@@ -1,0 +1,7 @@
+{
+	"RenderType":"Sprite",
+	"Texture":"textures/rotating_thing.png",
+	"SpriteRadius": 0.05,
+	"Height": 0.125,
+	"GroundOffset": 0.5
+}

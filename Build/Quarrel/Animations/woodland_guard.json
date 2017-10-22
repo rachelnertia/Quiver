@@ -1,0 +1,29 @@
+{
+    "frameRects": [
+        {
+            "bottom": 32,
+            "left": 0,
+            "right": 32,
+            "top": 0
+        },
+        {
+            "bottom": 32,
+            "left": 32,
+            "right": 64,
+            "top": 0
+        },
+        {
+            "bottom": 32,
+            "left": 64,
+            "right": 96,
+            "top": 0
+        },
+        {
+            "bottom": 32,
+            "left": 32,
+            "right": 64,
+            "top": 0
+        }
+    ],
+    "frameTimes": [745, 255, 745, 255]
+}

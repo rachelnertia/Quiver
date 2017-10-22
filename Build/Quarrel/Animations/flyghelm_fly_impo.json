@@ -1,0 +1,72 @@
+{
+    "frameRects": [
+        {
+            "bottom": 32,
+            "left": 0,
+            "right": 32,
+            "top": 0
+        },
+        {
+            "bottom": 32,
+            "left": 32,
+            "right": 0,
+            "top": 0
+        },
+        {
+            "bottom": 32,
+            "left": 32,
+            "right": 64,
+            "top": 0
+        },
+        {
+            "bottom": 32,
+            "left": 64,
+            "right": 32,
+            "top": 0
+        },
+        {
+            "bottom": 32,
+            "left": 64,
+            "right": 96,
+            "top": 0
+        },
+        {
+            "bottom": 32,
+            "left": 96,
+            "right": 64,
+            "top": 0
+        },
+        {
+            "bottom": 32,
+            "left": 96,
+            "right": 128,
+            "top": 0
+        },
+        {
+            "bottom": 32,
+            "left": 128,
+            "right": 96,
+            "top": 0
+        },
+        {
+            "bottom": 64,
+            "left": 0,
+            "right": 32,
+            "top": 32
+        },
+        {
+            "bottom": 64,
+            "left": 32,
+            "right": 0,
+            "top": 32
+        }
+    ],
+    "frameTimes": [
+        100,
+        100,
+        100,
+        100,
+        100
+    ],
+    "altViewsPerFrame": 1
+}

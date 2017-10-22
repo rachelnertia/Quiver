@@ -1,0 +1,361 @@
+{
+    "AnimationSystem": null,
+    "DirectionalLight": {
+        "Angle": 0.0,
+        "Strength": 0.5
+    },
+    "Entities": [
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    0.09375,
+                    -3.53125
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            -3.0625,
+                            -0.59375
+                        ],
+                        [
+                            3.0625,
+                            -0.59375
+                        ],
+                        [
+                            3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            0.59375
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ff3cffff",
+                "GroundOffset": 0.0,
+                "Height": 1,
+                "SpriteRadius": 0.5
+            }
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    -0.4375,
+                    -6.5
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            -2.1875,
+                            -0.625
+                        ],
+                        [
+                            2.1875,
+                            -0.625
+                        ],
+                        [
+                            2.1875,
+                            0.625
+                        ],
+                        [
+                            -2.1875,
+                            0.625
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ffffffff",
+                "GroundOffset": 0.0,
+                "Height": 1,
+                "SpriteRadius": 0.5
+            }
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": 0.70511132478714,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    5.03125,
+                    -2.0625
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            3.0625,
+                            -0.59375
+                        ],
+                        [
+                            3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            -0.59375
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ff3cffff",
+                "GroundOffset": 0.0,
+                "Height": 1,
+                "SpriteRadius": 0.5
+            }
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": 2.12510371208191,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    4.875,
+                    2.09375
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            3.0625,
+                            -0.59375
+                        ],
+                        [
+                            3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            -0.59375
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ff3cffff",
+                "GroundOffset": 0.0,
+                "Height": 1,
+                "SpriteRadius": 0.5
+            }
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    0.1875,
+                    4.78125
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            3.0625,
+                            -0.59375
+                        ],
+                        [
+                            3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            -0.59375
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ff3cffff",
+                "GroundOffset": 0.0,
+                "Height": 1,
+                "SpriteRadius": 0.5
+            }
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": -0.256516605615616,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    -5.70542335510254,
+                    -2.75
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            3.0625,
+                            -0.59375
+                        ],
+                        [
+                            3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            -0.59375
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ff3cffff",
+                "GroundOffset": 0.0,
+                "Height": 1,
+                "SpriteRadius": 0.5
+            }
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": 0.274575293064117,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    -5.42417335510254,
+                    4
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            3.0625,
+                            -0.59375
+                        ],
+                        [
+                            3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            -0.59375
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ff3cffff",
+                "GroundOffset": 0.0,
+                "Height": 1,
+                "SpriteRadius": 0.5
+            }
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": 1.5475447177887,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    -8.33042335510254,
+                    0.59375
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            3.0625,
+                            -0.59375
+                        ],
+                        [
+                            3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            0.59375
+                        ],
+                        [
+                            -3.0625,
+                            -0.59375
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ff3cffff",
+                "GroundOffset": 0.0,
+                "Height": 1,
+                "SpriteRadius": 0.5
+            }
+        }
+    ],
+    "Gravity": [
+        0.0,
+        0.0
+    ],
+    "GroundColour": "ffff00ff",
+    "Prefabs": {},
+    "Sky": null,
+    "SkyColour": "00000000"
+}

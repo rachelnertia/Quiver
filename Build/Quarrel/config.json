@@ -1,4 +1,4 @@
 {
 	"initialState":"Editor",
-	"world":"testbed.json"
+	"worldFile":"testbed.json"
 }

@@ -240,7 +240,7 @@ TEST_CASE("AnimationSystem", "[Animation]")
 
 	SECTION("Check AddAnimation result") {
 		REQUIRE(animationSystem.GetAnimationCount() == 1);
-		REQUIRE(animationSystem.GetAnimationNumFrames(animationId) == animationData.GetFrameCount());
+		REQUIRE((int)animationSystem.GetAnimationNumFrames(animationId) == animationData.GetFrameCount());
 		REQUIRE(animationSystem.AnimationHasAltViews(animationId) == false);
 		REQUIRE(animationSystem.AnimationExists(animationId));
 
@@ -267,9 +267,9 @@ TEST_CASE("AnimationSystem", "[Animation]")
 	}
 
 	SECTION("Animate plays the animation") {
-		for (int i = 0; i < (int)animationData.GetFrameCount(); ++i) {
+		for (int i = 0; i < animationData.GetFrameCount(); ++i) {
 			REQUIRE(animationSystem.GetAnimatorAnimation(animatorId) == animationId);
-			REQUIRE(animationSystem.GetAnimatorFrame(animatorId) == i);
+			REQUIRE((int)animationSystem.GetAnimatorFrame(animatorId) == i);
 			REQUIRE(animatorTarget.rect == animationData.GetRect(i).value());
 
 			animationSystem.Animate(animationData.GetTime(i).value());
@@ -319,14 +319,14 @@ TEST_CASE("AnimationSystem", "[Animation]")
 			for (const int invalidFrame : { -1, animationData.GetFrameCount() })
 			{
 				REQUIRE(animationSystem.SetAnimatorFrame(animatorId, invalidFrame) == false);
-				REQUIRE(animationSystem.GetAnimatorFrame(animatorId) == originalFrame);
+				REQUIRE((int)animationSystem.GetAnimatorFrame(animatorId) == originalFrame);
 				REQUIRE(animatorTarget.rect == originalTargetVal);
 			}
 		}
 
 		SECTION("Set to current frame") {
 			REQUIRE(animationSystem.SetAnimatorFrame(animatorId, 0));
-			REQUIRE(animationSystem.GetAnimatorFrame(animatorId) == originalFrame);
+			REQUIRE((int)animationSystem.GetAnimatorFrame(animatorId) == originalFrame);
 			REQUIRE(animatorTarget.rect == originalTargetVal);
 		}
 
@@ -352,7 +352,7 @@ TEST_CASE("AnimationSystem", "[Animation]")
 			
 			// Check that the animator & target are left unchanged
 			REQUIRE(animationSystem.GetAnimatorAnimation(animatorId) == animationId);
-			REQUIRE(animationSystem.GetAnimatorFrame(animatorId) == currentFrame);
+			REQUIRE((int)animationSystem.GetAnimatorFrame(animatorId) == currentFrame);
 			REQUIRE(currentRect == animatorTarget.rect);
 		}
 

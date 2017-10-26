@@ -15,7 +15,7 @@ You will need:
 
 Clone the Quiver repository. 
 
-Run Premake in the root directory (where you'll find premake5.lua), specifying the directory in which you unzipped SFML to using the --sfmldir parameter. In this example, Quiver has been cloned to `C:/Dev/Quiver`, SFML 2.4.2 has been unzipped to `C:/SFML-2.4.2`, and I am generating a Visual Studio 2017 workspace:
+Run Premake in the root directory (where you'll find `premake5.lua`), specifying the directory in which you unzipped SFML to using the `--sfmldir` parameter. In this example, Quiver has been cloned to `C:/Dev/Quiver`, SFML 2.4.2 has been unzipped to `C:/SFML-2.4.2`, and I am generating a Visual Studio 2017 workspace:
 
 ```
 PS C:\Dev\Quiver> premake5 --sfmldir=C:\SFML-2.4.2\ vs2017

@@ -14,6 +14,7 @@
 
 #include "Quiver/Animation/AnimationSystem.h"
 #include "Quiver/Entity/CustomComponent/CustomComponentUpdater.h"
+#include "Quiver/Entity/EntityPrefab.h"
 #include "Quiver/Graphics/Fog.h"
 #include "Quiver/Graphics/Light.h"
 #include "Quiver/Graphics/RenderSettings.h"
@@ -48,27 +49,6 @@ class World;
 
 bool                   SaveWorld(const World & world, const std::string filename);
 std::unique_ptr<World> LoadWorld(const std::string filename, CustomComponentTypeLibrary& customComponentTypes);
-
-class EntityPrefabContainer
-{
-public:
-	const std::vector<std::string> GetPrefabNames() const;
-
-	bool AddPrefab(
-		const std::string prefabName,
-		const Entity& entity,
-		const CustomComponentTypeLibrary& customComponentTypes);
-
-	const std::experimental::optional<nlohmann::json> GetPrefab(std::string prefabName) const;
-
-	bool FromJson(const nlohmann::json& j);
-	bool ToJson(nlohmann::json& j) const;
-
-private:
-
-	std::unordered_map<std::string, nlohmann::json> mEntityPrefabs;
-
-};
 
 class WorldController;
 
@@ -143,7 +123,6 @@ public:
 
 	bool AddEntity(std::unique_ptr<Entity> entity);
 
-	// TODO: Will separate this out from World.
 	EntityPrefabContainer mEntityPrefabs;
 
 	sf::Color groundColor = sf::Color::Yellow;
@@ -212,6 +191,7 @@ private:
 	WorldRaycastRenderer mRaycastRenderer;
 };
 
+// TODO: Decide what to do with this.
 class WorldController
 {
 public:

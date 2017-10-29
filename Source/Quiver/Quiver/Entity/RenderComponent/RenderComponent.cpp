@@ -7,8 +7,6 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
-#include <ImGui/imgui.h>
-#include <ImGui/imgui-SFML.h>
 #include <spdlog/spdlog.h>
 
 #include "Quiver/Entity/Entity.h"
@@ -26,6 +24,10 @@ using namespace qvr;
 
 AnimationSystem& GetAnimationSystem(const RenderComponent& renderComponent) {
 	return renderComponent.GetEntity().GetWorld().GetAnimationSystem();
+}
+
+TextureLibrary& GetTextureLibrary(const RenderComponent& renderComponent) {
+	return renderComponent.GetEntity().GetWorld().GetTextureLibrary();
 }
 
 b2World* GetPhysicsWorld(RenderComponent& rc) {
@@ -79,157 +81,6 @@ RenderComponent::~RenderComponent()
 	if (mDetachedBody) {
 		GetEntity().GetWorld().UnregisterDetachedRenderComponent(*this);
 		GetEntity().GetWorld().UnregisterAnimatorWithAltViews(*this);
-	}
-}
-
-void RenderComponent::GuiControls()
-{
-	{
-		bool detached = IsDetached();
-		if (ImGui::Checkbox("Detached", &detached)) {
-			SetDetached(detached);
-		}
-	}
-
-	{
-		float height = GetHeight();
-		if (ImGui::SliderFloat("Height", &height, 0.5f, 8.0f)) {
-			SetHeight(height);
-		}
-	}
-
-	{
-		float groundOffset = GetGroundOffset();
-		if (ImGui::SliderFloat("Ground Offset", &groundOffset, 0.0f, 5.0f)) {
-			SetGroundOffset(groundOffset);
-		}
-	}
-
-	{
-		float spriteRadius = GetSpriteRadius();
-		if (ImGui::SliderFloat("Sprite Radius", &spriteRadius, 0.1f, 2.0f)) {
-			SetSpriteRadius(spriteRadius);
-		}
-	}
-
-	{
-		sf::Color c = GetColor();
-		ColourUtils::ImGuiColourEdit("Colour", c);
-		SetColor(c);
-	}
-
-	if (ImGui::CollapsingHeader("Texture")) {
-		ImGui::Indent();
-
-		if (GetTexture() != nullptr) {
-			if (ImGui::Button("Remove Texture")) {
-				mFixtureRenderData->mTexture.reset();
-				mTextureFilename.clear();
-			}
-			else {
-				ImGui::Image(*GetTexture());
-
-				ImGui::Image(*GetTexture(),
-					sf::FloatRect((float)GetTextureRect().left,
-					(float)GetTextureRect().top,
-						(float)GetTextureRect().right - GetTextureRect().left,
-						(float)GetTextureRect().bottom - GetTextureRect().top));
-			}
-		}
-		else {
-			ImGui::Text("No Texture");
-			static char filenameBuf[128];
-			ImGuiInputTextFlags flags = 0;
-			ImGui::InputText("Filename of Texture to Load", filenameBuf, 128, flags);
-			if (ImGui::Button("Try to Load")) {
-				if (strlen(filenameBuf) > 0) {
-					mFixtureRenderData->mTexture =
-						GetEntity().GetWorld().GetTextureLibrary().LoadTexture(filenameBuf);
-					if (GetTexture()) {
-						mTextureFilename = filenameBuf;
-
-						// If there is no Animator, set the texture rect to the size of the texture.
-						// Otherwise leave it; the AnimationSystem 'owns' control over the texture rect.
-						if (!GetAnimationSystem(*this).AnimatorExists(mAnimatorId)) {
-							mFixtureRenderData->mTextureRect.rect = SfVecToRect(GetTexture()->getSize());
-						}
-					}
-					else {
-						mTextureFilename.clear();
-					}
-				}
-			}
-		}
-
-		ImGui::Unindent();
-	}
-
-	if (ImGui::CollapsingHeader("Animation##RC")) {
-		ImGui::Indent();
-
-		AnimationSystem& animSystem = GetAnimationSystem(*this);
-
-		if (ImGui::CollapsingHeader("Pick Animation")) {
-			auto animIds = animSystem.GetAnimationIds();
-			const unsigned numAnims = animSystem.GetAnimationCount();
-			std::vector<std::string> animUidStrings;
-			for (auto animId : animIds) {
-				char buffer[32];
-				sprintf(buffer, "UID: %u", animId.GetValue());
-				animUidStrings.push_back(buffer);
-			}
-
-			auto itemsGetter = [](void* data, int idx, const char** out_text) -> bool
-			{
-				auto container = static_cast<std::vector<std::string>*>(data);
-
-				*out_text = (*container)[idx].c_str();
-
-				return true;
-			};
-
-			int selection = -1;
-
-			if (ImGui::Combo("List", &selection, itemsGetter, (void*)&animUidStrings, numAnims)) {
-				std::cout << "Selected #" << selection << ". AnimationId: " << animIds[selection] << "\n";
-
-				SetAnimation(animIds[selection]);
-
-				std::cout << "AnimatorId set to " << mAnimatorId << ".\n";
-			}
-		}
-
-		if (animSystem.AnimatorExists(mAnimatorId)) {
-			ImGui::Text("Animator ID:\t%u", mAnimatorId);
-			animSystem.AnimatorGui(mAnimatorId);
-
-			if (ImGui::Button("Remove Animator")) {
-				RemoveAnimation();
-			}
-		}
-		else {
-			ImGui::Text("No Animator");
-
-			if (ImGui::CollapsingHeader("Set Texture Rect Directly")) {
-				ImGui::Indent();
-
-				int corner[2] = { GetTextureRect().left, GetTextureRect().top };
-				if (ImGui::InputInt2("Top Left (X, Y)", corner)) {
-					mFixtureRenderData->mTextureRect.rect.left = corner[0];
-					mFixtureRenderData->mTextureRect.rect.top = corner[1];
-				}
-				corner[0] = GetTextureRect().right;
-				corner[1] = GetTextureRect().bottom;
-				if (ImGui::InputInt2("Bottom Right (X, Y)", corner)) {
-					mFixtureRenderData->mTextureRect.rect.right = corner[0];
-					mFixtureRenderData->mTextureRect.rect.bottom = corner[1];
-				}
-
-				ImGui::Unindent();
-			}
-		}
-
-		ImGui::Unindent();
 	}
 }
 
@@ -516,6 +367,40 @@ void RenderComponent::SetSpriteRadius(const float spriteRadius)
 		newFixture->SetUserData(mFixtureRenderData.get());
 
 		std::cout << "RenderComponent::SetSpriteRadius: Recreated fixture for flat sprite.\n";
+	}
+}
+
+bool RenderComponent::SetTexture(const std::string& filename)
+{
+	std::shared_ptr<sf::Texture> texture = GetTextureLibrary(*this).LoadTexture(filename);
+
+	this->mFixtureRenderData->mTexture = texture;
+
+	if (texture)
+	{
+		this->mTextureFilename = filename;
+		
+		SetTextureRect(SfVecToRect(GetTexture()->getSize()));
+
+		return true;
+	}
+
+	this->mTextureFilename.clear();
+
+	return false;
+}
+
+void RenderComponent::RemoveTexture() {
+	this->mFixtureRenderData->mTexture = nullptr;
+	this->mTextureFilename.clear();
+}
+
+void RenderComponent::SetTextureRect(const Animation::Rect& rect)
+{
+	// If there is no Animator, set the texture rect to the size of the texture.
+	// Otherwise leave it; the Animator owns control over the texture rect.
+	if (this->mAnimatorId == AnimatorId::Invalid) {
+		mFixtureRenderData->mTextureRect.rect = rect;
 	}
 }
 

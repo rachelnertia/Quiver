@@ -11,6 +11,7 @@
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponentDef.h"
 #include "Quiver/Entity/RenderComponent/RenderComponent.h"
+#include "Quiver/Entity/RenderComponent/RenderComponentEditor.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
 #include "Quiver/World/World.h"
 
@@ -264,18 +265,30 @@ void EntityEditor::GuiControls() {
 	if (ImGui::CollapsingHeader("Render Component")) {
 		ImGui::AutoIndent indent;
 
-		if (m_Entity.GetGraphics()) {
-			m_Entity.GetGraphics()->GuiControls();
-
-			ImGui::NewLine();
-
-			if (ImGui::Button("Remove Render Component")) {
-				m_Entity.RemoveGraphics();
-			}
+		if (!m_Entity.GetGraphics() && ImGui::Button("Add Render Component"))
+		{
+			m_Entity.AddGraphics();
 		}
-		else {
-			if (ImGui::Button("Add Render Component")) {
-				m_Entity.AddGraphics();
+
+		if (m_Entity.GetGraphics())
+		{
+			if (!m_RenderComponentEditor ||
+				!m_RenderComponentEditor->IsTargeting(*m_Entity.GetGraphics()))
+			{
+				m_RenderComponentEditor = std::make_unique<RenderComponentEditor>(*m_Entity.GetGraphics());
+			}
+
+			if (ImGui::CollapsingHeader("Edit Render Component"))
+			{
+				ImGui::AutoIndent indent2;
+
+				m_RenderComponentEditor->GuiControls();
+			}
+
+			if (ImGui::Button("Remove Render Component"))
+			{
+				m_Entity.RemoveGraphics();
+				m_RenderComponentEditor.release();
 			}
 		}
 	}
@@ -313,7 +326,6 @@ void EntityEditor::GuiControls() {
 			if (ImGui::Button("Remove Audio Component"))
 			{
 				m_Entity.RemoveAudio();
-				// Don't need to do this, but may as well:
 				m_AudioComponentEditor.release();
 			}
 		}

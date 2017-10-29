@@ -26,8 +26,6 @@ public:
 	RenderComponent& operator=(const RenderComponent&) = delete;
 	RenderComponent& operator=(const RenderComponent&&) = delete;
 
-	void GuiControls();
-
 	bool ToJson(nlohmann::json& j) const;
 	bool FromJson(const nlohmann::json& j);
 
@@ -43,8 +41,6 @@ public:
 	float GetSpriteRadius() const { return mFixtureRenderData->GetSpriteRadius(); }
 	float GetAnimatorRotation() const { return mImpostorRotation; }
 	const b2Vec2& GetSpritePosition() const { return mFixtureRenderData->GetSpritePosition(); }
-	const sf::Texture* GetTexture() const { return mFixtureRenderData->GetTexture(); }
-	const Animation::Rect& GetTextureRect() const { return mFixtureRenderData->GetTextureRect(); }
 	const sf::Color GetColor() const { return mFixtureRenderData->GetColor(); }
 
 	void SetHeight(const float height) { mFixtureRenderData->mHeight = height; }
@@ -52,6 +48,17 @@ public:
 	void SetAnimatorRotation(const float radians) { mImpostorRotation = radians; }
 	void SetSpriteRadius(const float spriteRadius);
 	void SetColor(const sf::Color& color) { mFixtureRenderData->mBlendColor = color; }
+
+	const sf::Texture* GetTexture()         const { return mFixtureRenderData->GetTexture(); }
+	const char*        GetTextureFilename() const { return mTextureFilename.c_str(); }
+
+	bool SetTexture(const std::string& filename);
+
+	void RemoveTexture();
+
+	const Animation::Rect& GetTextureRect() const { return mFixtureRenderData->GetTextureRect(); }
+
+	void SetTextureRect(const Animation::Rect& rect);
 
 	AnimatorId GetAnimatorId() { return mAnimatorId; }
 

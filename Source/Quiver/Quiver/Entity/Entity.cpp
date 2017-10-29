@@ -10,6 +10,7 @@
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponentDef.h"
+#include "Quiver/Entity/PhysicsComponent/PhysicsComponentEditor.h"
 #include "Quiver/Entity/RenderComponent/RenderComponent.h"
 #include "Quiver/Entity/RenderComponent/RenderComponentEditor.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
@@ -296,7 +297,13 @@ void EntityEditor::GuiControls() {
 	if (ImGui::CollapsingHeader("Physics Component")) {
 		ImGui::AutoIndent indent;
 
-		m_Entity.GetPhysics()->GuiControls();
+		if (!m_PhysicsComponentEditor ||
+			!m_PhysicsComponentEditor->IsTargeting(*m_Entity.GetPhysics()))
+		{
+			m_PhysicsComponentEditor = std::make_unique<PhysicsComponentEditor>(*m_Entity.GetPhysics());
+		}
+
+		m_PhysicsComponentEditor->GuiControls();
 	}
 
 	if (ImGui::CollapsingHeader("Audio Component"))

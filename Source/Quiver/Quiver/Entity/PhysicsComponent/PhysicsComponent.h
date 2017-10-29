@@ -32,8 +32,6 @@ public:
 
 	nlohmann::json ToJson();
 
-	void GuiControls();
-
 	b2Vec2 GetPosition() const;
 
 	b2Body& GetBody() { return *mBody; }

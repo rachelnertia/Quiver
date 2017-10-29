@@ -3,7 +3,6 @@
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Dynamics/b2Fixture.h>
 #include <Box2D/Dynamics/b2World.h>
-#include <ImGui/imgui.h>
 
 #include "Quiver/Entity/Entity.h"
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponentDef.h"
@@ -100,63 +99,6 @@ nlohmann::json PhysicsComponent::ToJson()
 	}
 
 	return j;
-}
-
-void PhysicsComponent::GuiControls() {
-
-	{
-		b2BodyType type = mBody->GetType();
-		const char* bodyTypeNames[3] =
-		{
-			"Static",    // b2_staticBody
-			"Kinematic", // b2_kinematicBody
-			"Dynamic"    // b2_dynamicBody
-		};
-
-		if (ImGui::ListBox("Body Type",
-			(int*)&type,
-			bodyTypeNames,
-			3))
-		{
-			mBody->SetType(type);
-		}
-	}
-
-	{
-		bool fixedRotation = mBody->IsFixedRotation();
-		if (ImGui::Checkbox("Fixed Rotation", &fixedRotation)) {
-			mBody->SetFixedRotation(fixedRotation);
-		}
-	}
-
-	{
-		float linearDamping = mBody->GetLinearDamping();
-		if (ImGui::SliderFloat("Linear Damping", &linearDamping, 0.0f, 10.0f)) {
-			mBody->SetLinearDamping(linearDamping);
-		}
-	}
-
-	{
-		float angularDamping = mBody->GetAngularDamping();
-		if (ImGui::InputFloat("Angular Damping", &angularDamping)) {
-			mBody->SetAngularDamping(angularDamping);
-		}
-	}
-
-	{
-		float friction = mBody->GetFixtureList()->GetFriction();
-		if (ImGui::SliderFloat("Friction", &friction, 0.0f, 1.0f)) {
-			mBody->GetFixtureList()->SetFriction(friction);
-		}
-	}
-
-	{
-		float restitution = mBody->GetFixtureList()->GetRestitution();
-		if (ImGui::SliderFloat("Restitution", &restitution, 0.0f, 2.0f)) {
-			mBody->GetFixtureList()->SetRestitution(restitution);
-		}
-	}
-
 }
 
 b2Vec2 PhysicsComponent::GetPosition() const

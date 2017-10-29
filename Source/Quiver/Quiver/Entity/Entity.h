@@ -70,6 +70,7 @@ private:
 };
 
 class AudioComponentEditor;
+class PhysicsComponentEditor;
 class RenderComponentEditor;
 
 class EntityEditor
@@ -85,8 +86,9 @@ public:
 private:
 	Entity& m_Entity;
 	// Maybe this could be an optional.
-	std::unique_ptr<AudioComponentEditor>  m_AudioComponentEditor;
-	std::unique_ptr<RenderComponentEditor> m_RenderComponentEditor;
+	std::unique_ptr<AudioComponentEditor>   m_AudioComponentEditor;
+	std::unique_ptr<PhysicsComponentEditor> m_PhysicsComponentEditor;
+	std::unique_ptr<RenderComponentEditor>  m_RenderComponentEditor;
 };
 
 }

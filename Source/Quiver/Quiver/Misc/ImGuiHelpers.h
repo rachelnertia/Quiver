@@ -53,6 +53,12 @@ namespace ImGui
 	bool ListBox(const char* label, int* current_item, const std::string* items, const int items_count);
 
 	template<int bufferSize>
+	bool InputText(const char* label, char (&buffer)[bufferSize], ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = nullptr, void* user_data = nullptr)
+	{
+		return ImGui::InputText(label, buffer, bufferSize, flags, callback, user_data);
+	}
+
+	template<int bufferSize>
 	bool InputText(const char* label, std::string& str, ImGuiInputTextFlags flags = 0, ImGuiTextEditCallback callback = nullptr, void* user_data = nullptr)
 	{
 		char buffer[bufferSize];

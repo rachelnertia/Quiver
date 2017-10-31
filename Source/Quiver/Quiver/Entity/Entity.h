@@ -9,7 +9,6 @@ class b2Shape;
 namespace qvr {
 
 class AudioComponent;
-class EntityEditor;
 class CustomComponent;
 class CustomComponentTypeLibrary;
 class PhysicsComponent;
@@ -62,33 +61,11 @@ private:
 	World& mWorld;
 	
 	std::unique_ptr<PhysicsComponent> mPhysicsComponent;
-	std::unique_ptr<RenderComponent> mRenderComponent;	
-	std::unique_ptr<AudioComponent> mAudioComponent;
-	std::unique_ptr<CustomComponent> mCustomComponent;
+	std::unique_ptr<RenderComponent>  mRenderComponent;	
+	std::unique_ptr<AudioComponent>   mAudioComponent;
+	std::unique_ptr<CustomComponent>  mCustomComponent;
 
 	std::string mPrefabName;
-};
-
-class AudioComponentEditor;
-class PhysicsComponentEditor;
-class RenderComponentEditor;
-
-class EntityEditor
-{
-public:
-	EntityEditor(Entity& entity);
-	~EntityEditor();
-	void GuiControls();
-	bool IsTargeting(const Entity& entity) const
-	{
-		return &entity == &m_Entity;
-	}
-private:
-	Entity& m_Entity;
-	// Maybe this could be an optional.
-	std::unique_ptr<AudioComponentEditor>   m_AudioComponentEditor;
-	std::unique_ptr<PhysicsComponentEditor> m_PhysicsComponentEditor;
-	std::unique_ptr<RenderComponentEditor>  m_RenderComponentEditor;
 };
 
 }

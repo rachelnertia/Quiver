@@ -19,6 +19,7 @@
 
 #include "Quiver/Application/Game/Game.h"
 #include "Quiver/Entity/Entity.h"
+#include "Quiver/Entity/EntityEditor.h"
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
 #include "Quiver/Entity/RenderComponent/RenderComponent.h"
 #include "Quiver/Graphics/ColourUtils.h"

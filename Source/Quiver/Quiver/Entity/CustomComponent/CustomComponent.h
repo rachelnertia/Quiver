@@ -17,8 +17,7 @@ namespace qvr {
 class CustomComponentType;
 class RawInputDevices;
 
-// This type of Component defines behaviour for the Entity it is attached to.
-// Once per world step, the CustomComponent's OnStep method is called.
+// This type of Component defines custom behaviour for its Entity.
 class CustomComponent : public Component {
 public:
 	CustomComponent(Entity& entity);
@@ -59,9 +58,6 @@ private:
 	bool mRemoveFlag = false;
 };
 
-// Instantiate this to register a subclass of CustomComponent.
-// You will need to provide a string name for the type, a factory function
-// and a JSON-verification function.
 class CustomComponentType final {
 public:
 	CustomComponentType(

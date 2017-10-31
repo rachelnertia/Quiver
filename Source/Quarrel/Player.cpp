@@ -15,6 +15,7 @@
 #include <SFML/Graphics/Texture.hpp>
 #include <spdlog/spdlog.h>
 
+#include "Quiver/Audio/Listener.h"
 #include "Quiver/Animation/AnimationSystem.h"
 #include "Quiver/Animation/AnimationData.h"
 #include "Quiver/Entity/Entity.h"
@@ -406,12 +407,6 @@ Player::~Player()
 	GetEntity().GetWorld().UnregisterCamera(mCamera);
 }
 
-void UpdateListener(const b2Vec2& position, const b2Vec2& direction) {
-	sf::Listener::setPosition(position.x, 0.0f, position.y);
-	sf::Listener::setDirection(direction.x, 0.0f, direction.y);
-	sf::Listener::setUpVector(0.0f, 1.0f, 0.0f);
-}
-
 class DeadPlayer : public CustomComponent
 {
 public:
@@ -436,7 +431,7 @@ public:
 		mCamera.SetPosition(body.GetPosition());
 		mCamera.SetRotation(body.GetAngle());
 
-		UpdateListener(mCamera.GetPosition(), mCamera.GetForwards());
+		qvr::UpdateListener(mCamera);
 	}
 
 private:
@@ -516,7 +511,7 @@ void Player::OnStep(float deltaSeconds)
 	mCamera.SetPosition(body.GetPosition());
 	mCamera.SetRotation(body.GetAngle());
 
-	UpdateListener(mCamera.GetPosition(), mCamera.GetForwards());
+	qvr::UpdateListener(mCamera);
 }
 
 void Player::OnBeginContact(Entity& other)

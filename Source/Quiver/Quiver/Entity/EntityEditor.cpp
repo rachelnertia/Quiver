@@ -3,7 +3,7 @@
 #include <ImGui/imgui.h>
 
 #include "Quiver/Entity/Entity.h"
-#include "Quiver/Entity/AudioComponent/AudioComponent.h"
+#include "Quiver/Entity/AudioComponent/AudioComponentEditor.h"
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponentEditor.h"
 #include "Quiver/Entity/RenderComponent/RenderComponentEditor.h"

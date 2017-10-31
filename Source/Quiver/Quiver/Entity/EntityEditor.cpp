@@ -25,9 +25,8 @@ void EntityEditor::GuiControls() {
 		m_Entity.GetPrefab().empty() ? "None" : m_Entity.GetPrefab().c_str());
 
 	if (ImGui::CollapsingHeader("Make Prefab")) {
-		const size_t bufferSize = 128;
-		static char buffer[bufferSize];
-		ImGui::InputText("Name", buffer, bufferSize);
+		static char buffer[128];
+		ImGui::InputText("Name", buffer);
 		if (ImGui::Button("Save as Prefab")) {
 			if (strlen(buffer) > 0) {
 				World& world = m_Entity.GetWorld();

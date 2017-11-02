@@ -106,12 +106,19 @@ public:
 	AnimationId AddAnimation(const AnimationData& anim);
 
 	// TODO:
-	// AnimationId AddAnimation(const AnimationData& anim, const AnimationSourceInfo& animSourceInfo);
+	AnimationId AddAnimation(const AnimationData& anim, const AnimationSourceInfo& animSourceInfo);
 
 	bool RemoveAnimation(const AnimationId id);
 
-	bool AnimationExists(const AnimationId id) const { return animations.infosById.count(id) > 0; }
+	bool AnimationExists(const AnimationId id) const { 
+		return animations.infosById.count(id) > 0; 
+	}
+	
 	bool AnimationHasAltViews(const AnimationId id) const;
+	
+	int GetReferenceCount(const AnimationId animation) const { 
+		return animations.referenceCountsById.at(animation); 
+	}
 
 	AnimationId GetAnimationFromSource(const AnimationSourceInfo& animSource) const;
 
@@ -130,6 +137,10 @@ public:
 
 	bool AnimatorExists(const AnimatorId id) const {
 		return animators.states.count(id) != 0;
+	}
+
+	int GetAnimatorCount() const { 
+		return animators.states.size(); 
 	}
 
 	void AnimatorGui(const AnimatorId id);
@@ -159,8 +170,6 @@ public:
 	// objectAngle - between 0 and tau (2 * pi), the angle the object is facing.
 	// viewAngle   - between 0 and tau (2 * pi), the angle the object is being viewed from.
 	void UpdateAnimatorAltView(const AnimatorId animatorId, const float objectAngle, const float viewAngle);
-
-	void SystemGui(AnimationSystemEditorData& editorData);
 
 private:
 	struct AnimationInfo {
@@ -289,10 +298,11 @@ private:
 		const unsigned currentAltView);
 };
 
+void GuiControls(AnimationSystem& animationSystem, AnimationSystemEditorData& editorData);
+
 // TODO: Put this in a different file.
 struct AnimationSystemEditorData {
-	static const int mFilenameBufferSize = 128;
-	char mFilenameBuffer[mFilenameBufferSize] = { 0 };
+	char mFilenameBuffer[128] = { 0 };
 	int mCurrentSelection = -1;
 };
 

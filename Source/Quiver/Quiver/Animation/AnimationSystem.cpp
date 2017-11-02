@@ -9,7 +9,9 @@
 
 #include <ImGui/imgui.h>
 
-#include "AnimationData.h"
+#include "Quiver/Animation/AnimationData.h"
+#include "Quiver/Misc/ImGuiHelpers.h"
+#include "Quiver/Misc/JsonHelpers.h"
 
 namespace qvr {
 
@@ -197,7 +199,6 @@ nlohmann::json AnimationSystem::ToJson() const
 	return j;
 }
 
-// 0 = error.
 AnimationId AnimationSystem::AddAnimation(const AnimationData & anim) {
 	if (!anim.IsValid()) {
 		std::cout << "AnimationSystem::AddAnimation: AnimationData is invalid.\n";
@@ -242,6 +243,18 @@ AnimationId AnimationSystem::AddAnimation(const AnimationData & anim) {
 	animations.count++;
 
 	return id;
+}
+
+AnimationId AnimationSystem::AddAnimation(const AnimationData& data, const AnimationSourceInfo& sourceInfo)
+{
+	const AnimationId newAnim = AddAnimation(data);
+
+	if (newAnim != AnimationId::Invalid) 
+	{
+		animations.sourcesById[newAnim] = sourceInfo;
+	}
+
+	return newAnim;
 }
 
 bool AnimationSystem::RemoveAnimation(const AnimationId id)
@@ -724,7 +737,10 @@ void AnimationSystem::Animate(const AnimationSystem::TimeUnit ms) {
 	}
 }
 
-AnimationId AddAnimationFromJson(AnimationSystem& animSystem, const nlohmann::json& j)
+AnimationId AddAnimationFromJson(
+	AnimationSystem& animSystem, 
+	const nlohmann::json& j, 
+	const AnimationSourceInfo& sourceInfo)
 {
 	static const char* logCtx = "AddAnimationFromJson: ";
 
@@ -732,7 +748,7 @@ AnimationId AddAnimationFromJson(AnimationSystem& animSystem, const nlohmann::js
 
 	if (const auto anim = AnimationData::FromJson(j)) {
 		if ((*anim).IsValid()) {
-			auto ret = animSystem.AddAnimation(*anim);
+			auto ret = animSystem.AddAnimation(*anim, sourceInfo);
 			if (ret != AnimationId::Invalid) {
 				std::cout << logCtx << "Successfully added animation from JSON to the system with ID " <<
 					ret.GetValue() << ".\n";
@@ -788,25 +804,25 @@ void AnimationSystem::UpdateAnimatorAltView(const AnimatorId animatorId,
 	}
 }
 
-void AnimationSystem::SystemGui(AnimationSystemEditorData& editorData)
+void GuiControls(AnimationSystem& animationSystem, AnimationSystemEditorData& editorData)
 {
-	static const char* logCtx = "AnimationSystem::SystemGui: ";
-
-	ImGui::Text("Num. Animations: %u", animations.count);
-	ImGui::Text("Num. Animators:  %u", animators.states.size());
+	ImGui::Text("Num. Animations: %u", animationSystem.GetAnimationCount());
+	ImGui::Text("Num. Animators:  %u", animationSystem.GetAnimatorCount());
 
 	if (ImGui::CollapsingHeader("View Animations"))
 	{
-		if (animations.count == 0) {
+		ImGui::AutoIndent indent;
+
+		if (animationSystem.GetAnimationCount() == 0) {
 			ImGui::Text("No Animations to display");
 		}
 
 		std::vector<std::string> animationUidStrings;
-		for (auto animId : animations.allIds) {
+		for (auto animId : animationSystem.GetAnimationIds()) {
 			animationUidStrings.emplace_back(fmt::format("UID: {}", animId.GetValue()));
 		}
 
-		if (editorData.mCurrentSelection > (int)(animations.count) - 1) {
+		if (editorData.mCurrentSelection > (int)(animationSystem.GetAnimationCount()) - 1) {
 			editorData.mCurrentSelection = -1;
 		}
 
@@ -819,89 +835,57 @@ void AnimationSystem::SystemGui(AnimationSystemEditorData& editorData)
 			return true;
 		};
 
-		ImGui::Combo("List", &editorData.mCurrentSelection, itemsGetter, (void*)&animationUidStrings, animations.count);
+		ImGui::Combo("List", &editorData.mCurrentSelection, itemsGetter, (void*)&animationUidStrings, animationUidStrings.size());
 
 		if (editorData.mCurrentSelection > -1) {
-			AnimationId animId = animations.allIds[editorData.mCurrentSelection];
+			const AnimationId animId = animationSystem.GetAnimationIds()[editorData.mCurrentSelection];
 
-			const AnimationSourceInfo animSourceInfo = animations.sourcesById[animId];
+			AnimationSourceInfo animSourceInfo;
+			animationSystem.GetAnimationSourceInfo(animId, animSourceInfo);
 
 			ImGui::Text("Name: %s", animSourceInfo.name.c_str());
 			ImGui::Text("File: %s", animSourceInfo.filename.c_str());
-			ImGui::NewLine();
-			ImGui::Text("Ref Count: %u", animations.referenceCountsById[animId]);
+			ImGui::Text("Ref Count: %d", animationSystem.GetReferenceCount(animId));
 
 			if (ImGui::Button("Remove")) {
-				RemoveAnimation(animId);
+				animationSystem.RemoveAnimation(animId);
 			}
 		}
 	}
 
-	if (ImGui::CollapsingHeader("Add Animations")) {
+	if (ImGui::CollapsingHeader("Add Animations")) 
+	{
+		using namespace JsonHelp;
+		
+		ImGui::AutoIndent indent;
 
-		ImGui::InputText("JSON Filename", editorData.mFilenameBuffer,
-			editorData.mFilenameBufferSize);
+		ImGui::InputText("JSON Filename", editorData.mFilenameBuffer);
 
-		if (ImGui::Button("Load Individual") && strlen(editorData.mFilenameBuffer)) {
-			std::ifstream file(editorData.mFilenameBuffer);
+		if (ImGui::Button("Load Individual") && 
+			strlen(editorData.mFilenameBuffer)) 
+		{
 
-			if (file.is_open()) {
-				nlohmann::json j;
-				j << file;
+			const nlohmann::json j = LoadJsonFromFile(editorData.mFilenameBuffer);
 
-				auto animationId = AddAnimationFromJson(*this, j);
-
-				if (animationId != AnimationId::Invalid) {
-
-					AnimationSourceInfo sourceInfo;
-					//sourceInfo.name = ; leave name empty so we know this is not from a collection file.
-					sourceInfo.filename = editorData.mFilenameBuffer;
-
-					animations.sourcesById[animationId] = sourceInfo;
-
-					std::cout << logCtx << "Successfully added animation from file \"" <<
-						editorData.mFilenameBuffer << "\" to the system.\n";
-				}
-				else {
-					std::cout << logCtx << "Failed to add animation from file \"" <<
-						editorData.mFilenameBuffer << "\" to the system.\n";
-				}
-			}
-			else {
-				std::cout << logCtx << "Could not open file \"" << editorData.mFilenameBuffer << "\".\n";
-			}
+			AddAnimationFromJson(
+				animationSystem, 
+				j, 
+				AnimationSourceInfo{ {}, editorData.mFilenameBuffer });
 		}
 
-		if (ImGui::Button("Load Collection") && strlen(editorData.mFilenameBuffer)) {
-			std::ifstream file(editorData.mFilenameBuffer);
+		if (ImGui::Button("Load Collection") && 
+			strlen(editorData.mFilenameBuffer)) 
+		{
+			const nlohmann::json j = LoadJsonFromFile(editorData.mFilenameBuffer);
 
-			if (file.is_open()) {
-				nlohmann::json j;
-				j << file;
+			auto animCollection = j.get<std::map<std::string, nlohmann::json>>();
 
-				auto animCollection = j.get<std::map<std::string, nlohmann::json>>();
-
-				for (auto& kvp : animCollection) {
-					auto animationId = AddAnimationFromJson(*this, kvp.second);
-
-					if (animationId != AnimationId::Invalid) {
-						AnimationSourceInfo sourceInfo;
-						sourceInfo.name = kvp.first;
-						sourceInfo.filename = editorData.mFilenameBuffer;
-
-						animations.sourcesById[animationId] = sourceInfo;
-
-						std::cout << logCtx << "Successfully added animation \"" << kvp.first <<
-							"\" from collection file \"" << editorData.mFilenameBuffer << "\" to the system.\n";
-					}
-					else {
-						std::cout << logCtx << "Failed to add animation \"" << kvp.first <<
-							"\" from collection file \"" << editorData.mFilenameBuffer << "\" to the system.\n";
-					}
-				}
-			}
-			else {
-				std::cout << logCtx << "Could not open file \"" << editorData.mFilenameBuffer << "\".\n";
+			for (auto& kvp : animCollection) 
+			{
+				AddAnimationFromJson(
+					animationSystem, 
+					kvp.second, 
+					AnimationSourceInfo{ kvp.first, editorData.mFilenameBuffer});
 			}
 		}
 	}

@@ -8,6 +8,7 @@
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 #include "Quiver/Entity/Entity.h"
 #include "Quiver/World/World.h"
+#include "Quiver/World/WorldContext.h"
 
 using json = nlohmann::json;
 
@@ -50,7 +51,7 @@ void WorldExit::OnBeginContact(Entity& other)
 	if (other.GetCustomComponent() && other.GetCustomComponent()->GetTypeName() == "Player") {
 		auto world = LoadWorld(mWorldFilename, GetEntity().GetWorld().GetCustomComponentTypes());
 		if (world) {
-			GetEntity().GetWorld().SetNextWorld(world);
+			GetEntity().GetWorld().GetContext().SetNextWorld(std::move(world));
 		}
 	}
 }

@@ -20,6 +20,10 @@
 #include "json.hpp"
 #include <spdlog/spdlog.h>
 
+// TODO: I don't like that we're including ApplicationState.h here.
+//       I'd like to figure out a way to not have to do so.
+
+#include "Quiver/Application/ApplicationState.h"
 #include "Quiver/Audio/AudioLibrary.h"
 #include "Quiver/Entity/Entity.h"
 #include "Quiver/Entity/AudioComponent/AudioComponent.h"
@@ -35,7 +39,9 @@
 #include "Quiver/Input/RawInput.h"
 #include "Quiver/Misc/FindByAddress.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
+#include "Quiver/Misc/JsonHelpers.h"
 #include "Quiver/Physics/ContactListener.h"
+#include "Quiver/World/WorldContext.h"
 
 namespace qvr {
 
@@ -70,23 +76,7 @@ std::unique_ptr<World> LoadWorld(
 	auto log = spdlog::get("console");
 	assert(log.get());
 
-	std::ifstream in(filename);
-	if (!in.is_open()) {
-		log->error("Couldn't open {}!", filename);
-		return nullptr;
-	}
-
-	nlohmann::json j;
-
-	try {
-		j << in;
-	}
-	catch (std::invalid_argument exception) {
-		log->error("Parsing failed! Exception: {}", exception.what());
-		return nullptr;
-	}
-
-	in.close();
+	const nlohmann::json j = JsonHelp::LoadJsonFromFile(filename);
 
 	if (!World::VerifyJson(j)) {
 		log->error("JSON is not valid!");
@@ -109,8 +99,10 @@ std::unique_ptr<World> LoadWorld(
 	return nullptr;
 }
 
-World::World(CustomComponentTypeLibrary& customComponentTypes)
+World::World(
+	CustomComponentTypeLibrary& customComponentTypes)
 	: m_CustomComponentTypes(customComponentTypes)
+	, mContext(std::make_unique<WorldContext>())
 	, mContactListener(std::make_unique<Physics::ContactListener>())
 	, mPhysicsWorld(std::make_unique<b2World>(b2Vec2_zero))
 	, mAudioLibrary(std::make_unique<AudioLibrary>())

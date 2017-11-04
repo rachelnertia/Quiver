@@ -36,6 +36,7 @@ namespace qvr {
 
 class AudioComponent;
 class AudioLibrary;
+class ApplicationState;
 class Camera2D;
 class Camera3D;
 class CustomComponent;
@@ -47,15 +48,19 @@ class RenderComponent;
 class TextureLibrary;
 class World;
 
-bool                   SaveWorld(const World & world, const std::string filename);
-std::unique_ptr<World> LoadWorld(const std::string filename, CustomComponentTypeLibrary& customComponentTypes);
+bool SaveWorld(
+	const World & world, 
+	const std::string filename);
 
-class WorldController;
+std::unique_ptr<World> LoadWorld(
+	const std::string filename, 
+	CustomComponentTypeLibrary& customComponentTypes);
+
+class WorldContext;
 
 class World {
 public:
-	World(
-		CustomComponentTypeLibrary& customComponentTypes);
+	World(CustomComponentTypeLibrary& customComponentTypes);
 
 	World(
 		CustomComponentTypeLibrary& customComponentTypes,
@@ -128,10 +133,6 @@ public:
 	sf::Color groundColor = sf::Color::Yellow;
 	sf::Color skyColor = sf::Color::Transparent;
 
-	std::unique_ptr<World>& GetNextWorld() { return mNextWorld; }
-
-	void SetNextWorld(std::unique_ptr<World>& nextWorld) { mNextWorld.reset(nextWorld.release()); }
-
 	// TODO: Some kind of World clock thing with time_point
 	using TimePoint = std::chrono::duration<float>;
 
@@ -142,6 +143,10 @@ public:
 
 	CustomComponentTypeLibrary& GetCustomComponentTypes() const {
 		return m_CustomComponentTypes;
+	}
+
+	WorldContext& GetContext() {
+		return *mContext;
 	}
 
 private:
@@ -166,6 +171,8 @@ private:
 
 	AnimationSystem mAnimationSystem;
 
+	std::unique_ptr<WorldContext> mContext;
+
 	std::unique_ptr<b2World>              mPhysicsWorld;
 	std::unique_ptr<b2ContactListener>    mContactListener;
 	std::unique_ptr<AudioLibrary>         mAudioLibrary;
@@ -176,10 +183,7 @@ private:
 	std::vector<std::reference_wrapper<RenderComponent>> mAnimatedWithAltViews;
 	std::vector<std::reference_wrapper<AudioComponent>>  mAudioComponents;
 
-	std::vector<std::unique_ptr<WorldController>> mControllers;
 	std::vector<std::unique_ptr<Entity>> mEntities;
-
-	std::unique_ptr<World> mNextWorld;
 
 	CustomComponentTypeLibrary& m_CustomComponentTypes;
 	CustomComponentUpdater m_CustomComponentUpdater;
@@ -189,32 +193,6 @@ private:
 	RenderSettings mRenderSettings;
 
 	WorldRaycastRenderer mRaycastRenderer;
-};
-
-// TODO: Decide what to do with this.
-class WorldController
-{
-public:
-	WorldController(World& world) : mWorld(world) {}
-
-	virtual ~WorldController() {}
-
-	WorldController(const WorldController&) = delete;
-	WorldController(const WorldController&&) = delete;
-
-	WorldController& operator=(const WorldController&) = delete;
-	WorldController& operator=(const WorldController&&) = delete;
-
-	virtual void OnStep() = 0;
-
-	virtual void GuiControls() {}
-
-protected:
-	World& GetWorld() const { return mWorld; }
-
-private:
-	World& mWorld;
-
 };
 
 }

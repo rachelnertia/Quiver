@@ -29,6 +29,8 @@ public:
 class ApplicationState {
 public:
 	ApplicationState(ApplicationStateContext& context) : mContext(context) {}
+	
+	virtual ~ApplicationState() = default;
 
 	ApplicationState(const ApplicationState& other) = delete;
 	ApplicationState(const ApplicationState&& other) = delete;

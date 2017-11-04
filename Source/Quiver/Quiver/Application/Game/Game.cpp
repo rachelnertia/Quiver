@@ -12,6 +12,7 @@
 #include "Quiver/Input/RawInput.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
 #include "Quiver/World/World.h"
+#include "Quiver/World/WorldContext.h"
 
 namespace qvr {
 
@@ -118,7 +119,8 @@ void Game::ProcessFrame()
 	{
 		sf::RenderWindow& window = GetContext().GetWindow();
 		sf::Sprite frameSprite(mFrameTex->getTexture());
-		frameSprite.setScale((float)window.getSize().x / (float)mFrameTex->getSize().x,
+		frameSprite.setScale(
+			(float)window.getSize().x / (float)mFrameTex->getSize().x,
 			(float)window.getSize().y / (float)mFrameTex->getSize().y);
 		window.draw(frameSprite);
 	}
@@ -135,9 +137,14 @@ void Game::ProcessFrame()
 
 	GetContext().GetWindow().display();
 
-	if (mWorld->GetNextWorld())
+	if (mWorld->GetContext().GetNextWorld())
 	{
-		mWorld.reset(mWorld->GetNextWorld().release());
+		mWorld.reset(mWorld->GetContext().GetNextWorld().release());
+	}
+
+	if (mWorld->GetContext().GetNextApplicationState())
+	{
+		SetQuit(std::move(mWorld->GetContext().GetNextApplicationState()));
 	}
 }
 

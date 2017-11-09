@@ -11,7 +11,6 @@ public:
 		: ApplicationState(context)
 	{}
 
-	void ProcessEvent(sf::Event& event);
 	void ProcessFrame();
 };
 

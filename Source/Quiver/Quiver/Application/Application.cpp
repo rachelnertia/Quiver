@@ -65,8 +65,6 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 		while (window.pollEvent(windowEvent)) {
 			ImGui::SFML::ProcessEvent(windowEvent);
 
-			currentState->ProcessEvent(windowEvent);
-
 			switch (windowEvent.type) {
 
 			case sf::Event::Closed:
@@ -88,6 +86,9 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 							0.0f,
 							(float)windowEvent.size.width,
 							(float)windowEvent.size.height)));
+
+				applicationStateContext.mWindowResized = true;
+
 				break;
 
 			case sf::Event::LostFocus:
@@ -113,6 +114,8 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 				quit = true;
 			}
 		}
+
+		applicationStateContext.mWindowResized = false;
 	}
 
 	consoleLog->info("Exiting.");

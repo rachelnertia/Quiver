@@ -39,6 +39,7 @@ WorldEditor::WorldEditor(ApplicationStateContext& context, std::unique_ptr<World
 	: ApplicationState(context)
 	, mWorld(std::move(world))
 	, mFrameTex(std::make_unique<sf::RenderTexture>())
+	, mMouse(context.GetWindow())
 {
 	if (!mWorld) {
 		mWorld = std::make_unique<World>(GetContext().GetCustomComponentTypes());
@@ -66,31 +67,13 @@ WorldEditor::WorldEditor(ApplicationStateContext& context, std::unique_ptr<World
 
 WorldEditor::~WorldEditor() {}
 
-void WorldEditor::ProcessEvent(sf::Event & event)
-{
-	if (GetContext().GetWindow().hasFocus()) {
-		switch (event.type) {
-		case sf::Event::MouseButtonPressed:
-			OnMouseClick(event.mouseButton);
-			break;
-		case sf::Event::MouseMoved:
-			OnMouseMove(event.mouseMove);
-			break;
-		case sf::Event::Resized:
-			// Resize frame texture
-			mFrameTex->create(
-				unsigned(event.size.width * mFrameTexResolutionModifier),
-				unsigned(event.size.height * mFrameTexResolutionModifier));
-			break;
-		default:
-			break;
-		}
-	}
-
-}
-
 void WorldEditor::ProcessFrame()
 {
+	if (GetContext().WindowResized()) {
+		const auto newSize = GetContext().GetWindow().getSize();
+		mFrameTex->create(newSize.x, newSize.y);
+	}
+
 	auto dt = frameClock.restart();
 
 	HandleInput(dt.asSeconds());
@@ -104,9 +87,27 @@ void WorldEditor::ProcessFrame()
 	Render();
 }
 
-// This is for non-event-driven input. So, isKeyPressed(..) etc.
 void WorldEditor::HandleInput(const float dt)
 {
+	mJoysticks.Update();
+	mKeyboard.Update();
+	mMouse.Update();
+
+	if (mMouse.GetPositionDelta() != sf::Vector2i(0, 0)) {
+		OnMouseMove(
+			sf::Event::MouseMoveEvent{ 
+				mMouse.GetPositionRelative().x, 
+				mMouse.GetPositionRelative().y });
+	}
+
+	if (mMouse.JustDown(qvr::MouseButton::Left)) {
+		OnMouseClick(
+			sf::Event::MouseButtonEvent{
+				sf::Mouse::Button::Left,
+				mMouse.GetPositionRelative().x,
+				mMouse.GetPositionRelative().y });
+	}
+
 	if (!GetContext().GetWindow().hasFocus()) {
 		return;
 	}

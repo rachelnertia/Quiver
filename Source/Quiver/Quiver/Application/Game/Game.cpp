@@ -45,30 +45,15 @@ Game::Game(ApplicationStateContext& context, std::unique_ptr<World> world)
 
 Game::~Game() {}
 
-void Game::ProcessEvent(sf::Event& event)
-{
-	switch (event.type) {
-	case sf::Event::Resized:
-		// Resize frame texture
-		mFrameTex->create(unsigned(event.size.width * mFrameTexResolutionModifier), unsigned(event.size.height * mFrameTexResolutionModifier));
-		break;
-	case sf::Event::KeyPressed:
-		switch (event.key.code) {
-		case sf::Keyboard::Escape:
-			mPaused = !mPaused;
-			OnTogglePause();
-			break;
-		}
-		break;
-	default:
-		break;
-	}
-}
-
 void Game::ProcessFrame()
 {
+	if (GetContext().WindowResized()) {
+		const auto newSize = GetContext().GetWindow().getSize();
+		mFrameTex->create(newSize.x, newSize.y);
+	}
+
 	// Clamp excessively large delta times.
-	float delta = std::min(mFrameClock.restart().asSeconds(), 1.0f / 30.0f);
+	const float delta = std::min(mFrameClock.restart().asSeconds(), 1.0f / 30.0f);
 
 	mFrameTime += delta;
 
@@ -91,11 +76,16 @@ void Game::ProcessFrame()
 	{
 		mFrameTime = 0.0f;
 
-		if (!mPaused) {
-			mMouse.Update();
-			mKeyboard.Update();
-			mJoysticks.Update();
+		mMouse.Update();
+		mKeyboard.Update();
+		mJoysticks.Update();
 
+		if (mKeyboard.JustDown(qvr::KeyboardKey::Escape)) {
+			mPaused = !mPaused;
+			OnTogglePause();
+		}
+
+		if (!mPaused) {
 			qvr::RawInputDevices devices(mMouse, mKeyboard, mJoysticks);
 
 			mWorld->TakeStep(devices);

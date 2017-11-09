@@ -14,6 +14,10 @@ class CustomComponentTypeLibrary;
 class ApplicationStateContext {
 	sf::RenderWindow& mWindow;
 	CustomComponentTypeLibrary& mCustomComponentTypes;
+	bool mWindowResized = false;
+
+	friend int RunApplication(CustomComponentTypeLibrary&);
+
 public:
 	ApplicationStateContext(
 		sf::RenderWindow& window,
@@ -23,6 +27,7 @@ public:
 	{}
 
 	sf::RenderWindow&           GetWindow() { return mWindow; }
+	bool                        WindowResized() { return mWindowResized; }
 	CustomComponentTypeLibrary& GetCustomComponentTypes() { return mCustomComponentTypes; }
 };
 
@@ -38,7 +43,6 @@ public:
 	ApplicationState& operator=(const ApplicationState& other) = delete;
 	ApplicationState& operator=(const ApplicationState&& other) = delete;
 
-	virtual void ProcessEvent(sf::Event& event) = 0;
 	virtual void ProcessFrame() = 0;
 
 	bool GetQuit() const { return mQuit; }

@@ -13,7 +13,6 @@ public:
 		: qvr::ApplicationState(context)
 	{}
 
-	void ProcessEvent(sf::Event&) override {}
 	void ProcessFrame() override
 	{
 		this->SetQuit(

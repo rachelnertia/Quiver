@@ -101,6 +101,8 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 			}
 		}
 
+		if (quit) continue;
+
 		ImGui::SFML::Update(deltaClock.restart());
 
 		currentState->ProcessFrame();
@@ -123,8 +125,6 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 	ImGui::SFML::Shutdown();
 
 	window.close();
-
-	spdlog::drop_all();
 
 	return 0;
 }

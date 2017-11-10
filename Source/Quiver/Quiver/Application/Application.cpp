@@ -124,8 +124,6 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 
 	ImGui::SFML::Shutdown();
 
-	window.close();
-
 	return 0;
 }
 

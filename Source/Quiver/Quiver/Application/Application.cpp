@@ -196,7 +196,7 @@ std::unique_ptr<ApplicationState> GetInitialState(
 		if (!worldFile.empty()) {
 			return std::make_unique<WorldEditor>(
 				applicationStateContext,
-				LoadWorld(worldFile, applicationStateContext.GetCustomComponentTypes()));
+				LoadWorld(worldFile, applicationStateContext.GetWorldContext()));
 		}
 
 		return std::make_unique<WorldEditor>(applicationStateContext);
@@ -210,7 +210,7 @@ std::unique_ptr<ApplicationState> GetInitialState(
 		if (!worldFile.empty()) {
 			return std::make_unique<Game>(
 				applicationStateContext,
-				LoadWorld(worldFile, applicationStateContext.GetCustomComponentTypes()));
+				LoadWorld(worldFile, applicationStateContext.GetWorldContext()));
 		}
 
 		return std::make_unique<Game>(applicationStateContext);

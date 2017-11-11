@@ -42,7 +42,7 @@ WorldEditor::WorldEditor(ApplicationStateContext& context, std::unique_ptr<World
 	, mMouse(context.GetWindow())
 {
 	if (!mWorld) {
-		mWorld = std::make_unique<World>(GetContext().GetCustomComponentTypes());
+		mWorld = std::make_unique<World>(GetContext().GetWorldContext());
 	}
 
 	// Instantiate EditorTools.
@@ -228,7 +228,7 @@ void WorldEditor::ProcessGUI()
 	}
 
 	if (ImGui::Button("New")) {
-		mWorld = std::make_unique<World>(GetContext().GetCustomComponentTypes());
+		mWorld = std::make_unique<World>(GetContext().GetWorldContext());
 		mCurrentSelection = nullptr;
 		mWorldFilename.clear();
 	}
@@ -255,7 +255,7 @@ void WorldEditor::ProcessGUI()
 				if (auto newWorld =
 					LoadWorld(
 						mWorldFilename,
-						GetContext().GetCustomComponentTypes()))
+						GetContext().GetWorldContext()))
 				{
 					mWorld.reset(newWorld.release());
 				}

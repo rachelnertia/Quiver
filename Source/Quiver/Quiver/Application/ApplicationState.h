@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "Quiver/World/WorldContext.h"
+
 namespace sf {
 class RenderWindow;
 class Event;
@@ -11,10 +13,12 @@ namespace qvr {
 
 class CustomComponentTypeLibrary;
 
+// Contains data shared by multiple ApplicationStates.
 class ApplicationStateContext {
 	sf::RenderWindow& mWindow;
-	CustomComponentTypeLibrary& mCustomComponentTypes;
 	bool mWindowResized = false;
+	
+	WorldContext mWorldContext;
 
 	friend int RunApplication(CustomComponentTypeLibrary&);
 
@@ -23,12 +27,12 @@ public:
 		sf::RenderWindow& window,
 		CustomComponentTypeLibrary& customComponentTypes)
 		: mWindow(window)
-		, mCustomComponentTypes(customComponentTypes)
+		, mWorldContext(customComponentTypes)
 	{}
 
 	sf::RenderWindow&           GetWindow() { return mWindow; }
 	bool                        WindowResized() { return mWindowResized; }
-	CustomComponentTypeLibrary& GetCustomComponentTypes() { return mCustomComponentTypes; }
+	WorldContext&               GetWorldContext() { return mWorldContext; }
 };
 
 class ApplicationState {

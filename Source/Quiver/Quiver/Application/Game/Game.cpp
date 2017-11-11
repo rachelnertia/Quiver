@@ -27,7 +27,7 @@ Game::Game(ApplicationStateContext& context, std::unique_ptr<World> world)
 	, mFrameTex(std::make_unique<sf::RenderTexture>())
 {
 	if (!mWorld) {
-		mWorld.reset(new World(GetContext().GetCustomComponentTypes()));
+		mWorld.reset(new World(GetContext().GetWorldContext()));
 	}
 
 	// Save the World-state so we can rollback to it.
@@ -127,14 +127,16 @@ void Game::ProcessFrame()
 
 	GetContext().GetWindow().display();
 
-	if (mWorld->GetContext().GetNextWorld())
+	if (mWorld->GetNextWorld())
 	{
-		mWorld.reset(mWorld->GetContext().GetNextWorld().release());
+		mWorld = std::move(mWorld->GetNextWorld());
 	}
-
-	if (mWorld->GetContext().GetNextApplicationState())
+	
 	{
-		SetQuit(std::move(mWorld->GetContext().GetNextApplicationState()));
+		auto applicationState = mWorld->GetNextApplicationState(GetContext());
+		if (applicationState) {
+			SetQuit(std::move(applicationState));
+		}
 	}
 }
 
@@ -177,7 +179,7 @@ void Game::ProcessGui()
 		try
 		{
 			// Reload the World back to the state it was in when we entered Game mode.
-			newWorld = std::make_unique<World>(mWorld->GetCustomComponentTypes(), mWorldJson);
+			newWorld = std::make_unique<World>(GetContext().GetWorldContext(), mWorldJson);
 		}
 		catch (std::exception)
 		{
@@ -192,13 +194,13 @@ void Game::ProcessGui()
 		try
 		{
 			// Reload the World back to the state it was in when we entered Game mode.
-			auto newWorld = std::make_unique<World>(mWorld->GetCustomComponentTypes(), mWorldJson);
+			auto newWorld = std::make_unique<World>(GetContext().GetWorldContext(), mWorldJson);
 
 			mWorld.swap(newWorld);
 		}
 		catch (std::exception e)
 		{
-			mWorld = std::make_unique<World>(mWorld->GetCustomComponentTypes());
+			mWorld = std::make_unique<World>(GetContext().GetWorldContext());
 		}
 	}
 

@@ -5,32 +5,23 @@
 namespace qvr
 {
 
-class ApplicationState; 
-class World;
+class CustomComponentTypeLibrary;
 
-// This is used to communicate from the World to its owner/controller.
+// Contains data shared by multiple Worlds.
 class WorldContext
 {
 public:
-	// Flag that an object in the World would like to change the ApplicationState.
-	void SetNextApplicationState(std::unique_ptr<ApplicationState> nextState);
+	WorldContext(CustomComponentTypeLibrary& customComponentTypes)
+		: m_CustomComponentTypes(customComponentTypes)
+	{}
 
-	std::unique_ptr<ApplicationState>& GetNextApplicationState();
-
-	// Flag that an object in the World would like to change the World.
-	void SetNextWorld(std::unique_ptr<World> nextWorld) {
-		mNextWorld = std::move(nextWorld);
+	CustomComponentTypeLibrary& GetCustomComponentTypes() {
+		return m_CustomComponentTypes;
 	}
-
-	std::unique_ptr<World>& GetNextWorld() { 
-		return mNextWorld; 
-	}
-
-	~WorldContext();
 
 private:
-	std::unique_ptr<ApplicationState> mNextApplicationState;
-	std::unique_ptr<World>            mNextWorld;
+	CustomComponentTypeLibrary& m_CustomComponentTypes;
+
 };
 
 }

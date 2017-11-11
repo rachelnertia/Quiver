@@ -15,7 +15,9 @@ TEST_CASE("PhysicsComponent creation and cleanup", "[Physics]")
 {
 	CustomComponentTypeLibrary types;
 
-	World world(types);
+	WorldContext worldContext(types);
+
+	World world(worldContext);
 
 	auto entity = [&]() {
 		return std::make_unique<Entity>(

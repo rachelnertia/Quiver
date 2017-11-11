@@ -20,6 +20,7 @@
 #include "Quiver/Graphics/RenderSettings.h"
 #include "Quiver/Graphics/Sky.h"
 #include "Quiver/Graphics/WorldRaycastRenderer.h"
+#include "Quiver/World/WorldContext.h"
 
 struct b2Transform;
 struct b2Vec2;
@@ -34,9 +35,10 @@ class RenderTarget;
 
 namespace qvr {
 
+class ApplicationState;
+class ApplicationStateContext;
 class AudioComponent;
 class AudioLibrary;
-class ApplicationState;
 class Camera2D;
 class Camera3D;
 class CustomComponent;
@@ -54,16 +56,16 @@ bool SaveWorld(
 
 std::unique_ptr<World> LoadWorld(
 	const std::string filename, 
-	CustomComponentTypeLibrary& customComponentTypes);
+	WorldContext& context);
 
 class WorldContext;
 
 class World {
 public:
-	World(CustomComponentTypeLibrary& customComponentTypes);
+	World(WorldContext& context);
 
 	World(
-		CustomComponentTypeLibrary& customComponentTypes,
+		WorldContext& context,
 		const nlohmann::json& j);
 
 	~World();
@@ -142,12 +144,25 @@ public:
 	const Fog&          GetFog()          const { return mFog; }
 
 	CustomComponentTypeLibrary& GetCustomComponentTypes() const {
-		return m_CustomComponentTypes;
+		return mContext.GetCustomComponentTypes();
 	}
 
 	WorldContext& GetContext() {
-		return *mContext;
+		return mContext;
 	}
+
+	void SetNextWorld(std::unique_ptr<World> world) {
+		mNextWorld = std::move(world);
+	}
+
+	std::unique_ptr<World>& GetNextWorld() {
+		return mNextWorld;
+	}
+
+	void SetNextApplicationState(
+		std::function<std::unique_ptr<ApplicationState>(ApplicationStateContext&)> factoryFunc);
+
+	std::unique_ptr<ApplicationState> GetNextApplicationState(ApplicationStateContext& context);
 
 private:
 
@@ -171,12 +186,13 @@ private:
 
 	AnimationSystem mAnimationSystem;
 
-	std::unique_ptr<WorldContext> mContext;
+	WorldContext& mContext;
 
-	std::unique_ptr<b2World>              mPhysicsWorld;
-	std::unique_ptr<b2ContactListener>    mContactListener;
-	std::unique_ptr<AudioLibrary>         mAudioLibrary;
-	std::unique_ptr<TextureLibrary>       mTextureLibrary;
+	std::unique_ptr<World>             mNextWorld;
+	std::unique_ptr<b2World>           mPhysicsWorld;
+	std::unique_ptr<b2ContactListener> mContactListener;
+	std::unique_ptr<AudioLibrary>      mAudioLibrary;
+	std::unique_ptr<TextureLibrary>    mTextureLibrary;
 
 	std::vector<std::reference_wrapper<Camera3D>>        mCameras;
 	std::vector<std::reference_wrapper<RenderComponent>> mDetachedRenderComponents;
@@ -185,7 +201,6 @@ private:
 
 	std::vector<std::unique_ptr<Entity>> mEntities;
 
-	CustomComponentTypeLibrary& m_CustomComponentTypes;
 	CustomComponentUpdater m_CustomComponentUpdater;
 
 	Sky mSky;
@@ -193,6 +208,9 @@ private:
 	RenderSettings mRenderSettings;
 
 	WorldRaycastRenderer mRaycastRenderer;
+
+	std::function<std::unique_ptr<ApplicationState>(ApplicationStateContext&)> 
+		mNextApplicationStateFactory;
 };
 
 }

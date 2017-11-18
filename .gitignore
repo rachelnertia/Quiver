@@ -1,3 +1,5 @@
+PremakeGenerated/
+.vscode/
 *.sdf
 *.suo
 *.ilk

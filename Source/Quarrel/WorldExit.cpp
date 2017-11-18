@@ -49,9 +49,9 @@ WorldExit::WorldExit(Entity& entity)
 void WorldExit::OnBeginContact(Entity& other)
 {
 	if (other.GetCustomComponent() && other.GetCustomComponent()->GetTypeName() == "Player") {
-		auto world = LoadWorld(mWorldFilename, GetEntity().GetWorld().GetCustomComponentTypes());
+		auto world = LoadWorld(mWorldFilename, GetEntity().GetWorld().GetContext());
 		if (world) {
-			GetEntity().GetWorld().GetContext().SetNextWorld(std::move(world));
+			GetEntity().GetWorld().SetNextWorld(std::move(world));
 		}
 	}
 }

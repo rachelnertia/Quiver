@@ -4,6 +4,7 @@
 #include <Box2D/Dynamics/b2Fixture.h>
 #include <Box2D/Dynamics/b2World.h>
 #include <ImGui/imgui.h>
+#include <spdlog/spdlog.h>
 
 #include "Quiver/Animation/AnimationSystem.h"
 #include "Quiver/Entity/Entity.h"
@@ -82,8 +83,11 @@ void Wanderer::OnStep(float timestep)
 
 void Wanderer::OnBeginContact(Entity& other)
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	if (other.GetCustomComponent()) {
-		std::cout << "Wanderer beginning contact with " << other.GetCustomComponent()->GetTypeName() << "...\n";
+		log->debug("Wanderer beginning contact with {}...", other.GetCustomComponent()->GetTypeName());
 
 		if (other.GetCustomComponent()->GetTypeName() == "Player") {
 			SetRemoveFlag(true);
@@ -93,8 +97,11 @@ void Wanderer::OnBeginContact(Entity& other)
 
 void Wanderer::OnEndContact(Entity& other)
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	if (other.GetCustomComponent()) {
-		std::cout << "Wanderer finishing contact with " << other.GetCustomComponent()->GetTypeName() << ".\n";
+		log->debug("Wanderer finishing contact with {}...", other.GetCustomComponent()->GetTypeName());
 	}
 }
 

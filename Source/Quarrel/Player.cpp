@@ -177,8 +177,11 @@ void Player::OnBeginContact(Entity& other)
 
 void Player::OnEndContact(Entity& other)
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	if (other.GetCustomComponent()) {
-		std::cout << "Player finishing contact with " << other.GetCustomComponent()->GetTypeName() << "...\n";
+		log->debug("Player finishing contact with {}...", other.GetCustomComponent()->GetTypeName());
 	}
 }
 

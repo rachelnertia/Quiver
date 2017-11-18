@@ -6,6 +6,7 @@
 #include <Box2D/Dynamics/b2Body.h>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Sprite.hpp>
+#include <spdlog/spdlog.h>
 
 #include "Quiver/World/World.h"
 #include "Quiver/Entity/Entity.h"
@@ -34,15 +35,17 @@ public:
 	}
 
 	std::string GetTypeName() const override { return "CrossbowBolt"; }
-
 };
 
 Crossbow::Crossbow(Player& player) 
 	: Weapon(player) 
 {
-	auto LogLoadFail = [](const char* filename)
+	auto log = spdlog::get("console");
+	assert(log);
+
+	auto LogLoadFail = [&log](const char* filename)
 	{
-		std::cout << "Crossbow ctor: Couldn't load " << filename << "\n";
+		log->error("Crossbow constructor: Couldn't load {},", filename);
 	};
 
 	// Load crossbow textures.
@@ -89,8 +92,10 @@ Crossbow::Crossbow(Player& player)
 
 		if (mProjectileRenderCompJson.empty())
 		{
-			std::cout << "Crossbow ctor: Didn't manage to get anything useful from " << filename <<
-				". Using default RenderComponent JSON for the projectile \n";
+			log->warn(
+				"Crossbow ctor: Didn't manage to get anything useful from {}."
+				"Using default RenderComponent JSON for the projectile",
+				filename);
 
 			mProjectileRenderCompJson =
 			{

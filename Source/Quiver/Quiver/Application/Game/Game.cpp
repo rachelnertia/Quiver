@@ -1,12 +1,13 @@
 #include "Game.h"
 
-#include "SFML/Audio/Listener.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Window/Event.hpp"
-#include "ImGui/imgui.h"
-#include "ImGui/imgui-SFML.h"
+#include <SFML/Audio/Listener.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Window/Event.hpp>
+#include <ImGui/imgui.h>
+#include <ImGui/imgui-SFML.h>
+#include <spdlog/spdlog.h>
 
 #include "Quiver/Application/WorldEditor/WorldEditor.h"
 #include "Quiver/Input/RawInput.h"
@@ -142,6 +143,9 @@ void Game::ProcessFrame()
 
 void Game::OnTogglePause()
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	GetContext().GetWindow().setMouseCursorVisible(true);
 
 	mWorld->SetPaused(mPaused);
@@ -151,12 +155,12 @@ void Game::OnTogglePause()
 		mMouse.SetHidden(false);
 		mMouse.SetMouselook(false);
 
-		std::cout << "Paused" << std::endl;
+		log->debug("Paused");
 	}
 	else {
 		// Game has just been unpaused.
 
-		std::cout << "Unpaused" << std::endl;
+		log->debug("Unpaused");
 	}
 }
 

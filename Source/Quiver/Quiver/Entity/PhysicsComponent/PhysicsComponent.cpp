@@ -3,6 +3,7 @@
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Dynamics/b2Fixture.h>
 #include <Box2D/Dynamics/b2World.h>
+#include <spdlog/spdlog.h>
 
 #include "Quiver/Entity/Entity.h"
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponentDef.h"
@@ -14,10 +15,13 @@ namespace qvr {
 PhysicsComponent::PhysicsComponent(Entity& entity, const PhysicsComponentDef& def)
 	: Component(entity)
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	{
 		b2Body* body = const_cast<b2World*>(GetEntity().GetWorld().GetPhysicsWorld())->CreateBody(&def.bodyDef);
 		if (!body) {
-			std::cout << "Failed to create body!" << std::endl;
+			log->error("Failed to create body!");
 		}
 
 		// Point the b2Body to this PhysicsComponent.
@@ -31,10 +35,9 @@ PhysicsComponent::PhysicsComponent(Entity& entity, const PhysicsComponentDef& de
 		b2Fixture* f = nullptr;
 		f = mBody->CreateFixture(&def.fixtureDef);
 		if (!f) {
-			std::cout << "Failed to create fixture!" << std::endl;
+			log->error("Failed to create fixture!");
 		}
 	}
-
 }
 
 PhysicsComponent::~PhysicsComponent()
@@ -46,10 +49,13 @@ PhysicsComponent::~PhysicsComponent()
 
 nlohmann::json PhysicsComponent::ToJson()
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	using json = nlohmann::json;
 
 	if (!mBody) {
-		std::cout << "Trying to serialize a body-less PhysicsComponent." << std::endl;
+		log->error("Trying to serialize a body-less PhysicsComponent.");
 		return {};
 	}
 
@@ -79,7 +85,7 @@ nlohmann::json PhysicsComponent::ToJson()
 		j["BodyType"] = "Kinematic";
 		break;
 	default:
-		std::cout << "mBody->GetType() returned garbage. Serializing as Static." << std::endl;
+		log->warn("mBody->GetType() returned garbage. Serializing as Static.");
 		j["BodyType"] = "Static";
 		break;
 	}
@@ -87,7 +93,7 @@ nlohmann::json PhysicsComponent::ToJson()
 	{
 		json shapeData = PhysicsShape::ToJson(*mBody->GetFixtureList()->GetShape());
 		if (shapeData.empty()) {
-			std::cout << "Couldn't serialize shape." << std::endl;
+			log->error("Couldn't serialize shape.");
 			return {};
 		}
 

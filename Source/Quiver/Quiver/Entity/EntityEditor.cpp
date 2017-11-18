@@ -1,6 +1,7 @@
 #include "EntityEditor.h"
 
 #include <ImGui/imgui.h>
+#include <spdlog/spdlog.h>
 
 #include "Quiver/Entity/Entity.h"
 #include "Quiver/Entity/AudioComponent/AudioComponentEditor.h"
@@ -18,6 +19,9 @@ EntityEditor::EntityEditor(Entity& entity) : m_Entity(entity) {}
 EntityEditor::~EntityEditor() {}
 
 void EntityEditor::GuiControls() {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	ImGui::Text("Entity Address: %p", (unsigned)(&m_Entity));
 
 	ImGui::Text(
@@ -38,15 +42,15 @@ void EntityEditor::GuiControls() {
 						world.GetCustomComponentTypes());
 
 				if (ret) {
-					std::cout << "Added/updated prefab \"" << buffer << "\".\n";
+					log->info("Added/updated prefab \"{}\"", buffer);
 					m_Entity.mPrefabName = buffer;
 				}
 				else {
-					std::cout << "Could not add/update prefab \"" << buffer << "\".\n";
+					log->error("Could not add/update prefab \"{}\"", buffer);
 				}
 			}
 			else {
-				std::cout << "No name specified.\n";
+				log->error("No name specified.");
 			}
 		}
 	}

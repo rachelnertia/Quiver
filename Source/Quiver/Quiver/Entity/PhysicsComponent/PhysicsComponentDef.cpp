@@ -4,6 +4,7 @@
 #include <Box2D/Collision/Shapes/b2ChainShape.h>
 #include <Box2D/Collision/Shapes/b2EdgeShape.h>
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
+#include <spdlog/spdlog.h>
 
 #include "Quiver/Physics/PhysicsShape.h"
 
@@ -150,6 +151,11 @@ PhysicsComponentDef::PhysicsComponentDef(const nlohmann::json & j)
 }
 
 bool PhysicsComponentDef::VerifyJson(const nlohmann::json & j) {
+	auto log = spdlog::get("console");
+	assert(log);
+
+	const char* logCtx = "PhysicsComponentDef::VerifyJson: ";
+
 	if (!j.is_object()) {
 		return false;
 	}
@@ -168,11 +174,11 @@ bool PhysicsComponentDef::VerifyJson(const nlohmann::json & j) {
 
 	// Warn if there's something off about BodyType.
 	if (j.find("BodyType") == j.end()) {
-		std::cout << "Warning: BodyType not present." << std::endl;
+		log->warn("{} Could not find 'BodyType' field.", logCtx);
 	}
 	else {
 		if (!j["BodyType"].is_string()) {
-			std::cout << "Warning: BodyType present but not a string." << std::endl;
+			log->warn("{} 'BodyType' is not a string.", logCtx);
 		}
 		else {
 			std::string bodyType = j["BodyType"];
@@ -185,10 +191,12 @@ bool PhysicsComponentDef::VerifyJson(const nlohmann::json & j) {
 				}
 			}
 			if (!bodyTypeIsValid) {
-				std::cout << "Warning: BodyType is present but it is not " <<
-					"\"" << validBodyTypes[0] << "\"" <<
-					"\"" << validBodyTypes[1] << "\"" <<
-					"\"" << validBodyTypes[2] << "\"." << std::endl;
+				log->warn(
+					"{} 'BodyType' is not '{}', '{}' or '{}'",
+					logCtx,
+					validBodyTypes[0],
+					validBodyTypes[1],
+					validBodyTypes[2]);
 			}
 		}
 	}

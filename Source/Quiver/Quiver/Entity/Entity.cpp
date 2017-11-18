@@ -5,6 +5,7 @@
 #include <Box2D/Dynamics/b2World.h>
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
 #include <ImGui/imgui.h>
+#include <spdlog/spdlog.h>
 
 #include "Quiver/Entity/AudioComponent/AudioComponent.h"
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
@@ -27,10 +28,15 @@ Entity::~Entity() {}
 
 nlohmann::json Entity::ToJson(const bool toPrefab) const
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
+	const char* logCtx = "Entity::ToJson: ";
+
 	using json = nlohmann::json;
 
 	if (!GetPhysics()) {
-		std::cout << "Entity has no PhysicsComponent!" << std::endl;
+		log->error("{} Entity has no PhysicsComponent!", logCtx);
 		return {};
 	}
 
@@ -58,8 +64,8 @@ nlohmann::json Entity::ToJson(const bool toPrefab) const
 
 		bool result = GetGraphics()->ToJson(renderData);
 		if (!result) {
-			std::cout << "Couldn't serialize RenderComponent." << std::endl;
-			return false;
+			log->error("{} Couldn't serialize RenderComponent.", logCtx);
+			return {};
 		}
 
 		j["RenderComponent"] = renderData;
@@ -68,7 +74,7 @@ nlohmann::json Entity::ToJson(const bool toPrefab) const
 	{
 		const json physicsData = GetPhysics()->ToJson();
 		if (physicsData.empty()) {
-			std::cout << "Couldn't serialize PhysicsComponent." << std::endl;
+			log->error("{} Couldn't serialize PhysicsComponent.", logCtx);
 			return {};
 		}
 
@@ -87,19 +93,21 @@ nlohmann::json Entity::ToJson(const bool toPrefab) const
 
 std::unique_ptr<Entity> Entity::FromJson(World& world, const nlohmann::json & j)
 {
-	constexpr const char* logContext = "Entity::FromJson: ";
+	auto log = spdlog::get("console");
+	assert(log);
+	const char* logContext = "Entity::FromJson:";
 
 	using json = nlohmann::json;
 
 	if (!VerifyJson(j, world.GetCustomComponentTypes())) {
-		std::cout << "Entity JSON is invalid." << std::endl;
+		log->error("{} Entity JSON is invalid.", logContext);
 		return nullptr;
 	}
 
 	// Determine if this is a instance of a prefab.
 	if (j.find("PrefabName") != j.end()) {
 		if (!j["PrefabName"].is_string()) {
-			std::cout << logContext << "\"PrefabName\" field found, but it is not a string.\n";
+			log->error("{} \"PrefabName\" field found, but it is not a string.", logContext);
 			return nullptr;
 		}
 

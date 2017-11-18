@@ -16,6 +16,7 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Window/Event.hpp>
+#include <spdlog/spdlog.h>
 
 #include "Quiver/Application/Game/Game.h"
 #include "Quiver/Entity/Entity.h"
@@ -215,6 +216,9 @@ void WorldEditor::Render()
 
 void WorldEditor::ProcessGUI()
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
 	ImGui::SetNextWindowSize(ImVec2(400.0f, (float)GetContext().GetWindow().getSize().y));
 
@@ -238,7 +242,7 @@ void WorldEditor::ProcessGUI()
 
 		if (ImGui::Button("Save")) {
 			if (mWorldFilename.empty()) {
-				std::cout << "No filename specified." << std::endl;
+				log->error("No filename specified.");
 			}
 			else {
 				SaveWorld(*mWorld, mWorldFilename);
@@ -247,7 +251,7 @@ void WorldEditor::ProcessGUI()
 
 		if (ImGui::Button("Load")) {
 			if (mWorldFilename.empty()) {
-				std::cout << "No filename specified." << std::endl;
+				log->error("No filename specified.");
 			}
 			else {
 				mCurrentSelection = nullptr;

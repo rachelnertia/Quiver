@@ -34,3 +34,4 @@ LibFilenames.txt
 *.vcxproj
 *.sln
 /Generated/.vs/*.sqlite
+PremakeGenerated/

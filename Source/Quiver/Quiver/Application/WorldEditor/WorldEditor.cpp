@@ -16,9 +16,11 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Window/Event.hpp>
+#include <spdlog/spdlog.h>
 
 #include "Quiver/Application/Game/Game.h"
 #include "Quiver/Entity/Entity.h"
+#include "Quiver/Entity/EntityEditor.h"
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
 #include "Quiver/Entity/RenderComponent/RenderComponent.h"
 #include "Quiver/Graphics/ColourUtils.h"
@@ -38,9 +40,10 @@ WorldEditor::WorldEditor(ApplicationStateContext& context, std::unique_ptr<World
 	: ApplicationState(context)
 	, mWorld(std::move(world))
 	, mFrameTex(std::make_unique<sf::RenderTexture>())
+	, mMouse(context.GetWindow())
 {
 	if (!mWorld) {
-		mWorld = std::make_unique<World>(GetContext().GetCustomComponentTypes());
+		mWorld = std::make_unique<World>(GetContext().GetWorldContext());
 	}
 
 	// Instantiate EditorTools.
@@ -65,31 +68,13 @@ WorldEditor::WorldEditor(ApplicationStateContext& context, std::unique_ptr<World
 
 WorldEditor::~WorldEditor() {}
 
-void WorldEditor::ProcessEvent(sf::Event & event)
-{
-	if (GetContext().GetWindow().hasFocus()) {
-		switch (event.type) {
-		case sf::Event::MouseButtonPressed:
-			OnMouseClick(event.mouseButton);
-			break;
-		case sf::Event::MouseMoved:
-			OnMouseMove(event.mouseMove);
-			break;
-		case sf::Event::Resized:
-			// Resize frame texture
-			mFrameTex->create(
-				unsigned(event.size.width * mFrameTexResolutionModifier),
-				unsigned(event.size.height * mFrameTexResolutionModifier));
-			break;
-		default:
-			break;
-		}
-	}
-
-}
-
 void WorldEditor::ProcessFrame()
 {
+	if (GetContext().WindowResized()) {
+		const auto newSize = GetContext().GetWindow().getSize();
+		mFrameTex->create(newSize.x, newSize.y);
+	}
+
 	auto dt = frameClock.restart();
 
 	HandleInput(dt.asSeconds());
@@ -103,9 +88,27 @@ void WorldEditor::ProcessFrame()
 	Render();
 }
 
-// This is for non-event-driven input. So, isKeyPressed(..) etc.
 void WorldEditor::HandleInput(const float dt)
 {
+	mJoysticks.Update();
+	mKeyboard.Update();
+	mMouse.Update();
+
+	if (mMouse.GetPositionDelta() != sf::Vector2i(0, 0)) {
+		OnMouseMove(
+			sf::Event::MouseMoveEvent{ 
+				mMouse.GetPositionRelative().x, 
+				mMouse.GetPositionRelative().y });
+	}
+
+	if (mMouse.JustDown(qvr::MouseButton::Left)) {
+		OnMouseClick(
+			sf::Event::MouseButtonEvent{
+				sf::Mouse::Button::Left,
+				mMouse.GetPositionRelative().x,
+				mMouse.GetPositionRelative().y });
+	}
+
 	if (!GetContext().GetWindow().hasFocus()) {
 		return;
 	}
@@ -213,6 +216,9 @@ void WorldEditor::Render()
 
 void WorldEditor::ProcessGUI()
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
 	ImGui::SetNextWindowSize(ImVec2(400.0f, (float)GetContext().GetWindow().getSize().y));
 
@@ -226,7 +232,7 @@ void WorldEditor::ProcessGUI()
 	}
 
 	if (ImGui::Button("New")) {
-		mWorld = std::make_unique<World>(GetContext().GetCustomComponentTypes());
+		mWorld = std::make_unique<World>(GetContext().GetWorldContext());
 		mCurrentSelection = nullptr;
 		mWorldFilename.clear();
 	}
@@ -236,7 +242,7 @@ void WorldEditor::ProcessGUI()
 
 		if (ImGui::Button("Save")) {
 			if (mWorldFilename.empty()) {
-				std::cout << "No filename specified." << std::endl;
+				log->error("No filename specified.");
 			}
 			else {
 				SaveWorld(*mWorld, mWorldFilename);
@@ -245,7 +251,7 @@ void WorldEditor::ProcessGUI()
 
 		if (ImGui::Button("Load")) {
 			if (mWorldFilename.empty()) {
-				std::cout << "No filename specified." << std::endl;
+				log->error("No filename specified.");
 			}
 			else {
 				mCurrentSelection = nullptr;
@@ -253,7 +259,7 @@ void WorldEditor::ProcessGUI()
 				if (auto newWorld =
 					LoadWorld(
 						mWorldFilename,
-						GetContext().GetCustomComponentTypes()))
+						GetContext().GetWorldContext()))
 				{
 					mWorld.reset(newWorld.release());
 				}

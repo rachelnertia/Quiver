@@ -1,17 +1,19 @@
 #include "Game.h"
 
-#include "SFML/Audio/Listener.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Window/Event.hpp"
-#include "ImGui/imgui.h"
-#include "ImGui/imgui-SFML.h"
+#include <SFML/Audio/Listener.hpp>
+#include <SFML/Graphics/RenderTexture.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Window/Event.hpp>
+#include <ImGui/imgui.h>
+#include <ImGui/imgui-SFML.h>
+#include <spdlog/spdlog.h>
 
 #include "Quiver/Application/WorldEditor/WorldEditor.h"
 #include "Quiver/Input/RawInput.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
 #include "Quiver/World/World.h"
+#include "Quiver/World/WorldContext.h"
 
 namespace qvr {
 
@@ -26,7 +28,7 @@ Game::Game(ApplicationStateContext& context, std::unique_ptr<World> world)
 	, mFrameTex(std::make_unique<sf::RenderTexture>())
 {
 	if (!mWorld) {
-		mWorld.reset(new World(GetContext().GetCustomComponentTypes()));
+		mWorld.reset(new World(GetContext().GetWorldContext()));
 	}
 
 	// Save the World-state so we can rollback to it.
@@ -44,30 +46,15 @@ Game::Game(ApplicationStateContext& context, std::unique_ptr<World> world)
 
 Game::~Game() {}
 
-void Game::ProcessEvent(sf::Event& event)
-{
-	switch (event.type) {
-	case sf::Event::Resized:
-		// Resize frame texture
-		mFrameTex->create(unsigned(event.size.width * mFrameTexResolutionModifier), unsigned(event.size.height * mFrameTexResolutionModifier));
-		break;
-	case sf::Event::KeyPressed:
-		switch (event.key.code) {
-		case sf::Keyboard::Escape:
-			mPaused = !mPaused;
-			OnTogglePause();
-			break;
-		}
-		break;
-	default:
-		break;
-	}
-}
-
 void Game::ProcessFrame()
 {
+	if (GetContext().WindowResized()) {
+		const auto newSize = GetContext().GetWindow().getSize();
+		mFrameTex->create(newSize.x, newSize.y);
+	}
+
 	// Clamp excessively large delta times.
-	float delta = std::min(mFrameClock.restart().asSeconds(), 1.0f / 30.0f);
+	const float delta = std::min(mFrameClock.restart().asSeconds(), 1.0f / 30.0f);
 
 	mFrameTime += delta;
 
@@ -90,11 +77,16 @@ void Game::ProcessFrame()
 	{
 		mFrameTime = 0.0f;
 
-		if (!mPaused) {
-			mMouse.Update();
-			mKeyboard.Update();
-			mJoysticks.Update();
+		mMouse.Update();
+		mKeyboard.Update();
+		mJoysticks.Update();
 
+		if (mKeyboard.JustDown(qvr::KeyboardKey::Escape)) {
+			mPaused = !mPaused;
+			OnTogglePause();
+		}
+
+		if (!mPaused) {
 			qvr::RawInputDevices devices(mMouse, mKeyboard, mJoysticks);
 
 			mWorld->TakeStep(devices);
@@ -118,7 +110,8 @@ void Game::ProcessFrame()
 	{
 		sf::RenderWindow& window = GetContext().GetWindow();
 		sf::Sprite frameSprite(mFrameTex->getTexture());
-		frameSprite.setScale((float)window.getSize().x / (float)mFrameTex->getSize().x,
+		frameSprite.setScale(
+			(float)window.getSize().x / (float)mFrameTex->getSize().x,
 			(float)window.getSize().y / (float)mFrameTex->getSize().y);
 		window.draw(frameSprite);
 	}
@@ -137,12 +130,22 @@ void Game::ProcessFrame()
 
 	if (mWorld->GetNextWorld())
 	{
-		mWorld.reset(mWorld->GetNextWorld().release());
+		mWorld = std::move(mWorld->GetNextWorld());
+	}
+	
+	{
+		auto applicationState = mWorld->GetNextApplicationState(GetContext());
+		if (applicationState) {
+			SetQuit(std::move(applicationState));
+		}
 	}
 }
 
 void Game::OnTogglePause()
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	GetContext().GetWindow().setMouseCursorVisible(true);
 
 	mWorld->SetPaused(mPaused);
@@ -152,12 +155,12 @@ void Game::OnTogglePause()
 		mMouse.SetHidden(false);
 		mMouse.SetMouselook(false);
 
-		std::cout << "Paused" << std::endl;
+		log->debug("Paused");
 	}
 	else {
 		// Game has just been unpaused.
 
-		std::cout << "Unpaused" << std::endl;
+		log->debug("Unpaused");
 	}
 }
 
@@ -180,7 +183,7 @@ void Game::ProcessGui()
 		try
 		{
 			// Reload the World back to the state it was in when we entered Game mode.
-			newWorld = std::make_unique<World>(mWorld->GetCustomComponentTypes(), mWorldJson);
+			newWorld = std::make_unique<World>(GetContext().GetWorldContext(), mWorldJson);
 		}
 		catch (std::exception)
 		{
@@ -195,13 +198,13 @@ void Game::ProcessGui()
 		try
 		{
 			// Reload the World back to the state it was in when we entered Game mode.
-			auto newWorld = std::make_unique<World>(mWorld->GetCustomComponentTypes(), mWorldJson);
+			auto newWorld = std::make_unique<World>(GetContext().GetWorldContext(), mWorldJson);
 
 			mWorld.swap(newWorld);
 		}
 		catch (std::exception e)
 		{
-			mWorld = std::make_unique<World>(mWorld->GetCustomComponentTypes());
+			mWorld = std::make_unique<World>(GetContext().GetWorldContext());
 		}
 	}
 

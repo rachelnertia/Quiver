@@ -10,6 +10,9 @@
 #include "Quiver/Application/ApplicationState.h"
 #include "Quiver/Graphics/Camera2D.h"
 #include "Quiver/Graphics/Camera3D.h"
+#include "Quiver/Input/SfmlJoystick.h"
+#include "Quiver/Input/SfmlKeyboard.h"
+#include "Quiver/Input/SfmlMouse.h"
 
 namespace sf {
 class RenderTexture;
@@ -36,7 +39,6 @@ public:
 	WorldEditor& operator=(const WorldEditor&) = delete;
 	WorldEditor& operator=(const WorldEditor&&) = delete;
 
-	void ProcessEvent(sf::Event& event) override;
 	void ProcessFrame() override;
 
 	inline World* GetWorld() { return mWorld.get(); }
@@ -97,6 +99,10 @@ private:
 	std::string mWorldFilename;
 
 	std::unique_ptr<TextureLibraryGui> mTextureLibraryGui;
+
+	qvr::SfmlJoystickSet mJoysticks;
+	qvr::SfmlKeyboard mKeyboard;
+	qvr::SfmlMouse mMouse;
 };
 
 }

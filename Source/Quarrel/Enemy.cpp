@@ -514,6 +514,9 @@ optional<AnimationId> PickAnimationGui(
 	const AnimationId currentAnim, 
 	const AnimationSystem& animationSystem)
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	if (ImGui::CollapsingHeader(title))
 	{
 		ImGui::AutoIndent autoIndent;
@@ -555,7 +558,7 @@ optional<AnimationId> PickAnimationGui(
 		bool selectionChanged = false;
 
 		if (ImGui::Combo(title, &selection, itemsGetter, (void*)&animUidStrings, numAnims)) {
-			std::cout << "Selected #" << selection << ". AnimationId: " << animIds[selection] << "\n";
+			log->debug("Selected index {} AnimationId {}", selection, animIds[selection]);
 
 			selectionChanged = true;
 		}

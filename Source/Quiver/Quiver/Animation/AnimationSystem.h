@@ -102,10 +102,7 @@ public:
 		animators = Animators();
 	}
 
-	// 0 = error.
 	AnimationId AddAnimation(const AnimationData& anim);
-
-	// TODO:
 	AnimationId AddAnimation(const AnimationData& anim, const AnimationSourceInfo& animSourceInfo);
 
 	bool RemoveAnimation(const AnimationId id);
@@ -130,7 +127,6 @@ public:
 
 	const std::vector<AnimationId>& GetAnimationIds() const { return animations.allIds; }
 
-	// 0 = error
 	AnimatorId AddAnimator(AnimatorTarget& target, const AnimatorStartSetting& startSetting);
 
 	bool RemoveAnimator(const AnimatorId id);
@@ -173,8 +169,6 @@ public:
 
 private:
 	struct AnimationInfo {
-		// TODO: There is too much here.
-
 		AnimationInfo(
 			const unsigned indexOfFirstRect,
 			const unsigned indexOfFirstTime,

@@ -4,10 +4,12 @@
 
 #include <json.hpp>
 #include <ImGui/imgui.h>
+#include <spdlog/spdlog.h>
 
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 #include "Quiver/Entity/Entity.h"
 #include "Quiver/World/World.h"
+#include "Quiver/World/WorldContext.h"
 
 using json = nlohmann::json;
 
@@ -36,8 +38,7 @@ private:
 
 	//std::unique_ptr<World> mWorld;
 
-	// TODO: Move this into an object that only gets created to go along with WorldExit 
-	// instances when in WorldEditor mode / other places where GuiControls can be called.
+	// TODO: Move this into an editor object.
 	std::array<char, 64> mFilenameBuffer;
 };
 
@@ -48,9 +49,9 @@ WorldExit::WorldExit(Entity& entity)
 void WorldExit::OnBeginContact(Entity& other)
 {
 	if (other.GetCustomComponent() && other.GetCustomComponent()->GetTypeName() == "Player") {
-		auto world = LoadWorld(mWorldFilename, GetEntity().GetWorld().GetCustomComponentTypes());
+		auto world = LoadWorld(mWorldFilename, GetEntity().GetWorld().GetContext());
 		if (world) {
-			GetEntity().GetWorld().SetNextWorld(world);
+			GetEntity().GetWorld().SetNextWorld(std::move(world));
 		}
 	}
 }
@@ -78,9 +79,12 @@ json WorldExit::ToJson() const
 
 bool WorldExit::FromJson(const json& j)
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	mWorldFilename = j.value<std::string>("WorldFile", std::string());
 
-	std::cout << "World File: " << mWorldFilename << std::endl;
+	log->debug("World File: {}", mWorldFilename);
 
 	// Set up the WorldEditor-only filename buffer.
 	mFilenameBuffer[0] = '\0';

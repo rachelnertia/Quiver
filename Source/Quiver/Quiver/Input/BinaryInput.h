@@ -155,7 +155,7 @@ private:
 	};
 };
 
-bool AnyActive(const qvr::RawInputDevices& devices, const std::vector<BinaryInput> inputs) {
+inline bool AnyActive(const qvr::RawInputDevices& devices, const std::vector<BinaryInput> inputs) {
 	for (const BinaryInput input : inputs) {
 		if (input.IsActive(devices)) {
 			return true;
@@ -165,7 +165,7 @@ bool AnyActive(const qvr::RawInputDevices& devices, const std::vector<BinaryInpu
 	return false;
 }
 
-bool AnyJustActive(const qvr::RawInputDevices& devices, const std::vector<BinaryInput> inputs) {
+inline bool AnyJustActive(const qvr::RawInputDevices& devices, const std::vector<BinaryInput> inputs) {
 	for (const BinaryInput input : inputs) {
 		if (input.JustActive(devices)) {
 			return true;

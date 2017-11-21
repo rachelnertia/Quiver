@@ -12,22 +12,6 @@
 
 namespace qvr {
 
-void MainMenu::ProcessEvent(sf::Event & event)
-{
-	if (GetContext().GetWindow().hasFocus()) {
-		switch (event.type) {
-		case sf::Event::MouseButtonPressed:
-			break;
-		case sf::Event::MouseMoved:
-			break;
-		case sf::Event::Resized:
-			break;
-		default:
-			break;
-		}
-	}
-}
-
 void MainMenu::ProcessFrame()
 {
 	{

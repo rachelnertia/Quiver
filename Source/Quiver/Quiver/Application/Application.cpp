@@ -65,8 +65,6 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 		while (window.pollEvent(windowEvent)) {
 			ImGui::SFML::ProcessEvent(windowEvent);
 
-			currentState->ProcessEvent(windowEvent);
-
 			switch (windowEvent.type) {
 
 			case sf::Event::Closed:
@@ -88,6 +86,9 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 							0.0f,
 							(float)windowEvent.size.width,
 							(float)windowEvent.size.height)));
+
+				applicationStateContext.mWindowResized = true;
+
 				break;
 
 			case sf::Event::LostFocus:
@@ -99,6 +100,8 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 				break;
 			}
 		}
+
+		if (quit) continue;
 
 		ImGui::SFML::Update(deltaClock.restart());
 
@@ -113,15 +116,13 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 				quit = true;
 			}
 		}
+
+		applicationStateContext.mWindowResized = false;
 	}
 
 	consoleLog->info("Exiting.");
 
 	ImGui::SFML::Shutdown();
-
-	window.close();
-
-	spdlog::drop_all();
 
 	return 0;
 }
@@ -195,7 +196,7 @@ std::unique_ptr<ApplicationState> GetInitialState(
 		if (!worldFile.empty()) {
 			return std::make_unique<WorldEditor>(
 				applicationStateContext,
-				LoadWorld(worldFile, applicationStateContext.GetCustomComponentTypes()));
+				LoadWorld(worldFile, applicationStateContext.GetWorldContext()));
 		}
 
 		return std::make_unique<WorldEditor>(applicationStateContext);
@@ -209,7 +210,7 @@ std::unique_ptr<ApplicationState> GetInitialState(
 		if (!worldFile.empty()) {
 			return std::make_unique<Game>(
 				applicationStateContext,
-				LoadWorld(worldFile, applicationStateContext.GetCustomComponentTypes()));
+				LoadWorld(worldFile, applicationStateContext.GetWorldContext()));
 		}
 
 		return std::make_unique<Game>(applicationStateContext);

@@ -3,6 +3,8 @@
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 #include "Quiver/Graphics/Camera3D.h"
 
+#include "Weapon.h"
+
 namespace sf {
 class RenderTarget;
 }

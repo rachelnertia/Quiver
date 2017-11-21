@@ -7,19 +7,23 @@
 
 #include <optional.hpp>
 
-#include "Box2D/Collision/Shapes/b2PolygonShape.h"
-#include "Box2D/Common/b2Math.h"
-#include "Box2D/Dynamics/b2Fixture.h"
-#include "Box2D/Dynamics/b2World.h"
-#include "Box2D/Dynamics/b2WorldCallbacks.h"
-#include "Box2D/Dynamics/Contacts/b2Contact.h"
-#include "ImGui/imgui.h"
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "json.hpp"
+#include <Box2D/Collision/Shapes/b2PolygonShape.h>
+#include <Box2D/Common/b2Math.h>
+#include <Box2D/Dynamics/b2Fixture.h>
+#include <Box2D/Dynamics/b2World.h>
+#include <Box2D/Dynamics/b2WorldCallbacks.h>
+#include <Box2D/Dynamics/Contacts/b2Contact.h>
+#include <ImGui/imgui.h>
+#include <json.hpp>
+#include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
+#include <SFML/Graphics/Sprite.hpp>
 #include <spdlog/spdlog.h>
 
+// TODO: I don't like that we're including ApplicationState.h here.
+//       I'd like to figure out a way to not have to do so.
+
+#include "Quiver/Application/ApplicationState.h"
 #include "Quiver/Audio/AudioLibrary.h"
 #include "Quiver/Entity/Entity.h"
 #include "Quiver/Entity/AudioComponent/AudioComponent.h"
@@ -35,7 +39,9 @@
 #include "Quiver/Input/RawInput.h"
 #include "Quiver/Misc/FindByAddress.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
+#include "Quiver/Misc/JsonHelpers.h"
 #include "Quiver/Physics/ContactListener.h"
+#include "Quiver/World/WorldContext.h"
 
 namespace qvr {
 
@@ -65,28 +71,12 @@ bool SaveWorld(const World & world, const std::string filename) {
 
 std::unique_ptr<World> LoadWorld(
 	const std::string filename,
-	CustomComponentTypeLibrary& customComponentTypes)
+	WorldContext& worldContext)
 {
 	auto log = spdlog::get("console");
 	assert(log.get());
 
-	std::ifstream in(filename);
-	if (!in.is_open()) {
-		log->error("Couldn't open {}!", filename);
-		return nullptr;
-	}
-
-	nlohmann::json j;
-
-	try {
-		j << in;
-	}
-	catch (std::invalid_argument exception) {
-		log->error("Parsing failed! Exception: {}", exception.what());
-		return nullptr;
-	}
-
-	in.close();
+	const nlohmann::json j = JsonHelp::LoadJsonFromFile(filename);
 
 	if (!World::VerifyJson(j)) {
 		log->error("JSON is not valid!");
@@ -95,7 +85,7 @@ std::unique_ptr<World> LoadWorld(
 
 	try
 	{
-		auto world = std::make_unique<World>(customComponentTypes, j);
+		auto world = std::make_unique<World>(worldContext, j);
 
 		log->debug("Loaded World from JSON file {}", filename);
 
@@ -109,8 +99,9 @@ std::unique_ptr<World> LoadWorld(
 	return nullptr;
 }
 
-World::World(CustomComponentTypeLibrary& customComponentTypes)
-	: m_CustomComponentTypes(customComponentTypes)
+World::World(
+	WorldContext& context)
+	: mContext(context)
 	, mContactListener(std::make_unique<Physics::ContactListener>())
 	, mPhysicsWorld(std::make_unique<b2World>(b2Vec2_zero))
 	, mAudioLibrary(std::make_unique<AudioLibrary>())
@@ -518,7 +509,7 @@ bool World::ToJson(nlohmann::json & j) const {
 // At the moment, this doesn't throw any exceptions, I don't think (nothing in it can fail, we just fall back to defaults).
 // In the future it might, so remember to put try { ... } around calls to this constructor.
 World::World(
-	CustomComponentTypeLibrary& customComponentTypes,
+	WorldContext& customComponentTypes,
 	const nlohmann::json & j)
 	: World(customComponentTypes)
 {
@@ -833,6 +824,26 @@ bool World::UnregisterAudioComponent(const AudioComponent & audioComponent)
 	}
 
 	return false;
+}
+
+
+// Provide a factory function to create an ApplicationState.
+// It will hopefully be grabbed by whatever owns and is responsible for updating the World.
+
+void World::SetNextApplicationState(std::function<std::unique_ptr<ApplicationState>(ApplicationStateContext&)> factoryFunc)
+{
+	mNextApplicationStateFactory = factoryFunc;
+}
+
+std::unique_ptr<ApplicationState> World::GetNextApplicationState(ApplicationStateContext & context)
+{
+	if (mNextApplicationStateFactory != nullptr) {
+		auto appState = mNextApplicationStateFactory(context);
+		mNextApplicationStateFactory = nullptr;
+		return appState;
+	}
+
+	return nullptr;
 }
 
 void World::UpdateAudioComponents()

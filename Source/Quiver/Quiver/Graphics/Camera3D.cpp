@@ -5,6 +5,7 @@
 #include <SFML/Window/Keyboard.hpp>
 #include <SFML/Window/Mouse.hpp>
 #include <SFML/Window/Window.hpp>
+#include <spdlog/spdlog.h>
 
 #include "Quiver/Input/Xbox360Controller.h"
 #include "Quiver/World/World.h"
@@ -65,6 +66,9 @@ void FreeControl(
 	const bool mouselook,
 	const sf::Window* windowForMouselook)
 {
+	auto log = spdlog::get("console");
+	assert(log);
+
 	namespace xbc = Xbox360Controller;
 
 	{
@@ -130,14 +134,7 @@ void FreeControl(
 		auto GetJoystickLook = []() {
 			if (!sf::Joystick::isConnected(0)) return sf::Vector2f{ 0.0f, 0.0f };
 
-			const sf::Vector2f raw(
-				0, 0);
-			//sf::Joystick::getAxisPosition(
-			//	0, 
-			//	xbc::ToJoystickAxis(xbc::Axis::AnalogStick_Right_Horizontal)),
-			//sf::Joystick::getAxisPosition(
-			//	0, 
-			//	xbc::ToSfmlAxis(xbc::Axis::AnalogStick_Right_Vertical)));
+			const sf::Vector2f raw(0, 0);
 
 			const int thresholdRaw = 25;
 
@@ -188,12 +185,19 @@ void FreeControl(
 
 			camera.RotateBy(rotationHorizontal);
 
+			// Check that the camera's forwards vector has a length of 1. 
+
 			auto AreEquivalent = [](const float a, const float b, const float error) {
 				return (fabsf(a - b) < fabsf(error));
 			};
+
+			const float error = 0.0001f;
+
 			if (!AreEquivalent(camera.GetForwards().Length(), 1.0f, 0.0001f)) {
-				std::cout << "Error: Camera3D.GetForwards().Length() == "
-					<< std::fixed << std::setprecision(8) << camera.GetForwards().Length() << '\n';
+				log->error(
+					"Camera3D.GetForwards().Length() == {}. Error == {}", 
+					camera.GetForwards().Length(),
+					error);
 			}
 		}
 

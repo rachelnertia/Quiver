@@ -87,7 +87,10 @@ PhysicsComponentEditor::~PhysicsComponentEditor() {}
 
 void PhysicsComponentEditor::GuiControls()
 {
-	qvr::GuiControls(m_PhysicsComponent.GetBody());
+	if (ImGui::CollapsingHeader("Body")) {
+		ImGui::AutoIndent indent;
+		qvr::GuiControls(m_PhysicsComponent.GetBody());
+	}
 }
 
 }

@@ -30,7 +30,6 @@ public:
 	Game& operator=(const Game&) = delete;
 	Game& operator=(const Game&&) = delete;
 
-	void ProcessEvent(sf::Event& event) override;
 	void ProcessFrame() override;
 
 private:

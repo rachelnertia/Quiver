@@ -6,9 +6,10 @@
 
 #include "json.hpp"
 
-#include "AnimationId.h"
-#include "AnimatorId.h"
-#include "Rect.h"
+#include "Quiver/Animation/AnimationId.h"
+#include "Quiver/Animation/AnimationLibrary.h"
+#include "Quiver/Animation/AnimatorId.h"
+#include "Quiver/Animation/Rect.h"
 
 namespace qvr {
 
@@ -67,18 +68,6 @@ inline bool operator!=(const AnimatorRepeatSetting& a, const AnimatorRepeatSetti
 	return a.GetRepeatCount() != b.GetRepeatCount();
 }
 
-// Tells us about where to find an Animation on disk.
-struct AnimationSourceInfo {
-	std::string name;
-	std::string filename;
-};
-
-inline bool operator==(const AnimationSourceInfo& a, const AnimationSourceInfo& b) {
-	return a.name == b.name && a.filename == b.filename;
-}
-
-struct AnimationSystemEditorData;
-
 class AnimationData;
 
 // doesn't (yet) support:
@@ -98,8 +87,9 @@ public:
 	nlohmann::json ToJson() const;
 
 	void Reset() {
-		animations = Animations();
+		animations = AnimationLibrary();
 		animators = Animators();
+		animationReferenceCounts.clear();
 	}
 
 	AnimationId AddAnimation(const AnimationData& anim);
@@ -108,13 +98,13 @@ public:
 	bool RemoveAnimation(const AnimationId id);
 
 	bool AnimationExists(const AnimationId id) const { 
-		return animations.infosById.count(id) > 0; 
+		return animations.Contains(id); 
 	}
 	
 	bool AnimationHasAltViews(const AnimationId id) const;
 	
 	int GetReferenceCount(const AnimationId animation) const { 
-		return animations.referenceCountsById.at(animation); 
+		return animationReferenceCounts.at(animation); 
 	}
 
 	AnimationId GetAnimationFromSource(const AnimationSourceInfo& animSource) const;
@@ -123,9 +113,9 @@ public:
 
 	unsigned GetAnimationNumFrames(const AnimationId id) const;
 
-	unsigned GetAnimationCount() const { return animations.count; }
+	unsigned GetAnimationCount() const { return animations.GetCount(); }
 
-	const std::vector<AnimationId>& GetAnimationIds() const { return animations.allIds; }
+	std::vector<AnimationId> GetAnimationIds() const { return animations.GetIds(); }
 
 	AnimatorId AddAnimator(AnimatorTarget& target, const AnimatorStartSetting& startSetting);
 
@@ -168,45 +158,6 @@ public:
 	void UpdateAnimatorAltView(const AnimatorId animatorId, const float objectAngle, const float viewAngle);
 
 private:
-	struct AnimationInfo {
-		AnimationInfo(
-			const unsigned indexOfFirstRect,
-			const unsigned indexOfFirstTime,
-			const unsigned numRects,
-			const unsigned numAltViewsPerFrame)
-			: mIndexOfFirstRect(indexOfFirstRect)
-			, mIndexOfFirstTime(indexOfFirstTime)
-			, mNumRects(numRects)
-			, mNumAltViewsPerFrame(numAltViewsPerFrame)
-		{}
-
-		AnimationInfo() = default;
-
-		unsigned IndexOfFirstRect() const { return mIndexOfFirstRect; }
-		unsigned IndexOfFirstTime() const { return mIndexOfFirstTime; }
-		unsigned NumFrames() const { return mNumRects / (mNumAltViewsPerFrame + 1); }
-		unsigned NumRects()  const { return mNumRects; }
-		unsigned NumTimes()  const { return NumFrames(); }
-		unsigned NumRectsPerTime() const { return NumRects() / NumTimes(); }
-		unsigned NumAltViewsPerFrame() const { return mNumAltViewsPerFrame; }
-
-	private:
-		unsigned mIndexOfFirstRect = 0;
-		unsigned mIndexOfFirstTime = 0;
-		unsigned mNumRects = 0;
-		unsigned mNumAltViewsPerFrame = 0;
-	};
-
-	struct Animations {
-		unsigned count = 0;
-		std::vector<AnimationId> allIds;
-		std::unordered_map<AnimationId, AnimationInfo> infosById;
-		std::unordered_map<AnimationId, unsigned> referenceCountsById;
-		std::vector<TimeUnit> allFrameTimes;
-		std::vector<Animation::Rect> allFrameRects; // Rects for each frame in every animation plus their alt view rects.
-		std::unordered_map<AnimationId, AnimationSourceInfo> sourcesById;
-	} animations;
-
 	struct AnimatorAltViewState {
 		// TODO: There is too much here.
 
@@ -286,18 +237,17 @@ private:
 		AnimatorId lastId = AnimatorId::Invalid;
 	} animators;
 
-	unsigned CalculateRectIndex(
-		const AnimationInfo& animationInfo,
-		const unsigned frameIndexInAnimation,
-		const unsigned currentAltView);
-};
+	AnimationLibrary animations;
 
-void GuiControls(AnimationSystem& animationSystem, AnimationSystemEditorData& editorData);
+	std::unordered_map<AnimationId, unsigned> animationReferenceCounts;
+};
 
 // TODO: Put this in a different file.
 struct AnimationSystemEditorData {
 	char mFilenameBuffer[128] = { 0 };
 	int mCurrentSelection = -1;
 };
+
+void GuiControls(AnimationSystem& animationSystem, AnimationSystemEditorData& editorData);
 
 }

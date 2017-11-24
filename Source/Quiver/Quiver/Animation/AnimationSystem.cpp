@@ -22,155 +22,9 @@ const AnimatorRepeatSetting AnimatorRepeatSetting::Never = AnimatorRepeatSetting
 const AnimatorRepeatSetting AnimatorRepeatSetting::Once = AnimatorRepeatSetting(1);
 const AnimatorRepeatSetting AnimatorRepeatSetting::Twice = AnimatorRepeatSetting(2);
 
-AnimationId AddAnimationFromJson(AnimationSystem& animSystem, const nlohmann::json& j);
-
-static constexpr const char* AnimationSourcesFieldTitle = "AnimationSources";
-
 bool AnimationSystem::FromJson(const nlohmann::json & j)
 {
-	static const std::string logCtx = "AnimationSystem::FromJson: ";
-
-	if (!j.is_object()) {
-		std::cout << logCtx << "Error: json object is not an object.\n";
-		return false;
-	}
-
-	if (j.find(AnimationSourcesFieldTitle) == j.end()) {
-		std::cout << logCtx << "Error: json object does not contain a field named \"SourceFiles\".\n";
-		return false;
-	}
-
-	if (!j[AnimationSourcesFieldTitle].is_array()) {
-		std::cout << logCtx << "Error: \"" << AnimationSourcesFieldTitle <<
-			"\" is not an array.\n";
-		return false;
-	}
-
-	std::vector<AnimationSourceInfo> animSources;
-
-	int totalCount = j[AnimationSourcesFieldTitle].size();
-	int validCount = 0;
-	int currentIndex = -1;
-	int fromCollectionCount = 0;
-	for (const nlohmann::json& sourceInfoJson : j[AnimationSourcesFieldTitle]) {
-		currentIndex++;
-
-		if (!sourceInfoJson.is_object()) {
-			std::cout << logCtx << "Error: Array entry " << currentIndex << " is not an object.\n";
-			continue;
-		}
-
-		if (sourceInfoJson.find("File") == sourceInfoJson.end()) {
-			std::cout << logCtx << "Error: Array entry " << currentIndex << " does not contain a \"File\" field.\n";
-			continue;
-		}
-
-		if (!sourceInfoJson["File"].is_string()) {
-			std::cout << logCtx << "Error: Array entry " << currentIndex << "'s \"File\" field is not a string.\n";
-			continue;
-		}
-
-		bool fromCollection = false;
-
-		if (sourceInfoJson.find("Name") != sourceInfoJson.end()) {
-			if (!sourceInfoJson["Name"].is_string()) {
-				std::cout << logCtx << "Error: Array entry " << currentIndex << " has a \"Name\" field but "
-					"it is not a string.\n";
-				continue;
-			}
-
-			fromCollection = true;
-			fromCollectionCount++;
-		}
-
-		AnimationSourceInfo animSourceInfo;
-		animSourceInfo.filename = sourceInfoJson["File"].get<std::string>();
-		if (fromCollection) {
-			animSourceInfo.name = sourceInfoJson["Name"].get<std::string>();
-		}
-
-		validCount++;
-
-		animSources.push_back(animSourceInfo);
-	}
-
-	std::cout << logCtx << "Found " << totalCount << " sources (" <<
-		validCount << " valid).\n";
-
-	std::cout << logCtx << fromCollectionCount << " are from collections.\n";
-
-	int successCount = 0;
-	for (auto& animSourceInfo : animSources) {
-		std::ifstream file(animSourceInfo.filename);
-		if (!file.is_open()) {
-			std::cout << logCtx << "Error: Could not open \"" <<
-				animSourceInfo.filename << "\".\n";
-			continue;
-		}
-
-		nlohmann::json fileJson;
-
-		fileJson << file;
-
-		if (animSourceInfo.name.empty()) {
-			// Load individual file.
-			if (const auto animData = AnimationData::FromJson(fileJson)) {
-				AnimationId animId = AddAnimation(*animData);
-
-				if (animId == AnimationId::Invalid) {
-					std::cout << logCtx << "Error: Could not add animation loaded from \""
-						<< animSourceInfo.filename << "\" to system.\n";
-					continue;
-				}
-
-				animations.sourcesById[animId] = animSourceInfo;
-
-				std::cout << logCtx << "Loaded animation from \"" << animSourceInfo.filename <<
-					"\", giving animation ID " << animId.GetValue() << ".\n";
-			}
-			else {
-				std::cout << "Error: Could not deserialize an AnimationData from \""
-					<< animSourceInfo.filename << "\".\n";
-				continue;
-			}
-		}
-		else {
-			// Load from collection file.
-			if (fileJson.find(animSourceInfo.name) == fileJson.end()) {
-				std::cout << logCtx << "Error: Could not find \"" << animSourceInfo.name << "\" in file \"" <<
-					animSourceInfo.filename << "\".\n";
-				continue;
-			}
-
-			if (const auto animData = AnimationData::FromJson(fileJson[animSourceInfo.name])) {
-				const AnimationId animId = AddAnimation(*animData);
-
-				if (animId == AnimationId::Invalid) {
-					std::cout << logCtx << "Error: Could not add animation loaded from field \"" <<
-						animSourceInfo.name << "\" in collection file \"" <<
-						animSourceInfo.filename << "\".\n";
-					continue;
-				}
-
-				animations.sourcesById[animId] = animSourceInfo;
-
-				std::cout << logCtx << "Loaded animation from field \"" <<
-					animSourceInfo.name << "\" in collection file \"" <<
-					animSourceInfo.filename << "\", giving animation ID "
-					<< animId.GetValue() << ".\n";
-			}
-			else {
-				std::cout << logCtx << "Error: Could not deserialize an AnimationData from field \""
-					<< animSourceInfo.name << "\" in collection file \"" <<
-					animSourceInfo.filename << "\".\n";
-				continue;
-			}
-		}
-
-		successCount++;
-	}
-
-	std::cout << logCtx << "Successfully loaded " << successCount << " animations!\n";
+	animations = j;
 
 	return true;
 }
@@ -178,151 +32,25 @@ bool AnimationSystem::FromJson(const nlohmann::json & j)
 // Store the source info of every Animation currently in the System so that we can reload later.
 nlohmann::json AnimationSystem::ToJson() const
 {
-	static const std::string logCtx = "AnimationSystem::ToJson: ";
-
-	std::cout << logCtx << "Serializing info about " << animations.count << " animations...\n";
-
-	nlohmann::json j;
-
-	int count = 0;
-	for (auto kvp : animations.sourcesById)
-	{
-		nlohmann::json animSourceJson;
-		animSourceJson["File"] = kvp.second.filename;
-		if (!kvp.second.name.empty()) {
-			animSourceJson["Name"] = kvp.second.name;
-		}
-		j[AnimationSourcesFieldTitle][count] = animSourceJson;
-		count++;
-	}
-
-	return j;
+	return qvr::ToJson(animations);
 }
 
-AnimationId AnimationSystem::AddAnimation(const AnimationData & anim) {
-	if (!anim.IsValid()) {
-		std::cout << "AnimationSystem::AddAnimation: AnimationData is invalid.\n";
-		return AnimationId::Invalid;
-	}
-
-	// generate an AnimationId
-	const AnimationId id = GenerateAnimationId(anim);
-
-	if (id == AnimationId::Invalid) return AnimationId::Invalid;
-
-	// an animation with the given id already exists
-	if (animations.infosById.find(id) != animations.infosById.end()) {
-		return id;
-	}
-
-	animations.infosById[id] =
-		AnimationInfo(
-			animations.allFrameRects.size(),
-			animations.allFrameTimes.size(),
-			anim.GetRectCount(),
-			anim.GetAltViewsPerFrame());
-
-	// Pack the animation's frame rects and times into the arrays.
-	const auto frameTimes = anim.GetTimes();
-	animations.allFrameTimes.insert(
-		animations.allFrameTimes.end(),
-		frameTimes.begin(),
-		frameTimes.end());
-	const auto frameRects = anim.GetRects();
-	animations.allFrameRects.insert(
-		animations.allFrameRects.end(),
-		frameRects.begin(),
-		frameRects.end());
-
-	assert(animations.referenceCountsById.count(id) == 0);
-
-	animations.referenceCountsById[id] = 0;
-
-	animations.allIds.push_back(id);
-
-	animations.count++;
-
-	return id;
+AnimationId AnimationSystem::AddAnimation(const AnimationData & anim) 
+{
+	return animations.Add(anim);
 }
 
 AnimationId AnimationSystem::AddAnimation(const AnimationData& data, const AnimationSourceInfo& sourceInfo)
 {
-	const AnimationId newAnim = AddAnimation(data);
-
-	if (newAnim != AnimationId::Invalid) 
-	{
-		animations.sourcesById[newAnim] = sourceInfo;
-	}
-
-	return newAnim;
+	return animations.Add(data, sourceInfo);
 }
 
 bool AnimationSystem::RemoveAnimation(const AnimationId id)
 {
-	std::stringstream logCtx;
-	logCtx << "AnimationSystem::RemoveAnimation(" << id.GetValue() << "): ";
+	auto log = spdlog::get("console");
+	assert(log);
 
-	if (!AnimationExists(id)) {
-		std::cout << logCtx.str() << "Animation does not exist.\n";
-		return false;
-	}
-
-	AnimationInfo animInfo = animations.infosById[id];
-
-	std::cout << logCtx.str()
-		<< "Animation found. "
-		<< "\n Start Frame Index: " << animInfo.IndexOfFirstRect()
-		<< "\n Num. Frames: " << animInfo.NumFrames()
-		<< "\n Num. Rects: " << animInfo.NumRects()
-		<< "\n Num. Times: " << animInfo.NumTimes()
-		<< "\n Num. Alt. Rects Per Frame: " << animInfo.NumAltViewsPerFrame()
-		<< "\n Ref. Count: " << animations.referenceCountsById[id]
-		<< "\n";
-
-	animations.infosById.erase(id);
-
-	// Erase rects.
-	{
-		auto start = animations.allFrameRects.begin() + animInfo.IndexOfFirstRect();
-		auto end = start + animInfo.NumRects();
-		animations.allFrameRects.erase(start, end);
-	}
-
-	// Erase times.
-	{
-		auto start = animations.allFrameTimes.begin() + animInfo.IndexOfFirstTime();
-		auto end = start + animInfo.NumTimes();
-		animations.allFrameTimes.erase(start, end);
-	}
-
-	// Loop through the remaining AnimationInfos and fix up the indexOfFirstRect members
-	// of those whose indexOfFirstRect was greater than this one's
-	// TODO: This smells!
-	for (auto& kvp : animations.infosById) {
-		if (kvp.second.IndexOfFirstRect() > animInfo.IndexOfFirstRect()) {
-			AnimationInfo newAnimInfo(
-				kvp.second.IndexOfFirstRect() - animInfo.NumRects(),
-				kvp.second.IndexOfFirstTime(),
-				kvp.second.NumRects(),
-				kvp.second.NumAltViewsPerFrame());
-
-			animations.infosById.insert_or_assign(kvp.first, newAnimInfo);
-		}
-	}
-
-	// And repeatSetting for times.
-	// TODO: This smells!
-	for (auto& kvp : animations.infosById) {
-		if (kvp.second.IndexOfFirstTime() > animInfo.IndexOfFirstTime()) {
-			AnimationInfo newAnimInfo(
-				kvp.second.IndexOfFirstRect(),
-				kvp.second.IndexOfFirstTime() - animInfo.NumTimes(),
-				kvp.second.NumRects(),
-				kvp.second.NumAltViewsPerFrame());
-
-			animations.infosById.insert_or_assign(kvp.first, newAnimInfo);
-		}
-	}
+	std::string logCtx = fmt::format("AnimationSystem::RemoveAnimation({}): ", id);
 
 	// Animators that reference this Animation are now invalid, so we need to delete them.
 	{
@@ -334,69 +62,44 @@ bool AnimationSystem::RemoveAnimation(const AnimationId id)
 			}
 		}
 
-		std::cout << logCtx.str() << "Found " << animatorsToRemove.size() << " Animators that reference this Animation. Removing them...\n";
+		log->debug(
+			"{} Found {} Animators that reference this Animation. Removing them...", 
+			logCtx, 
+			animatorsToRemove.size());
 
 		for (auto animatorId : animatorsToRemove) {
 			RemoveAnimator(animatorId);
 		}
 	}
 
-	animations.referenceCountsById.erase(id);
-
-	{
-		auto it = std::find(animations.allIds.begin(), animations.allIds.end(), id);
-		animations.allIds.erase(it);
-	}
-
-	animations.count--;
-
-	// Remove serialization stuff, if it exists:
-	if (animations.sourcesById.find(id) != animations.sourcesById.end()) {
-		animations.sourcesById.erase(id);
-	}
-
-	std::cout << logCtx.str() << "Success! Num. Animations Remaining: " << animations.count << "\n";
-
-	return true;
+	return animations.Remove(id);
 }
 
-bool AnimationSystem::GetAnimationSourceInfo(const AnimationId id, AnimationSourceInfo & animSource) const
+bool AnimationSystem::GetAnimationSourceInfo(const AnimationId id, AnimationSourceInfo & sourceInfoOut) const
 {
-	const auto it = animations.sourcesById.find(id);
+	std::experimental::optional<AnimationSourceInfo> sourceInfo = animations.GetSourceInfo(id);
 
-	if (it == animations.sourcesById.end()) {
-		return false;
+	if (sourceInfo) {
+		sourceInfoOut = sourceInfo.value();
+		return true;
 	}
 
-	animSource = it->second;
-
-	return true;
+	return false;
 }
 
 unsigned AnimationSystem::GetAnimationNumFrames(const AnimationId id) const
 {
-	const AnimationInfo& animInfo = animations.infosById.at(id);
-	return animInfo.NumFrames();
+	return animations.GetFrameCount(id);
 }
 
 bool AnimationSystem::AnimationHasAltViews(const AnimationId id) const
 {
-	assert(AnimationExists(id));
-
-	if (animations.infosById.count(id) == 0) return false;
-
-	return animations.infosById.at(id).NumAltViewsPerFrame() > 0;
+	return animations.HasAltViews(id);
 }
 
 AnimationId AnimationSystem::GetAnimationFromSource(const AnimationSourceInfo & animSource) const
 {
-	for (const auto& kvp : animations.sourcesById) {
-		if (kvp.second == animSource) {
-			return kvp.first;
-		}
-	}
-
-	return AnimationId::Invalid;
+	return animations.GetAnimation(animSource);
 }
 
 AnimatorId AnimationSystem::Animators::GetNextAnimatorId() {
@@ -410,41 +113,30 @@ AnimatorId AnimationSystem::AddAnimator(
 	const AnimatorStartSetting& startSetting)
 {
 	assert(startSetting.m_AnimationId != AnimationId::Invalid);
-	if (startSetting.m_AnimationId == AnimationId::Invalid) {
-		return AnimatorId::Invalid;
-	}
-	if (animations.infosById.find(startSetting.m_AnimationId) == animations.infosById.end()) {
-		return AnimatorId::Invalid;
-	}
-
-	const AnimationInfo animInfo =
-		animations.infosById[startSetting.m_AnimationId];
+	if (startSetting.m_AnimationId == AnimationId::Invalid) return AnimatorId::Invalid;
+	if (!animations.Contains(startSetting.m_AnimationId))   return AnimatorId::Invalid;
 
 	const int frameIndex = 0;
 
 	const AnimatorId newAnimatorId = animators.GetNextAnimatorId();
 
-	// Initialise Animator's time left in frame.
-	const int timeIndex = animators.hotStates.size();
-	animators.hotStates.emplace_back(
-		newAnimatorId,
-		animations.allFrameTimes[
-			animInfo.IndexOfFirstTime() + frameIndex]);
-
 	animators.states[newAnimatorId] =
 		AnimatorState(
 			startSetting.m_AnimationId,
 			frameIndex,
-			timeIndex,
+			animators.hotStates.size(),
 			target,
 			startSetting.m_RepeatSetting,
-			AnimatorAltViewState(animInfo.NumAltViewsPerFrame()));
+			AnimatorAltViewState(animations.GetViewCount(startSetting.m_AnimationId) - 1));
+
+	animators.hotStates.emplace_back(
+		newAnimatorId,
+		animations.GetTime(startSetting.m_AnimationId, 0));
 
 	// Update target.
-	target.rect = animations.allFrameRects[
-		animInfo.IndexOfFirstRect() + (frameIndex * animInfo.NumRectsPerTime())];
+	target.rect = animations.GetRect(startSetting.m_AnimationId, 0, 0);
 
-	animations.referenceCountsById[startSetting.m_AnimationId]++;
+	animationReferenceCounts[startSetting.m_AnimationId]++;
 
 	return newAnimatorId;
 }
@@ -460,7 +152,7 @@ bool AnimationSystem::RemoveAnimator(const AnimatorId id)
 	{
 		const AnimatorState& animator = animators.states[id];
 
-		animations.referenceCountsById[animator.currentAnimation]--;
+		animationReferenceCounts[animator.currentAnimation]--;
 
 		// swap...
 		std::iter_swap(
@@ -521,29 +213,14 @@ bool AnimationSystem::SetAnimatorAnimation(const AnimatorId animatorId, const An
 	AnimatorState& animator = animators.states[animatorId];
 
 	// Decrease refcount on current animation.
-	animations.referenceCountsById[animator.currentAnimation]--;
+	animationReferenceCounts[animator.currentAnimation]--;
 	// Increase refcount on new animation.
-	animations.referenceCountsById[startSetting.m_AnimationId]++;
-
-	const AnimationInfo& animInfo =
-		animations.infosById[startSetting.m_AnimationId];
-
-	const int firstFrameIndex = 0;
-
-	// Don't worry about alt views when doing this, the user will call the function
-	// to update them at some point.
-	const auto firstFrameRect =
-		animations.allFrameRects[
-			animInfo.IndexOfFirstRect()
-				+ (firstFrameIndex * animInfo.NumRectsPerTime())];
-	const auto firstFrameTime =
-		animations.allFrameTimes[
-			animInfo.IndexOfFirstTime() + firstFrameIndex];
+	animationReferenceCounts[startSetting.m_AnimationId]++;
 
 	animator.currentAnimation = startSetting.m_AnimationId;
-	animator.currentFrame = firstFrameIndex;
+	animator.currentFrame = 0;
 	animator.altViewState =
-		AnimatorAltViewState(animInfo.NumAltViewsPerFrame());
+		AnimatorAltViewState(animations.GetViewCount(animator.currentAnimation) - 1);
 	animator.repeatCount = 0;
 	animator.repeatSetting = startSetting.m_RepeatSetting;
 
@@ -551,10 +228,17 @@ bool AnimationSystem::SetAnimatorAnimation(const AnimatorId animatorId, const An
 		animator.queuedAnimations.clear();
 	}
 
-	animator.target->rect = firstFrameRect;
+	// Don't worry about alt views when doing this, the user will call the function
+	// to update them at some point.
+	animator.target->rect = 
+		animations.GetRect(
+			animator.currentAnimation, 
+			animator.currentFrame);
 
 	animators.hotStates[animator.index].timeLeftInFrame
-		= firstFrameTime;
+		= animations.GetTime(
+			animator.currentAnimation,
+			animator.currentFrame);
 
 	return true;
 }
@@ -600,19 +284,6 @@ unsigned AnimationSystem::GetAnimatorFrame(const AnimatorId animatorId) const
 	return animators.states.at(animatorId).currentFrame;
 }
 
-unsigned AnimationSystem::CalculateRectIndex(
-	const AnimationSystem::AnimationInfo& animationInfo,
-	const unsigned frameIndexInAnimation,
-	const unsigned currentAltView)
-{
-	assert(frameIndexInAnimation < animationInfo.NumFrames());
-	assert(currentAltView < animationInfo.NumRectsPerTime());
-
-	return animationInfo.IndexOfFirstRect()
-		+ (frameIndexInAnimation * animationInfo.NumRectsPerTime())
-		+ currentAltView;
-}
-
 bool AnimationSystem::SetAnimatorFrame(
 	const AnimatorId id,
 	const unsigned frameIndex)
@@ -624,25 +295,18 @@ bool AnimationSystem::SetAnimatorFrame(
 	if (frameIndex >= GetAnimationNumFrames(animator.currentAnimation))
 		return false;
 
-	const AnimationInfo animationInfo =
-		animations.infosById[animator.currentAnimation];
-
-	// Set frame
 	animator.currentFrame = frameIndex;
 
-	// Update target
-	{
-		const auto rectIndex = CalculateRectIndex(
-			animationInfo,
-			frameIndex,
+	animator.target->rect = 
+		animations.GetRect(
+			animator.currentAnimation, 
+			animator.currentFrame, 
 			animator.altViewState.currentAltView);
 
-		animator.target->rect = animations.allFrameRects[rectIndex];
-	}
-
-	// Update time
 	animators.hotStates[animator.index].timeLeftInFrame =
-		animations.allFrameTimes[animationInfo.IndexOfFirstTime() + frameIndex];
+		animations.GetTime(
+			animator.currentAnimation, 
+			animator.currentFrame);
 
 	return true;
 }
@@ -670,9 +334,9 @@ void AnimationSystem::Animate(const AnimationSystem::TimeUnit ms) {
 
 	for (auto animatorId : animatorsToUpdate) {
 		AnimatorState& animator = animators.states.at(animatorId);
-		const AnimationInfo animInfo = animations.infosById.at(animator.currentAnimation);
 
-		animator.currentFrame = (animator.currentFrame + 1) % animInfo.NumFrames();
+		animator.currentFrame = 
+			(animator.currentFrame + 1) % animations.GetFrameCount(animator.currentAnimation);
 
 		// This Animator is returning to the beginning of the Animation.
 		if (animator.currentFrame == 0)
@@ -713,23 +377,14 @@ void AnimationSystem::Animate(const AnimationSystem::TimeUnit ms) {
 		}
 
 		// Update target.
-		{
-			const unsigned nextRectIndex =
-				CalculateRectIndex(
-					animInfo,
-					animator.currentFrame,
-					animator.altViewState.currentAltView);
+		animator.target->rect = 
+			animations.GetRect(
+				animator.currentAnimation,
+				animator.currentFrame,
+				animator.altViewState.currentAltView);
 
-			const Rect nextRect = animations.allFrameRects[nextRectIndex];
-
-			animator.target->rect = nextRect;
-		}
-
-		{
-			const int timeIndex = animInfo.IndexOfFirstTime() + animator.currentFrame;
-			const TimeUnit nextTime = animations.allFrameTimes[timeIndex];
-			animators.hotStates[animator.index].timeLeftInFrame += nextTime;
-		}
+		animators.hotStates[animator.index].timeLeftInFrame += 
+			animations.GetTime(animator.currentAnimation, animator.currentFrame);
 	}
 
 	for (auto animatorId : animatorsToRemove) {
@@ -770,7 +425,8 @@ AnimationId AddAnimationFromJson(
 	}
 }
 
-void AnimationSystem::UpdateAnimatorAltView(const AnimatorId animatorId,
+void AnimationSystem::UpdateAnimatorAltView(
+	const AnimatorId animatorId,
 	const float objectAngle,
 	const float viewAngle)
 {
@@ -793,14 +449,11 @@ void AnimationSystem::UpdateAnimatorAltView(const AnimatorId animatorId,
 		// Update the Animator.
 		altViewState.currentAltView = viewIndex;
 
-		const AnimationInfo& animInfo =
-			animations.infosById.at(animator.currentAnimation);
-
-		// Update the target rect.
-		animator.target->rect = animations.allFrameRects[
-			animInfo.IndexOfFirstRect() +
-				animator.currentFrame +
-				viewIndex];
+		animator.target->rect =
+			animations.GetRect(
+				animator.currentAnimation,
+				animator.currentFrame,
+				viewIndex);
 	}
 }
 

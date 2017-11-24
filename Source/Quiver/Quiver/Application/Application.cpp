@@ -15,6 +15,7 @@
 #include <optional.hpp>
 
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
+#include "Quiver/Misc/Logging.h"
 #include "Quiver/World/World.h"
 
 #include "Game/Game.h"
@@ -31,11 +32,9 @@ std::unique_ptr<ApplicationState> GetInitialState(
 
 int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 {
-	// Console logger with colour.
-	auto consoleLog = spdlog::stdout_color_mt("console");
+	InitLoggers(spdlog::level::debug);
 
-	consoleLog->set_level(spdlog::level::debug); // Log everything
-	consoleLog->set_pattern("[%l] %v");          // [level] msg
+	auto consoleLog = spdlog::get("console");
 
 	const nlohmann::json config = GetConfig();
 

@@ -2,6 +2,7 @@
 
 #include "Quiver/Animation/AnimationData.h"
 #include "Quiver/Animation/AnimationSystem.h"
+#include "Quiver/Misc/Logging.h"
 
 using namespace std::chrono_literals;
 using json = nlohmann::json;
@@ -201,6 +202,8 @@ TEST_CASE("AnimationData can be modified", "[Animation]")
 
 TEST_CASE("AnimationSystem", "[Animation]")
 {
+	qvr::InitLoggers(spdlog::level::off);
+
 	AnimationSystem animationSystem;
 
 	// Animate is fine when there's no Animations and no Animators
@@ -403,4 +406,8 @@ TEST_CASE("AnimationSystem", "[Animation]")
 
 TEST_CASE("More AnimationSystem", "[Animation]") {
 	
+}
+
+TEST_CASE("AnimationLibrary", "[Animation]") {
+
 }

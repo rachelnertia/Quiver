@@ -229,7 +229,7 @@ auto ToJson(const AnimationSourceInfo& animationSource) -> json
 void from_json(const json& j, AnimationSourceInfo& animationSource)
 {
 	animationSource.filename = j.at("File").get<std::string>();
-	animationSource.name     = j.at("Name").get<std::string>();
+	animationSource.name     = j.value<std::string>("Name", {});
 }
 
 static const char* AnimationSourcesFieldTitle = "AnimationSources";

@@ -298,15 +298,6 @@ TEST_CASE("AnimationSystem", "[Animation]")
 		REQUIRE(animationSystem.AnimatorExists(animatorId) == false);
 	}
 
-	SECTION("Reset resets everything") {
-		animationSystem.Reset();
-
-		REQUIRE(animationSystem.AnimationExists(animationId) == false);
-		REQUIRE(animationSystem.GetAnimationCount() == 0);
-
-		REQUIRE(animationSystem.AnimatorExists(animatorId) == false);
-	}
-
 	SECTION("SetAnimatorFrame") {
 		SECTION("Reject invalid AnimatorIds") {
 			for (const AnimatorId invalidAnimatorId : { AnimatorId::Invalid, AnimatorId(animatorId.GetValue() + 1) })

@@ -86,12 +86,6 @@ public:
 
 	nlohmann::json ToJson() const;
 
-	void Reset() {
-		animations = AnimationLibrary();
-		animators = Animators();
-		animationReferenceCounts.clear();
-	}
-
 	AnimationId AddAnimation(const AnimationData& anim);
 	AnimationId AddAnimation(const AnimationData& anim, const AnimationSourceInfo& animSourceInfo);
 

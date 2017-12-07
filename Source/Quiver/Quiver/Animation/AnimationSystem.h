@@ -70,9 +70,6 @@ inline bool operator!=(const AnimatorRepeatSetting& a, const AnimatorRepeatSetti
 
 class AnimationData;
 
-// doesn't (yet) support:
-//  - rewinding
-//  - stepping over multiple frames when the delta ms is large enough that that should happen
 class AnimationSystem {
 public:
 	AnimationSystem() = default;
@@ -83,35 +80,26 @@ public:
 	AnimationSystem& operator=(const AnimationSystem&&) = delete;
 
 	bool FromJson(const nlohmann::json& j);
+	auto ToJson() const -> nlohmann::json;
 
-	nlohmann::json ToJson() const;
+	auto GetAnimations() const -> const AnimationLibrary& {
+		return animations;
+	}
 
 	AnimationId AddAnimation(const AnimationData& anim);
-	AnimationId AddAnimation(const AnimationData& anim, const AnimationSourceInfo& animSourceInfo);
+	AnimationId AddAnimation(
+		const AnimationData& anim, 
+		const AnimationSourceInfo& animSourceInfo);
 
 	bool RemoveAnimation(const AnimationId id);
 
-	bool AnimationExists(const AnimationId id) const { 
-		return animations.Contains(id); 
-	}
-	
-	bool AnimationHasAltViews(const AnimationId id) const;
-	
 	int GetReferenceCount(const AnimationId animation) const { 
 		return animationReferenceCounts.at(animation); 
 	}
 
-	AnimationId GetAnimationFromSource(const AnimationSourceInfo& animSource) const;
-
-	bool GetAnimationSourceInfo(const AnimationId id, AnimationSourceInfo& animSource) const;
-
-	unsigned GetAnimationNumFrames(const AnimationId id) const;
-
-	unsigned GetAnimationCount() const { return animations.GetCount(); }
-
-	std::vector<AnimationId> GetAnimationIds() const { return animations.GetIds(); }
-
-	AnimatorId AddAnimator(AnimatorTarget& target, const AnimatorStartSetting& startSetting);
+	AnimatorId AddAnimator(
+		AnimatorTarget& target, 
+		const AnimatorStartSetting& startSetting);
 
 	bool RemoveAnimator(const AnimatorId id);
 
@@ -129,13 +117,19 @@ public:
 		const AnimatorId animatorId,
 		const AnimatorStartSetting& animation,
 		const bool clearQueue = true);
+
 	bool SetAnimatorTarget(
 		const AnimatorId id,
 		AnimatorTarget& newTarget);
-	bool SetAnimatorFrame(const AnimatorId id, const unsigned index);
+
+	bool SetAnimatorFrame(
+		const AnimatorId id, 
+		const int index);
+
 	bool QueueAnimation(
 		const AnimatorId animatorId,
 		const AnimatorStartSetting& pendingAnimation);
+
 	bool ClearAnimationQueue(const AnimatorId id);
 
 	unsigned GetAnimatorFrame(const AnimatorId animatorId) const;

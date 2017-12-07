@@ -10,6 +10,7 @@
 #include <ImGui/imgui.h>
 
 #include "Quiver/Animation/AnimationData.h"
+#include "Quiver/Animation/AnimationLibraryGui.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
 #include "Quiver/Misc/JsonHelpers.h"
 
@@ -73,33 +74,6 @@ bool AnimationSystem::RemoveAnimation(const AnimationId id)
 	}
 
 	return animations.Remove(id);
-}
-
-bool AnimationSystem::GetAnimationSourceInfo(const AnimationId id, AnimationSourceInfo & sourceInfoOut) const
-{
-	std::experimental::optional<AnimationSourceInfo> sourceInfo = animations.GetSourceInfo(id);
-
-	if (sourceInfo) {
-		sourceInfoOut = sourceInfo.value();
-		return true;
-	}
-
-	return false;
-}
-
-unsigned AnimationSystem::GetAnimationNumFrames(const AnimationId id) const
-{
-	return animations.GetFrameCount(id);
-}
-
-bool AnimationSystem::AnimationHasAltViews(const AnimationId id) const
-{
-	return animations.HasAltViews(id);
-}
-
-AnimationId AnimationSystem::GetAnimationFromSource(const AnimationSourceInfo & animSource) const
-{
-	return animations.GetAnimation(animSource);
 }
 
 AnimatorId AnimationSystem::Animators::GetNextAnimatorId() {
@@ -187,7 +161,7 @@ void AnimationSystem::AnimatorGui(const AnimatorId id)
 	ImGui::Text("Target Rect:\t0x%08X", animator.target);
 
 	{
-		const int numFrames = (int)GetAnimationNumFrames(animator.currentAnimation);
+		const int numFrames = (int)animations.GetFrameCount(animator.currentAnimation);
 		int frameIndex = (int)animator.currentFrame;
 		if (ImGui::SliderInt("Current Frame", &frameIndex, 0, numFrames - 1))
 			SetAnimatorFrame(id, frameIndex);
@@ -208,7 +182,7 @@ bool AnimationSystem::ClearAnimationQueue(const AnimatorId id)
 bool AnimationSystem::SetAnimatorAnimation(const AnimatorId animatorId, const AnimatorStartSetting& startSetting, const bool clearQueue)
 {
 	if (!AnimatorExists(animatorId)) return false;
-	if (!AnimationExists(startSetting.m_AnimationId)) return false;
+	if (!animations.Contains(startSetting.m_AnimationId)) return false;
 
 	AnimatorState& animator = animators.states[animatorId];
 
@@ -286,13 +260,13 @@ unsigned AnimationSystem::GetAnimatorFrame(const AnimatorId animatorId) const
 
 bool AnimationSystem::SetAnimatorFrame(
 	const AnimatorId id,
-	const unsigned frameIndex)
+	const int frameIndex)
 {
 	if (!AnimatorExists(id)) return false;
 
 	AnimatorState& animator = animators.states[id];
 
-	if (frameIndex >= GetAnimationNumFrames(animator.currentAnimation))
+	if (frameIndex >= animations.GetFrameCount(animator.currentAnimation))
 		return false;
 
 	animator.currentFrame = frameIndex;
@@ -459,49 +433,26 @@ void AnimationSystem::UpdateAnimatorAltView(
 
 void GuiControls(AnimationSystem& animationSystem, AnimationSystemEditorData& editorData)
 {
-	ImGui::Text("Num. Animations: %u", animationSystem.GetAnimationCount());
+	ImGui::Text("Num. Animations: %u", animationSystem.GetAnimations().GetCount());
 	ImGui::Text("Num. Animators:  %u", animationSystem.GetAnimatorCount());
 
 	if (ImGui::CollapsingHeader("View Animations"))
 	{
 		ImGui::AutoIndent indent;
 
-		if (animationSystem.GetAnimationCount() == 0) {
-			ImGui::Text("No Animations to display");
-		}
+		const AnimationId anim = PickAnimation(animationSystem.GetAnimations(), editorData.mCurrentSelection);
 
-		std::vector<std::string> animationUidStrings;
-		for (auto animId : animationSystem.GetAnimationIds()) {
-			animationUidStrings.emplace_back(fmt::format("UID: {}", animId.GetValue()));
-		}
-
-		if (editorData.mCurrentSelection > (int)(animationSystem.GetAnimationCount()) - 1) {
-			editorData.mCurrentSelection = -1;
-		}
-
-		auto itemsGetter = [](void* data, int idx, const char** out_text) -> bool
+		if (anim != AnimationId::Invalid)
 		{
-			auto container = static_cast<std::vector<std::string>*>(data);
-
-			*out_text = (*container)[idx].c_str();
-
-			return true;
-		};
-
-		ImGui::Combo("List", &editorData.mCurrentSelection, itemsGetter, (void*)&animationUidStrings, animationUidStrings.size());
-
-		if (editorData.mCurrentSelection > -1) {
-			const AnimationId animId = animationSystem.GetAnimationIds()[editorData.mCurrentSelection];
-
-			AnimationSourceInfo animSourceInfo;
-			animationSystem.GetAnimationSourceInfo(animId, animSourceInfo);
+			AnimationSourceInfo animSourceInfo =
+				animationSystem.GetAnimations().GetSourceInfo(anim).value();
 
 			ImGui::Text("Name: %s", animSourceInfo.name.c_str());
 			ImGui::Text("File: %s", animSourceInfo.filename.c_str());
-			ImGui::Text("Ref Count: %d", animationSystem.GetReferenceCount(animId));
+			ImGui::Text("Ref Count: %d", animationSystem.GetReferenceCount(anim));
 
 			if (ImGui::Button("Remove")) {
-				animationSystem.RemoveAnimation(animId);
+				animationSystem.RemoveAnimation(anim);
 			}
 		}
 	}

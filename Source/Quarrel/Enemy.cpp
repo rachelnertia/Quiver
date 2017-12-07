@@ -14,6 +14,8 @@
 #include <spdlog/fmt/ostr.h>
 #include <spdlog/spdlog.h>
 
+#include "Quiver/Animation/AnimationLibrary.h"
+#include "Quiver/Animation/AnimationLibraryGui.h"
 #include "Quiver/Entity/AudioComponent/AudioComponent.h"
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
@@ -514,63 +516,18 @@ optional<AnimationId> PickAnimationGui(
 	const AnimationId currentAnim, 
 	const AnimationSystem& animationSystem)
 {
-	auto log = spdlog::get("console");
-	assert(log);
-
 	if (ImGui::CollapsingHeader(title))
 	{
 		ImGui::AutoIndent autoIndent;
 
-		const auto animIds = animationSystem.GetAnimationIds();
-
-		const unsigned numAnims = animationSystem.GetAnimationCount();
-
-		std::vector<std::string> animUidStrings;
-
-		for (auto animId : animIds) {
-			animUidStrings.emplace_back(fmt::format("UID: {}", animId.GetValue()));
-		}
-
-		auto itemsGetter = [](void* data, int idx, const char** out_text) -> bool
+		if (currentAnim != AnimationId::Invalid)
 		{
-			auto container = static_cast<std::vector<std::string>*>(data);
-
-			*out_text = (*container)[idx].c_str();
-
-			return true;
-		};
-
-		int selection = [&]()
-		{
-			int i = 0;
-			for (const AnimationId animId : animIds)
+			if (auto animSourceInfo = animationSystem.GetAnimations().GetSourceInfo(currentAnim))
 			{
-				if (animId == currentAnim)
-				{
-					return i;
-				}
-
-				i++;
-			}
-			return -1;
-		}();
-
-		bool selectionChanged = false;
-
-		if (ImGui::Combo(title, &selection, itemsGetter, (void*)&animUidStrings, numAnims)) {
-			log->debug("Selected index {} AnimationId {}", selection, animIds[selection]);
-
-			selectionChanged = true;
-		}
-
-		if (selection >= 0)
-		{
-			AnimationSourceInfo animSourceInfo;
-			if (animationSystem.GetAnimationSourceInfo(animIds[selection], animSourceInfo))
-			{
+				ImGui::Text("Animation ID: %d", currentAnim.GetValue());
 				ImGui::Text("Animation Data Source:");
-				ImGui::Text("  Name: %s", animSourceInfo.name.c_str());
-				ImGui::Text("  File: %s", animSourceInfo.filename.c_str());
+				ImGui::Text("  Name: %s", animSourceInfo->name.c_str());
+				ImGui::Text("  File: %s", animSourceInfo->filename.c_str());
 			}
 			
 			if (ImGui::Button(fmt::format("No {}", title).c_str()))
@@ -578,10 +535,10 @@ optional<AnimationId> PickAnimationGui(
 				return AnimationId::Invalid;
 			}
 		}
-
-		if (selectionChanged)
+		else
 		{
-			return animIds[selection];
+			int selection = -1;
+			return PickAnimation(animationSystem.GetAnimations(), selection);
 		}
 	}
 
@@ -632,39 +589,30 @@ json AnimationToJson(const AnimationSystem& animationSystem, const AnimationId a
 
 	const std::string logCtx = fmt::format("AnimationToJson({}):", animationId);
 
-	if (!animationSystem.AnimationExists(animationId))
+	if (!animationSystem.GetAnimations().Contains(animationId))
 	{
 		log->error("{} Animation does not exist", logCtx);
+		return {};
 	}
 
-	AnimationSourceInfo animSource;
-	if (!animationSystem.GetAnimationSourceInfo(animationId, animSource))
+	const auto animSource = animationSystem.GetAnimations().GetSourceInfo(animationId);
+	
+	if (animSource)
 	{
 		log->error("{} Could not retrieve any Source Info for this Animation", logCtx);
+		return {};
 	}
 
-	json j;
-
-	j["File"] = animSource.filename;
-	
-	if (!animSource.name.empty()) {
-		j["Name"] = animSource.name;
-	}
+	json j = animSource.value();
 
 	return j;
 }
 
 AnimationId AnimationFromJson(const AnimationSystem& animationSystem, const nlohmann::json& j)
 {
-	if (j.empty()) return AnimationId::Invalid;
-	if (j.count("File") == 0) return AnimationId::Invalid;
+	AnimationSourceInfo animSource = j;
 
-	AnimationSourceInfo animSource;
-
-	animSource.filename = j.value<std::string>("File", std::string());
-	animSource.name = j.value<std::string>("Name", std::string());
-
-	return animationSystem.GetAnimationFromSource(animSource);
+	return animationSystem.GetAnimations().GetAnimation(animSource);
 }
 
 json Enemy::ToJson() const

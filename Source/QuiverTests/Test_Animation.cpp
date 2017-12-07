@@ -209,65 +209,29 @@ TEST_CASE("AnimationSystem", "[Animation]")
 	// Animate is fine when there's no Animations and no Animators
 	animationSystem.Animate(10ms);
 
-	REQUIRE(animationSystem.AnimationExists(AnimationId::Invalid) == false);
-	REQUIRE(animationSystem.AnimationExists(AnimationId(1)) == false);
-
-	REQUIRE(animationSystem.GetAnimationCount() == 0);
-	REQUIRE(animationSystem.GetAnimationIds().empty());
-
-	SECTION("ToJson returns an empty json when there are no animations or animators") {
-		json j = animationSystem.ToJson();
-		REQUIRE(j.empty());
-	}
-
 	AnimationData animationData;
-
-	REQUIRE(animationSystem.AddAnimation(animationData) == AnimationId::Invalid);
-
-	animationData.AddFrame(Frame{ 10ms, Rect{ 0,0,1,1 }, {} });
-	animationData.AddFrame(Frame{ 10ms, Rect{ 1,0,2,1 }, {} });
 
 	const AnimationId animationId = GenerateAnimationId(animationData);
 
-	REQUIRE(animationId != AnimationId::Invalid);
+	REQUIRE(animationSystem.AddAnimation(animationData) == AnimationId::Invalid);
 
-	REQUIRE(animationSystem.RemoveAnimation(animationId) == false);
-	REQUIRE(animationSystem.RemoveAnimation(AnimationId::Invalid) == false);
+	animationData.AddFrame(Frame{ 10ms, Rect{ 0,0,1,1 },{} });
+	animationData.AddFrame(Frame{ 10ms, Rect{ 1,0,2,1 },{} });
 
-	SECTION("AddAnimator fails when AddAnimation has not been used") {
+	{
 		AnimatorTarget animatorTarget{};
 		REQUIRE(animationSystem.AddAnimator(animatorTarget, animationId) == AnimatorId::Invalid);
 	}
 
 	REQUIRE(animationSystem.AddAnimation(animationData) == animationId);
-
-	SECTION("Check AddAnimation result") {
-		REQUIRE(animationSystem.GetAnimationCount() == 1);
-		REQUIRE((int)animationSystem.GetAnimationNumFrames(animationId) == animationData.GetFrameCount());
-		REQUIRE(animationSystem.AnimationHasAltViews(animationId) == false);
-		REQUIRE(animationSystem.AnimationExists(animationId));
-
-		SECTION("No AnimationSourceInfo") {
-			AnimationSourceInfo animationSource;
-			REQUIRE(animationSystem.GetAnimationSourceInfo(animationId, animationSource) == false);
-		}
-
-		SECTION("Check GetAnimationIds") {
-			const auto animationIds = animationSystem.GetAnimationIds();
-			REQUIRE(animationIds.size() == 1);
-			REQUIRE(animationIds[0] == animationId);
-		}
-	}
-
+	
 	AnimatorTarget animatorTarget{};
 	const AnimatorId animatorId = animationSystem.AddAnimator(animatorTarget, animationId);
 
-	SECTION("Check AddAnimator result") {
-		REQUIRE(animatorId != AnimatorId::Invalid);
-		REQUIRE(animationSystem.GetAnimatorAnimation(animatorId) == animationId);
-		REQUIRE(animationSystem.GetAnimatorFrame(animatorId) == 0);
-		REQUIRE(animatorTarget.rect == animationData.GetRect(0).value());
-	}
+	REQUIRE(animatorId != AnimatorId::Invalid);
+	REQUIRE(animationSystem.GetAnimatorAnimation(animatorId) == animationId);
+	REQUIRE(animationSystem.GetAnimatorFrame(animatorId) == 0);
+	REQUIRE(animatorTarget.rect == animationData.GetRect(0).value());
 
 	SECTION("Animate plays the animation") {
 		for (int i = 0; i < animationData.GetFrameCount(); ++i) {
@@ -287,9 +251,6 @@ TEST_CASE("AnimationSystem", "[Animation]")
 
 	SECTION("RemoveAnimation removes the animation and the animator that references it") {
 		REQUIRE(animationSystem.RemoveAnimation(animationId));
-		REQUIRE(animationSystem.AnimationExists(animationId) == false);
-		REQUIRE(animationSystem.GetAnimationCount() == 0);
-
 		REQUIRE(animationSystem.AnimatorExists(animatorId) == false);
 	}
 
@@ -400,5 +361,46 @@ TEST_CASE("More AnimationSystem", "[Animation]") {
 }
 
 TEST_CASE("AnimationLibrary", "[Animation]") {
+	qvr::InitLoggers(spdlog::level::off);
 
+	AnimationLibrary animations;
+
+	REQUIRE(animations.Contains(AnimationId::Invalid) == false);
+	REQUIRE(animations.Contains(AnimationId(1)) == false);
+
+	REQUIRE(animations.GetCount() == 0);
+	REQUIRE(animations.GetIds().empty());
+
+	{
+		const json j = ToJson(animations);
+		REQUIRE(j.empty());
+	}
+
+	AnimationData animationData;
+
+	REQUIRE(animations.Add(animationData) == AnimationId::Invalid);
+
+	animationData.AddFrame(Frame{ 10ms, Rect{ 0,0,1,1 },{} });
+	animationData.AddFrame(Frame{ 10ms, Rect{ 1,0,2,1 },{} });
+
+	const AnimationId animationId = GenerateAnimationId(animationData);
+
+	REQUIRE(animationId != AnimationId::Invalid);
+
+	REQUIRE(animations.Remove(animationId) == false);
+	REQUIRE(animations.Remove(AnimationId::Invalid) == false);
+
+	REQUIRE(animations.GetCount() == 1);
+	REQUIRE(animations.GetFrameCount(animationId) == animationData.GetFrameCount());
+	REQUIRE(animations.HasAltViews(animationId) == false);
+	REQUIRE(animations.Contains(animationId));
+
+	// No source info.
+	REQUIRE(animations.GetSourceInfo(animationId).has_value() == false);
+
+	{
+		const auto animationIds = animations.GetIds();
+		REQUIRE(animationIds.size() == 1);
+		REQUIRE(animationIds[0] == animationId);
+	}
 }

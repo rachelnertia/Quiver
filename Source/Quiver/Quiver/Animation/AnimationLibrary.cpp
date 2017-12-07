@@ -226,6 +226,10 @@ auto ToJson(const AnimationSourceInfo& animationSource) -> json
 	return j;
 }
 
+void to_json(json& j, const AnimationSourceInfo& sourceInfo) {
+	j = ToJson(sourceInfo);
+}
+
 void from_json(const json& j, AnimationSourceInfo& animationSource)
 {
 	animationSource.filename = j.at("File").get<std::string>();

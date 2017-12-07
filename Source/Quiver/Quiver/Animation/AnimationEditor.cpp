@@ -465,11 +465,16 @@ void AnimationEditor::ProcessGui() {
 
 	if (ImGui::CollapsingHeader("Preview")) {
 		if (ImGui::Button("Update Preview")) {
-			if (mCurrentAnimationId != AnimationId::Invalid && mAnimationSystem.AnimationExists(mCurrentAnimationId)) {
+			if (mCurrentAnimationId != AnimationId::Invalid && 
+				mAnimationSystem.GetAnimations().Contains(mCurrentAnimationId)) 
+			{
 				mAnimationSystem.RemoveAnimation(mCurrentAnimationId);
 			}
+			
 			mCurrentAnimationId = mAnimationSystem.AddAnimation(mCurrentAnim);
-			if (mCurrentAnimationId != AnimationId::Invalid) {
+			
+			if (mCurrentAnimationId != AnimationId::Invalid) 
+			{
 				mAnimatorId = mAnimationSystem.AddAnimator(mAnimationPreviewRect, mCurrentAnimationId);
 			}
 		}

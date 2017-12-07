@@ -297,7 +297,7 @@ Entity* Crossbow::MakeProjectile(
 		projRenderComp->SetColor(color);
 
 		// Load the animation into the AnimationSystem if it hasn't already been done.
-		if (!world.GetAnimationSystem().AnimationExists(mProjectileAnimId))
+		if (!world.GetAnimationSystem().GetAnimations().Contains(mProjectileAnimId))
 		{
 			world.GetAnimationSystem().AddAnimation(mProjectileAnimData);
 		}

@@ -6,6 +6,7 @@
 #include <spdlog/fmt/ostr.h>
 
 #include "Quiver/Animation/AnimationSystem.h"
+#include "Quiver/Animation/AnimationLibraryGui.h"
 #include "Quiver/Entity/Entity.h"
 #include "Quiver/Entity/RenderComponent/RenderComponent.h"
 #include "Quiver/Graphics/ColourUtils.h"
@@ -25,40 +26,6 @@ AnimationSystem& GetAnimationSystem(const RenderComponent& renderComponent) {
 
 namespace qvr
 {
-
-AnimationId PickAnimation(const AnimationSystem& animSystem)
-{
-	const auto animIds = animSystem.GetAnimationIds();
-	std::vector<std::string> animUidStrings;
-	for (auto animId : animIds) {
-		char buffer[32];
-		sprintf(buffer, "UID: %u", animId.GetValue());
-		animUidStrings.push_back(buffer);
-	}
-
-	auto itemsGetter = [](void* data, int idx, const char** out_text) -> bool
-	{
-		auto container = static_cast<std::vector<std::string>*>(data);
-
-		*out_text = (*container)[idx].c_str();
-
-		return true;
-	};
-
-	int selection = -1;
-
-	if (ImGui::Combo("List", &selection, itemsGetter, (void*)&animUidStrings, animUidStrings.size())) 
-	{
-		auto log = spdlog::get("console");
-		assert(log);
-		
-		log->debug("PickAnimation: Selected {}. Animation ID: {}", selection, animIds[selection]);
-
-		return animIds[selection];
-	}
-
-	return AnimationId::Invalid;
-}
 
 RenderComponentEditor::RenderComponentEditor(RenderComponent& renderComponent)
 	: m_RenderComponent(renderComponent)
@@ -147,7 +114,8 @@ void RenderComponentEditor::GuiControls()
 		AnimationSystem& animSystem = GetAnimationSystem(m_RenderComponent);
 
 		if (ImGui::CollapsingHeader("Pick Animation")) {
-			const AnimationId animation = PickAnimation(animSystem);
+			int selection = -1;
+			const AnimationId animation = PickAnimation(animSystem.GetAnimations(), selection);
 
 			if (animation != AnimationId::Invalid) {
 				m_RenderComponent.SetAnimation(animation);

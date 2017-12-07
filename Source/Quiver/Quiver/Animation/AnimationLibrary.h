@@ -112,6 +112,9 @@ private:
 
 auto ToJson(const AnimationLibrary& animations) -> nlohmann::json;
 
+void to_json(nlohmann::json& j, const AnimationSourceInfo& sourceInfo);
+
 void from_json(const nlohmann::json& j, AnimationLibrary& animations);
+void from_json(const nlohmann::json& j, AnimationSourceInfo& animationSource);
 
 }

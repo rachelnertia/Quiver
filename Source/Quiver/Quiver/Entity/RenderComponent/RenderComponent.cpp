@@ -103,11 +103,11 @@ bool RenderComponent::ToJson(nlohmann::json & j) const
 		{
 			const AnimationId animId = animSystem.GetAnimatorAnimation(mAnimatorId);
 
-			AnimationSourceInfo animSource;
-			if (animSystem.GetAnimationSourceInfo(animId, animSource)) {
-				j["Animation"]["File"] = animSource.filename;
-				if (!animSource.name.empty()) {
-					j["Animation"]["Name"] = animSource.name;
+			if (const auto source = animSystem.GetAnimations().GetSourceInfo(animId)) 
+			{
+				j["Animation"]["File"] = source->filename;
+				if (!source->name.empty()) {
+					j["Animation"]["Name"] = source->name;
 				}
 			}
 
@@ -184,31 +184,22 @@ bool RenderComponent::FromJson(const nlohmann::json & j)
 	}
 
 	if (FieldExistsInJson("Animation", j)) {
-		if (FieldExistsInJson("File", j["Animation"])) {
-			AnimationSourceInfo animSource;
-
-			animSource.filename = j["Animation"]["File"].get<std::string>();
-
-			if (FieldExistsInJson("Name", j["Animation"])) {
-				animSource.name = j["Animation"]["Name"].get<std::string>();
-			}
-
+		const AnimationSourceInfo animSource = j["Animation"];
+		
+		if (!animSource.filename.empty()) {
 			AnimationSystem& animSystem = GetEntity().GetWorld().GetAnimationSystem();
 
-			AnimationId animId = animSystem.GetAnimationFromSource(animSource);
+			AnimationId animId = animSystem.GetAnimations().GetAnimation(animSource);
 
-			// TODO: Load AnimationData from the AnimationSourceInfo and add it to the AnimationSystem.
-			// Or handle that in GetAnimationFromSource or something.
+			if (animId != AnimationId::Invalid) {
+				if (SetAnimation(animId)) {
+					if (FieldExistsInJson("CurrentFrame", j["Animation"])) {
+						const unsigned currentFrame = j["Animation"]["CurrentFrame"].get<unsigned>();
 
-			if (animSystem.AnimationExists(animId) &&
-				SetAnimation(animId))
-			{
-				if (FieldExistsInJson("CurrentFrame", j["Animation"])) {
-					const unsigned currentFrame = j["Animation"]["CurrentFrame"].get<unsigned>();
+						std::cout << "j[\"Animation\"][\"CurrentFrame\"] == " << currentFrame << "\n";
 
-					std::cout << "j[\"Animation\"][\"CurrentFrame\"] == " << currentFrame << "\n";
-
-					animSystem.SetAnimatorFrame(mAnimatorId, currentFrame);
+						animSystem.SetAnimatorFrame(mAnimatorId, currentFrame);
+					}
 				}
 			}
 		}
@@ -413,7 +404,7 @@ bool RenderComponent::SetAnimation(const AnimationId animationId, AnimatorRepeat
 {
 	AnimationSystem& animationSystem = GetAnimationSystem(*this);
 
-	if (!animationSystem.AnimationExists(animationId)) {
+	if (!animationSystem.GetAnimations().Contains(animationId)) {
 		std::cout << "There is no Animation with ID " << animationId << "!\n";
 		return false;
 	}
@@ -422,7 +413,7 @@ bool RenderComponent::SetAnimation(const AnimationId animationId, AnimatorRepeat
 
 	if (animationSystem.AnimatorExists(mAnimatorId)) {
 		const AnimationId oldAnimation = animationSystem.GetAnimatorAnimation(mAnimatorId);
-		hadImpostors = animationSystem.AnimationHasAltViews(oldAnimation);
+		hadImpostors = animationSystem.GetAnimations().HasAltViews(oldAnimation);
 
 		if (!animationSystem.SetAnimatorAnimation(
 			mAnimatorId,
@@ -443,7 +434,7 @@ bool RenderComponent::SetAnimation(const AnimationId animationId, AnimatorRepeat
 		}
 	}
 
-	if ((!hadImpostors) && animationSystem.AnimationHasAltViews(animationId)) {
+	if ((!hadImpostors) && animationSystem.GetAnimations().HasAltViews(animationId)) {
 		// The old animation did not have impostor frames, but the new one does.
 		// Register with the thing.
 		if (!GetEntity().GetWorld().RegisterAnimatorWithAltViews(*this)) {

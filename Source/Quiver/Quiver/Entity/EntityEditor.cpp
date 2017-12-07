@@ -130,27 +130,27 @@ void EntityEditor::GuiControls() {
 		}
 	}
 
-	if (ImGui::CollapsingHeader("Input Component")) {
+	if (ImGui::CollapsingHeader("Custom Component")) {
 		ImGui::Indent();
 
-		CustomComponent* inputComp = m_Entity.GetCustomComponent();
+		CustomComponent* customComp = m_Entity.GetCustomComponent();
 
-		if (inputComp) {
-			// Display input component's type
-			ImGui::Text("Type: %s", inputComp->GetTypeName().c_str());
+		if (customComp) {
+			// Display custom component's type
+			ImGui::Text("Type: %s", customComp->GetTypeName().c_str());
 			ImGui::Separator();
 
-			if (ImGui::Button("Remove Input Component")) {
+			if (ImGui::Button("Remove Custom Component")) {
 				m_Entity.SetInput(nullptr); // SetInput handles deletion.
 			}
 			else {
 				// Display controls
-				inputComp->GUIControls();
+				customComp->GUIControls();
 			}
 
 		}
 		else {
-			ImGui::Text("No Input Component");
+			ImGui::Text("No Custom Component");
 			ImGui::Separator();
 
 			// List of the names of available CustomComponent types
@@ -171,7 +171,7 @@ void EntityEditor::GuiControls() {
 				return true;
 			};
 
-			ImGui::Text("Add Input Component:");
+			ImGui::Text("Add Custom Component:");
 
 			int selection = -1;
 			if (ImGui::ListBox("Available Types",

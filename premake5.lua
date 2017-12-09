@@ -29,9 +29,11 @@ workspace "Quiver"
 
 	debugformat "c7"
 
-	flags { "MultiProcessorCompile", "C++14" }
+	cppdialect "C++14"
 
-	if os.is("linux") then
+	flags { "MultiProcessorCompile" }
+
+	if os.istarget("linux") then
 		buildoptions { "--std=c++1z", "-fpermissive" }
 	else
 		flags { "FatalCompileWarnings" }

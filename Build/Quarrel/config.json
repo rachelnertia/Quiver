@@ -1,4 +1,7 @@
 {
 	"initialState":"Editor",
-	"worldFile":"testbed.json"
+	"worldFile":"testbed.json",
+	"ImGuiConfig": {
+		"FontGlobalScale": 1.4
+	}
 }

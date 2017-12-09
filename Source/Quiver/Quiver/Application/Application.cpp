@@ -15,6 +15,7 @@
 #include <optional.hpp>
 
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
+#include "Quiver/Misc/JsonHelpers.h"
 #include "Quiver/Misc/Logging.h"
 #include "Quiver/World/World.h"
 
@@ -24,11 +25,26 @@
 
 namespace qvr {
 
-nlohmann::json GetConfig();
+using json = nlohmann::json;
+
+json GetConfig();
 
 std::unique_ptr<ApplicationState> GetInitialState(
-	const nlohmann::json& config, 
+	const json& config, 
 	ApplicationStateContext& ctx);
+
+struct ImGuiConfig {
+	float FontGlobalScale = 1.0f;
+};
+
+void from_json(const json& j, ImGuiConfig& config) {
+	config.FontGlobalScale = JsonHelp::GetValue<float>(j, "FontGlobalScale", 1.0f);
+}
+
+void ConfigureImGui(const ImGuiConfig& config) {
+	ImGuiIO& io = ImGui::GetIO();
+	io.FontGlobalScale = config.FontGlobalScale;
+}
 
 int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 {
@@ -36,7 +52,7 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 
 	auto consoleLog = spdlog::get("console");
 
-	const nlohmann::json config = GetConfig();
+	const json config = GetConfig();
 
 	// Open Window
 	sf::RenderWindow window;
@@ -47,6 +63,8 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 	window.setKeyRepeatEnabled(false);
 
 	ImGui::SFML::Init(window);
+	
+	ConfigureImGui(config.value<json>("ImGuiConfig", {}));
 
 	ApplicationStateContext applicationStateContext(
 		window,
@@ -126,7 +144,7 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 	return 0;
 }
 
-nlohmann::json GetConfig()
+json GetConfig()
 {
 	auto log = spdlog::get("console");
 	assert(log.get() != nullptr);
@@ -142,10 +160,10 @@ nlohmann::json GetConfig()
 			"Couldn't load {}! Will just go with all the hard-coded defaults.",
 			configFileName);
 
-		return nlohmann::json();
+		return {};
 	}
 
-	nlohmann::json config;
+	json config;
 
 	try {
 		config << configFile;
@@ -156,7 +174,7 @@ nlohmann::json GetConfig()
 			"Will just go with all the hard-coded defaults.",
 			configFileName);
 
-		return nlohmann::json();
+		return {};
 	}
 
 	log->info("Loaded configuration parameters from {}!", configFileName);
@@ -166,17 +184,6 @@ nlohmann::json GetConfig()
 	return config;
 }
 
-template <typename T>
-T GetValue(const nlohmann::json& j, const char* name, T defaultValue)
-{
-	if (!j.is_object())
-	{
-		return defaultValue;
-	}
-
-	return j.value<T>(name, defaultValue);
-}
-
 std::unique_ptr<ApplicationState> GetInitialState(
 	const nlohmann::json& config,
 	ApplicationStateContext& applicationStateContext)
@@ -184,13 +191,13 @@ std::unique_ptr<ApplicationState> GetInitialState(
 	auto consoleLog = spdlog::get("console");
 	assert(consoleLog.get() != nullptr);
 
-	const auto initialState = GetValue<std::string>(config, "initialState", {});
+	const auto initialState = JsonHelp::GetValue<std::string>(config, "initialState", {});
 
 	if (initialState == "Editor")
 	{
 		consoleLog->info("Launching World Editor...");
 
-		const auto worldFile = GetValue<std::string>(config, "worldFile", {});
+		const auto worldFile = JsonHelp::GetValue<std::string>(config, "worldFile", {});
 
 		if (!worldFile.empty()) {
 			return std::make_unique<WorldEditor>(
@@ -204,7 +211,7 @@ std::unique_ptr<ApplicationState> GetInitialState(
 	{
 		consoleLog->info("Launching Game...");
 
-		const auto worldFile = GetValue<std::string>(config, "worldFile", {});
+		const auto worldFile = JsonHelp::GetValue<std::string>(config, "worldFile", {});
 
 		if (!worldFile.empty()) {
 			return std::make_unique<Game>(
@@ -217,7 +224,7 @@ std::unique_ptr<ApplicationState> GetInitialState(
 	else if (!initialState.empty())
 	{
 		consoleLog->warn(
-			"'{}' is an unrecognised value for config variable 'initialState'.", 
+			"'{}' is an unrecognised value for imguiConfig variable 'initialState'.", 
 			initialState);
 		consoleLog->info("Options are 'Editor' and 'Game'.");
 	}

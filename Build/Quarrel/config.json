@@ -2,6 +2,6 @@
 	"initialState":"Editor",
 	"worldFile":"testbed.json",
 	"ImGuiConfig": {
-		"FontGlobalScale": 1.4
+		"DefaultFontScale": 2
 	}
 }

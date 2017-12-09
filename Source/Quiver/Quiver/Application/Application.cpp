@@ -34,16 +34,32 @@ std::unique_ptr<ApplicationState> GetInitialState(
 	ApplicationStateContext& ctx);
 
 struct ImGuiConfig {
-	float FontGlobalScale = 1.0f;
+	float FontGlobalScale  = 1.0f;
+	float DefaultFontScale = 1.0f; // Scale of default font.
 };
 
 void from_json(const json& j, ImGuiConfig& config) {
-	config.FontGlobalScale = JsonHelp::GetValue<float>(j, "FontGlobalScale", 1.0f);
+	config.FontGlobalScale  = JsonHelp::GetValue<float>(j, "FontGlobalScale", 1.0f);
+	config.DefaultFontScale = JsonHelp::GetValue<float>(j, "DefaultFontScale", 1.0f);
 }
 
 void ConfigureImGui(const ImGuiConfig& config) {
 	ImGuiIO& io = ImGui::GetIO();
+	
 	io.FontGlobalScale = config.FontGlobalScale;
+	
+	{
+		io.Fonts->Clear();
+
+		const float scale = config.DefaultFontScale;
+
+		ImFontConfig fontCfg;
+		fontCfg.SizePixels = scale * 13;
+		
+		io.Fonts->AddFontDefault(&fontCfg)->DisplayOffset.y = scale;
+
+		ImGui::SFML::UpdateFontTexture();
+	}
 }
 
 int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
@@ -62,9 +78,12 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 	// Key repeat is enabled by default, which is silly.
 	window.setKeyRepeatEnabled(false);
 
-	ImGui::SFML::Init(window);
-	
-	ConfigureImGui(config.value<json>("ImGuiConfig", {}));
+	{
+		const bool loadDefaultFont = false;
+		ImGui::SFML::Init(window, loadDefaultFont);
+	}
+
+	ConfigureImGui(config.value<ImGuiConfig>("ImGuiConfig", ImGuiConfig()));
 
 	ApplicationStateContext applicationStateContext(
 		window,
@@ -120,7 +139,7 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 
 		if (quit) continue;
 
-		ImGui::SFML::Update(deltaClock.restart());
+		ImGui::SFML::Update(window, deltaClock.restart());
 
 		currentState->ProcessFrame();
 

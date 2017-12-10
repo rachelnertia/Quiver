@@ -2,6 +2,11 @@
 	"initialState":"Editor",
 	"worldFile":"testbed.json",
 	"ImGuiConfig": {
-		"FontGlobalScale": 1.4
+		"FontGlobalScale": 2
+	},
+	"windowConfig": {
+		"width": 1600,
+		"height": 900,
+		"name": "Quarrel"
 	}
 }

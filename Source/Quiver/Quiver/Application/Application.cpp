@@ -33,6 +33,22 @@ std::unique_ptr<ApplicationState> GetInitialState(
 	const json& config, 
 	ApplicationStateContext& ctx);
 
+struct WindowConfig {
+	int width = 1024;
+	int height = 576;
+	std::string name = "Quiver Window";
+
+	static WindowConfig Default;
+};
+
+WindowConfig WindowConfig::Default;
+
+void from_json(const json& j, WindowConfig& config) {
+	config.width = JsonHelp::GetValue(j, "width", WindowConfig::Default.width);
+	config.height = JsonHelp::GetValue(j, "height", WindowConfig::Default.height);
+	config.name = JsonHelp::GetValue(j, "name", WindowConfig::Default.name);
+}
+
 struct ImGuiConfig {
 	float FontGlobalScale = 1.0f;
 };
@@ -46,6 +62,12 @@ void ConfigureImGui(const ImGuiConfig& config) {
 	io.FontGlobalScale = config.FontGlobalScale;
 }
 
+void CreateSFMLWindow(sf::RenderWindow& window, const WindowConfig& config) {
+	window.create(sf::VideoMode(config.width, config.height), config.name);
+	// Key repeat is enabled by default, which is silly.
+	window.setKeyRepeatEnabled(false);
+}
+
 int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 {
 	InitLoggers(spdlog::level::debug);
@@ -56,15 +78,13 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 
 	// Open Window
 	sf::RenderWindow window;
-	window.create(sf::VideoMode(1024, 576), "SFML Window");
-
-	// Set some window settings.
-	// Key repeat is enabled by default, which is silly.
-	window.setKeyRepeatEnabled(false);
+	CreateSFMLWindow(
+		window, 
+		JsonHelp::GetValue(config, "windowConfig", WindowConfig::Default));
 
 	ImGui::SFML::Init(window);
 	
-	ConfigureImGui(config.value<json>("ImGuiConfig", {}));
+	ConfigureImGui(JsonHelp::GetValue(config, "ImGuiConfig", ImGuiConfig()));
 
 	ApplicationStateContext applicationStateContext(
 		window,

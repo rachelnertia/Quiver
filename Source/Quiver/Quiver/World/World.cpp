@@ -369,7 +369,8 @@ void World::Render3D(sf::RenderTarget & target, const Camera3D & camera)
 		{
 			sf::RectangleShape rect;
 			rect.setPosition(0.0f, 0.0f);
-			rect.setSize(sf::Vector2f((float)targetSize.x, (float)(targetSize.y / 2)));
+			const float height = (float)(targetSize.y / 2) + GetPitchOffsetInPixels(camera, targetSize.y);
+			rect.setSize(sf::Vector2f((float)targetSize.x, height));
 			rect.setFillColor(skyColor);
 			target.draw(rect);
 		}

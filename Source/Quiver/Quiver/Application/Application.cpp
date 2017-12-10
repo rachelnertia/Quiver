@@ -11,6 +11,7 @@
 #include <ImGui/imgui-SFML.h>
 
 #include <spdlog/spdlog.h>
+#include <spdlog/fmt/bundled/time.h>
 #include <cxxopts/cxxopts.hpp>
 #include <optional.hpp>
 
@@ -98,6 +99,8 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 	sf::Clock deltaClock;
 	bool quit = false;
 	while (!quit) {
+		bool takeScreenshot = false;
+
 		sf::Event windowEvent;
 		while (window.pollEvent(windowEvent)) {
 			ImGui::SFML::ProcessEvent(windowEvent);
@@ -109,6 +112,9 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 				break;
 
 			case sf::Event::KeyPressed:
+				if (windowEvent.key.code == sf::Keyboard::SemiColon) {
+					takeScreenshot = true;
+				}
 				break;
 
 			case sf::Event::KeyReleased:
@@ -143,6 +149,41 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 		ImGui::SFML::Update(deltaClock.restart());
 
 		currentState->ProcessFrame();
+
+		if (takeScreenshot) {
+			sf::Texture tex;
+			tex.create(window.getSize().x, window.getSize().y);
+			tex.update(window);
+			sf::Image image = tex.copyToImage();
+			
+			// Save to screenshots/latest.png
+			{
+				const std::string latestPath = "screenshots/latest.png";
+
+				// TODO: Detect if a 'screenshots' folder exists and, if it doesn't, create it.
+
+				if (image.saveToFile(latestPath)) {
+					consoleLog->info("Saved screenshot to {}", latestPath);
+				}
+				else {
+					consoleLog->error("Failed to save screenshot to {}", latestPath);
+				}
+			}
+
+			// Save with the date and time, down to the second.
+			// E.g. screenshots/2017-12-10-20-25-3.png
+			{
+				const std::time_t now = std::time(nullptr);
+				const std::string timePath = fmt::format("screenshots/{:%F-%H-%M-%S}.png", *std::localtime(&now));
+
+				if (image.saveToFile(timePath)) {
+					consoleLog->info("Saved screenshot to {}", timePath);
+				}
+				else {
+					consoleLog->error("Failed to save screenshot to {}", timePath);
+				}
+			}
+		}
 
 		if (currentState->GetQuit())
 		{

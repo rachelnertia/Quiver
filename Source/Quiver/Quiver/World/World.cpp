@@ -522,7 +522,7 @@ World::World(
 	}
 
 	if (j.find("SkyColour") != j.end()) {
-		ColourUtils::DeserializeSFColorFromJson(groundColor, j["GroundColour"]);
+		ColourUtils::DeserializeSFColorFromJson(skyColor, j["SkyColour"]);
 	}
 
 	if (j.find("Gravity") != j.end()) {

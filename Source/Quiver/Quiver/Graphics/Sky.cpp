@@ -7,6 +7,7 @@
 
 #include "Quiver/Graphics/Camera3D.h"
 #include "Quiver/Graphics/ColourUtils.h"
+#include "Quiver/Misc/ImGuiHelpers.h"
 
 namespace qvr {
 
@@ -267,7 +268,7 @@ void Sky::SkyLayer::SetTextureRepeats(float numRepeats)
 
 void Sky::SkyLayer::EditorImGuiControls()
 {
-	ImGui::Text("Layer Name: %s", mName.c_str() != nullptr ? mName.c_str() : "None");
+	ImGui::InputText<64>("Layer Name", mName);
 
 	{
 		ImGui::Text("Texture");
@@ -287,8 +288,7 @@ void Sky::SkyLayer::EditorImGuiControls()
 		else
 		{
 			static char buffer[128] = { 0 };
-
-			ImGui::InputText("Texture Filename", buffer, 128);
+			ImGui::InputText("Texture Filename", buffer);
 
 			if (ImGui::Button("Load")) {
 				LoadTexture(buffer);
@@ -297,7 +297,7 @@ void Sky::SkyLayer::EditorImGuiControls()
 
 		{
 			float repeats = mRepeatsPerCircle;
-			if (ImGui::SliderFloat("Num Repeats", &repeats, 1.0f, 10.0f)) {
+			if (ImGui::SliderFloat("Num Repeats", &repeats, 1.0f, 30.0f, "%.3f", 1.5f)) {
 				SetTextureRepeats(repeats);
 			}
 		}

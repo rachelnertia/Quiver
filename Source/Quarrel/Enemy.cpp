@@ -597,7 +597,7 @@ json AnimationToJson(const AnimationSystem& animationSystem, const AnimationId a
 
 	const auto animSource = animationSystem.GetAnimations().GetSourceInfo(animationId);
 	
-	if (animSource)
+	if (!animSource)
 	{
 		log->error("{} Could not retrieve any Source Info for this Animation", logCtx);
 		return {};

@@ -1,0 +1,157 @@
+{
+    "AmbientLight": {
+        "Colour": "bb81ffff"
+    },
+    "AnimationSystem": null,
+    "DirectionalLight": {
+        "Angle": 0.872664630413055,
+        "Color": "924e5600"
+    },
+    "Entities": [
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    -5.45141363143921,
+                    -1.09316396713257
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            1.09375,
+                            -4.875
+                        ],
+                        [
+                            1.09375,
+                            4.875
+                        ],
+                        [
+                            -1.09375,
+                            4.875
+                        ],
+                        [
+                            -1.09375,
+                            -4.875
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "b62d38ff",
+                "Detached": false,
+                "GroundOffset": 0.0,
+                "Height": 8.0,
+                "SpriteRadius": 0.5
+            }
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": -0.500160276889801,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    1.37368440628052,
+                    -2.53790926933289
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            1.21875023841858,
+                            -5.125
+                        ],
+                        [
+                            1.21875023841858,
+                            5.125
+                        ],
+                        [
+                            -1.21875023841858,
+                            5.125
+                        ],
+                        [
+                            -1.21875023841858,
+                            -5.125
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "b62d38ff",
+                "Detached": false,
+                "GroundOffset": 0.0,
+                "Height": 8.0,
+                "SpriteRadius": 0.5
+            }
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    -0.788341701030731,
+                    3.57974553108215
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            3.68719506263733,
+                            -1.82031667232513
+                        ],
+                        [
+                            0.209467113018036,
+                            1.86414647102356
+                        ],
+                        [
+                            -3.89666199684143,
+                            -0.0438301563262939
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "b62d38ff",
+                "Detached": false,
+                "GroundOffset": 0.0,
+                "Height": 8.0,
+                "SpriteRadius": 0.5
+            }
+        }
+    ],
+    "Fog": {
+        "Color": "5313ff00",
+        "MaxDistance": 33.951000213623,
+        "MaxIntensity": 0.175000011920929,
+        "MinDistance": 7.1540002822876
+    },
+    "Gravity": [
+        0.0,
+        0.0
+    ],
+    "GroundColour": "f3717dff",
+    "Prefabs": {},
+    "RenderSettings": {
+        "RayLength": 50.0
+    },
+    "Sky": null,
+    "SkyColour": "00000000"
+}

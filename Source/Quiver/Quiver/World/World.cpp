@@ -544,14 +544,7 @@ World::World(
 		log->error("Failed to deserialize directional light.");
 	}
 
-	if (j.find("AnimationSystem") != j.end()) {
-		if (!mAnimationSystem.FromJson(j["AnimationSystem"])) {
-			log->error("Failed to deserialize AnimationSystem.");
-		}
-	}
-	else {
-		log->debug("Couldn't find a field for the AnimationSystem.");
-	}
+	mAnimationSystem.FromJson(JsonHelp::GetValue<nlohmann::json>(j, "AnimationSystem", {}));
 
 	if (j.find("Prefabs") != j.end()) {
 		if (!mEntityPrefabs.FromJson(j["Prefabs"])) {

@@ -271,10 +271,10 @@ bool AddFromSource(AnimationLibrary& library, const AnimationSourceInfo& sourceI
 			sourceInfo);
 }
 
-// Let's try this out...
-// Wait, I'm not sure if I have the right version of json.hpp for this...
 void from_json(const json& j, AnimationLibrary& animations)
 {
+	if (j.is_null()) return;
+
 	std::vector<AnimationSourceInfo> animSources;
 
 	animSources = j.at(AnimationSourcesFieldTitle).get<std::vector<AnimationSourceInfo>>();

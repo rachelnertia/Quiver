@@ -49,10 +49,11 @@ Fog Fog::FromJson(const json& j)
 	Fog fog;
 
 	if (j.is_object() && !j.empty()) {
+		sf::Color c;
 		if (j.count("Color") != 0) {
-			sf::Color c;
 			ColourUtils::DeserializeSFColorFromJson(c, j["Color"]);
 		}
+		fog.SetColor(c);
 		fog.SetMaxDistance(j.value<float>("MaxDistance", fog.GetMaxDistance()));
 		fog.SetMinDistance(j.value<float>("MinDistance", fog.GetMinDistance()));
 		fog.SetMaxIntensity(j.value<float>("MaxIntensity", fog.GetMaxIntensity()));

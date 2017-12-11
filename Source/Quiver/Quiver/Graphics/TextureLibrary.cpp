@@ -70,6 +70,13 @@ std::shared_ptr<sf::Texture> TextureLibrary::LoadTexture(std::string filename)
 
 void TextureLibraryGui::ProcessGui() {
 	using namespace std;
+
+	if (mTextureLibrary.mLoadedTextures.empty()) {
+		ImGui::Text("No Textures");
+		
+		return;
+	}
+
 	vector<string> textureNames;
 	for (const auto& kvp : mTextureLibrary.mLoadedTextures) {
 		textureNames.push_back(kvp.first);

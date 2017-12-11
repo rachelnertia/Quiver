@@ -29,6 +29,7 @@ namespace qvr
 
 RenderComponentEditor::RenderComponentEditor(RenderComponent& renderComponent)
 	: m_RenderComponent(renderComponent)
+	, m_TextureFilename(renderComponent.GetTextureFilename())
 {}
 
 RenderComponentEditor::~RenderComponentEditor() {}
@@ -94,16 +95,11 @@ void RenderComponentEditor::GuiControls()
 		else {
 			ImGui::Text("No Texture");
 			
-			ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
-			
-			std::string filename;
+			ImGui::InputText<128>("Filename", m_TextureFilename);
 
-			if (ImGui::InputText<128>("Filename", filename, flags) ||			
-				ImGui::Button("Try to Load")) 
+			if (ImGui::Button("Try to Load") && !m_TextureFilename.empty())
 			{
-				if (!filename.empty()) {
-					m_RenderComponent.SetTexture(filename);
-				}
+				m_RenderComponent.SetTexture(m_TextureFilename);
 			}
 		}
 	}

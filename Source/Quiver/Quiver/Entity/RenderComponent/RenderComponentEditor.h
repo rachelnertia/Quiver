@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <string>
 
 namespace qvr
 {
@@ -19,6 +20,7 @@ public:
 	}
 private:
 	RenderComponent& m_RenderComponent;
+	std::string m_TextureFilename;
 };
 
 }

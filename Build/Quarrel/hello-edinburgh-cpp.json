@@ -2,7 +2,29 @@
     "AmbientLight": {
         "Colour": "bb81ffff"
     },
-    "AnimationSystem": null,
+    "AnimationSystem": {
+        "AnimationSources": [
+            {
+                "File": "animations/darkmage_anims.json",
+                "Name": "awaken"
+            },
+            {
+                "File": "animations/flyghelm_fly_impo.json"
+            },
+            {
+                "File": "animations/darkmage_anims.json",
+                "Name": "attack"
+            },
+            {
+                "File": "animations/darkmage_anims.json",
+                "Name": "die"
+            },
+            {
+                "File": "animations/darkmage_anims.json",
+                "Name": "idle"
+            }
+        ]
+    },
     "DirectionalLight": {
         "Angle": 0.872664630413055,
         "Color": "ff4b1a00"
@@ -2353,7 +2375,7 @@
                 "Type": "Player"
             },
             "PhysicsComponent": {
-                "Angle": 0.0,
+                "Angle": 2.87969923019409,
                 "AngularDamping": 0.0,
                 "BodyType": "Dynamic",
                 "FixedRotation": true,
@@ -2384,6 +2406,146 @@
                     "top": 0
                 }
             }
+        },
+        {
+            "Diff": [
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Friction",
+                    "value": 0.200000002980232
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/LinearDamping",
+                    "value": 3.74000024795532
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Position/0",
+                    "value": -7.36661052703857
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Position/1",
+                    "value": -24.824649810791
+                },
+                {
+                    "op": "replace",
+                    "path": "/RenderComponent/Height",
+                    "value": 1.11000001430511
+                },
+                {
+                    "op": "replace",
+                    "path": "/RenderComponent/SpriteRadius",
+                    "value": 0.285000026226044
+                }
+            ],
+            "PrefabName": "Darkmage"
+        },
+        {
+            "Diff": [
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Friction",
+                    "value": 0.200000002980232
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/LinearDamping",
+                    "value": 3.74000024795532
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Position/0",
+                    "value": -18.421875
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Position/1",
+                    "value": -29.3910655975342
+                },
+                {
+                    "op": "replace",
+                    "path": "/RenderComponent/Height",
+                    "value": 1.11000001430511
+                },
+                {
+                    "op": "replace",
+                    "path": "/RenderComponent/SpriteRadius",
+                    "value": 0.285000026226044
+                }
+            ],
+            "PrefabName": "Darkmage"
+        },
+        {
+            "Diff": [
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Friction",
+                    "value": 0.200000002980232
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/LinearDamping",
+                    "value": 3.74000024795532
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Position/0",
+                    "value": -6.97140693664551
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Position/1",
+                    "value": -33.5393753051758
+                },
+                {
+                    "op": "replace",
+                    "path": "/RenderComponent/Height",
+                    "value": 1.11000001430511
+                },
+                {
+                    "op": "replace",
+                    "path": "/RenderComponent/SpriteRadius",
+                    "value": 0.285000026226044
+                }
+            ],
+            "PrefabName": "Darkmage"
+        },
+        {
+            "Diff": [
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Friction",
+                    "value": 0.200000002980232
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/LinearDamping",
+                    "value": 3.74000024795532
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Position/0",
+                    "value": 6.10019159317017
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Position/1",
+                    "value": -40.0918045043945
+                },
+                {
+                    "op": "replace",
+                    "path": "/RenderComponent/Height",
+                    "value": 1.11000001430511
+                },
+                {
+                    "op": "replace",
+                    "path": "/RenderComponent/SpriteRadius",
+                    "value": 0.285000026226044
+                }
+            ],
+            "PrefabName": "Darkmage"
         }
     ],
     "Fog": {
@@ -2398,6 +2560,65 @@
     ],
     "GroundColour": "f3717dff",
     "Prefabs": {
+        "Darkmage": {
+            "CustomComponent": {
+                "Data": {
+                    "AwakeAnim": {
+                        "File": "animations/darkmage_anims.json",
+                        "Name": "awaken"
+                    },
+                    "DieAnim": {
+                        "File": "animations/darkmage_anims.json",
+                        "Name": "die"
+                    },
+                    "IdleAnim": {
+                        "File": "animations/darkmage_anims.json",
+                        "Name": "idle"
+                    },
+                    "RunAnim": {
+                        "File": "animations/darkmage_anims.json",
+                        "Name": "idle"
+                    },
+                    "ShootAnim": {
+                        "File": "animations/darkmage_anims.json",
+                        "Name": "attack"
+                    }
+                },
+                "Type": "Enemy"
+            },
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Dynamic",
+                "FixedRotation": true,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 3.74000024795532,
+                "Position": [
+                    -7.31072425842285,
+                    -9.34410762786865
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Radius": 0.503891110420227,
+                    "Type": "Circle"
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ffffffff",
+                "Detached": true,
+                "GroundOffset": 0.0,
+                "Height": 1.11000001430511,
+                "SpriteRadius": 0.285000026226044,
+                "Texture": "textures/darkmage.png",
+                "TextureRect": {
+                    "bottom": 32,
+                    "left": 0,
+                    "right": 32,
+                    "top": 0
+                }
+            }
+        },
         "Pillar": {
             "PhysicsComponent": {
                 "Angle": 2.45688438415527,

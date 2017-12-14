@@ -1,7 +1,11 @@
 #include "ColourUtils.h"
+
 #include <sstream>
+
 #include <ImGui/imgui.h>
 #include <SFML/Graphics/Color.hpp>
+
+#include "Quiver/Misc/Logging.h"
 
 namespace ColourUtils {
 
@@ -51,7 +55,8 @@ bool VerifyColourJson(const nlohmann::json& j) {
 	if (j.is_string()) {
 		std::string hexString = j.get<std::string>();
 		if (hexString.length() != 8) {
-			std::cout << hexString << " not a valid hex string. Must be 8 characters in length." << std::endl;
+			auto log = qvr::GetConsoleLogger();
+			log->error("{} not a valid hex string. Must be 8 characters in length", hexString);
 			return false;
 		}
 	}

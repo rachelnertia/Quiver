@@ -8,6 +8,7 @@
 #include "Quiver/Graphics/Camera3D.h"
 #include "Quiver/Graphics/ColourUtils.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
+#include "Quiver/Misc/Logging.h"
 
 namespace qvr {
 
@@ -26,13 +27,15 @@ bool Sky::ToJson(nlohmann::json & j) const
 
 bool Sky::FromJson(const nlohmann::json & j)
 {
-	static const char* logContext = "Sky::FromJson: ";
+	auto log = GetConsoleLogger();
+
+	static const char* logContext = "Sky::FromJson:";
 
 	mLayers.clear();
 
 	if (j.find("Layers") != j.end()) {
 		if (!j["Layers"].is_array()) {
-			std::cout << logContext << "Layers must be an array.\n";
+			log->error("{} Layers must be an array.", logContext);
 			return false;
 		}
 
@@ -49,6 +52,8 @@ bool Sky::FromJson(const nlohmann::json & j)
 
 void Sky::EditorImGuiControls()
 {
+	auto log = GetConsoleLogger();
+
 	if (mLayers.empty()) {
 		ImGui::Text("There are no Sky Layers. The Sky is empty.");
 	}
@@ -71,9 +76,10 @@ void Sky::EditorImGuiControls()
 			&mLayers, mLayers.size()))
 		{
 			const SkyLayer& selectedSkyLayer = mLayers[mSelectedLayerIndex];
-			std::cout << "Selected Sky Layer \"" <<
-				(selectedSkyLayer.GetName() != nullptr ? selectedSkyLayer.GetName() : "Unnamed Layer") <<
-				"\"\n";
+			
+			log->info(
+				"Selected sky layer '{}'", 
+				(selectedSkyLayer.GetName() != nullptr ? selectedSkyLayer.GetName() : "Unnamed Layer"));
 		}
 
 		if (mLayers.size() > 1) {
@@ -94,10 +100,10 @@ void Sky::EditorImGuiControls()
 
 	if (ImGui::Button("Add New Layer")) {
 		if (AddLayer()) {
-			std::cout << "Added a new Sky Layer.\n";
+			log->info("Added a new Sky Layer.");
 		}
 		else {
-			std::cout << "Could not add a new Sky Layer.\n";
+			log->info("Could not add a new Sky Layer.");
 		}
 	}
 
@@ -248,22 +254,23 @@ bool Sky::SkyLayer::FromJson(const nlohmann::json & j)
 }
 
 bool Sky::SkyLayer::LoadTexture(const char* filename) {
+	auto log = GetConsoleLogger();
+	
+	mTextureName.clear();
+	
 	if (mTexture.loadFromFile(filename)) {
-		std::cout << "Loaded texture file \"" << filename << "\".\n";
+		log->info("Loaded texture file '{}'.", filename);
 		mTextureName = filename;
 		return true;
 	}
-	else {
-		std::cout << "Could not load texture file \"" << mTextureName.c_str() << "\".\n";
-		mTextureName.clear();
-	}
+
+	log->error("Could not load texture file '{}'", filename);;
 	return false;
 }
 
 void Sky::SkyLayer::SetTextureRepeats(float numRepeats)
 {
 	mRepeatsPerCircle = std::fmaxf(1, numRepeats);
-	//mTexture.setRepeated(numRepeats > 0);
 }
 
 void Sky::SkyLayer::EditorImGuiControls()

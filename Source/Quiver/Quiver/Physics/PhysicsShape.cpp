@@ -1,16 +1,20 @@
 #include "PhysicsShape.h"
-#include <iostream>
+
 #include <Box2D/Collision/Shapes/b2CircleShape.h>
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
+
+#include "Quiver/Misc/Logging.h"
 
 namespace qvr {
 
 nlohmann::json PhysicsShape::ToJson(const b2Shape& shape)
 {
+	auto log = GetConsoleLogger();
+
 	b2Shape::Type shapeType = shape.GetType();
 
 	if ((shapeType < 0) || (shapeType >= b2Shape::Type::e_typeCount)) {
-		std::cout << "Shape type is invalid." << std::endl;
+		log->error("Shape type is invalid.");
 		return {};
 	}
 
@@ -26,7 +30,7 @@ nlohmann::json PhysicsShape::ToJson(const b2Shape& shape)
 		break;
 	case b2Shape::Type::e_edge:
 		//shapeTypeString = "Edge"; // Can't make in WorldEditor, yet.
-		//std::cout << "We don't support Edge shapes yet!" << std::endl;
+		//log->error("We don't support Edge shapes yet!");
 		return {};
 		break;
 	case b2Shape::Type::e_polygon:
@@ -34,7 +38,7 @@ nlohmann::json PhysicsShape::ToJson(const b2Shape& shape)
 		break;
 	case b2Shape::Type::e_chain:
 		//shapeTypeString = "Chain"; // Can't make in WorldEditor, yet.
-		//std::cout << "We don't support Chain shapes yet!" << std::endl;
+		//log->error("We don't support Chain shapes yet!");
 		return {};
 		break;
 	default:
@@ -59,7 +63,7 @@ nlohmann::json PhysicsShape::ToJson(const b2Shape& shape)
 		int vertexCount = polygonShape.GetVertexCount();
 
 		if ((vertexCount < 3) || (vertexCount > b2_maxPolygonVertices)) {
-			std::cout << "Polygon shape vertex count invalid." << std::endl;
+			log->error("Polygon shape vertex count invalid.");
 			return {};
 		}
 
@@ -79,12 +83,14 @@ nlohmann::json PhysicsShape::ToJson(const b2Shape& shape)
 // Yes, that's a reference to a pointer.
 std::unique_ptr<b2Shape> PhysicsShape::FromJson(const nlohmann::json & j)
 {
+	auto log = GetConsoleLogger();
+
 	// How much validation should this function have in it?
 	// Should we assume that VerifyJson has already been run and
 	// not execute it here?
 
 	if (!VerifyJson(j)) {
-		std::cout << "JSON is not valid for a shape." << std::endl;
+		log->error("JSON is not valid for a shape.");
 		return nullptr;
 	}
 

@@ -7,14 +7,14 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Shader.hpp>
 #include <SFML/Graphics/Texture.hpp>
-#include <spdlog/spdlog.h>
 
 #include "Quiver/Entity/Entity.h"
+#include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
 #include "Quiver/Graphics/Camera3D.h"
 #include "Quiver/Graphics/ColourUtils.h"
 #include "Quiver/Graphics/Light.h"
 #include "Quiver/Graphics/TextureLibrary.h"
-#include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
+#include "Quiver/Misc/Logging.h"
 #include "Quiver/World/World.h"
 
 namespace
@@ -66,12 +66,14 @@ RenderComponent::RenderComponent(Entity& entity)
 
 RenderComponent::~RenderComponent()
 {
+	auto log = GetConsoleLogger();
+
 	if (mAnimatorId != AnimatorId::Invalid) {
 		if (GetEntity().GetWorld().GetAnimationSystem().RemoveAnimator(mAnimatorId)) {
-			std::cout << "RenderComponent::Destroy: Removed Animator #" << mAnimatorId << "\n";
+			log->debug("RenderComponent::Destroy: Removed Animator {}", mAnimatorId);
 		}
 		else {
-			std::cout << "RenderComponent::Destroy: RemoveAnimator(" << mAnimatorId << ") FAILED! \n";
+			log->error("RenderComponent::Destroy: RemoveAnimator({}) FAILED!", mAnimatorId);
 		}
 		mAnimatorId = AnimatorId::Invalid;
 	}
@@ -113,8 +115,6 @@ bool RenderComponent::ToJson(nlohmann::json & j) const
 
 			if (animSystem.GetAnimatorFrame(mAnimatorId) > 0) {
 				j["Animation"]["CurrentFrame"] = animSystem.GetAnimatorFrame(mAnimatorId);
-
-				std::cout << "j[\"Animation\"][\"CurrentFrame\"] == " << j["Animation"]["CurrentFrame"].get<unsigned>() << '\n';
 			}
 		}
 		else if (GetTexture())
@@ -128,6 +128,8 @@ bool RenderComponent::ToJson(nlohmann::json & j) const
 
 bool RenderComponent::FromJson(const nlohmann::json & j)
 {
+	auto log = GetConsoleLogger();
+
 	if (!VerifyJson(j)) {
 		return false;
 	}
@@ -174,7 +176,7 @@ bool RenderComponent::FromJson(const nlohmann::json & j)
 			}
 		}
 		else {
-			std::cout << "Texture field must be a filename (string)." << std::endl;
+			log->error("Texture field must be a filename (string).");
 		}
 
 		if (FieldExistsInJson("TextureRect", j))
@@ -196,8 +198,6 @@ bool RenderComponent::FromJson(const nlohmann::json & j)
 					if (FieldExistsInJson("CurrentFrame", j["Animation"])) {
 						const unsigned currentFrame = j["Animation"]["CurrentFrame"].get<unsigned>();
 
-						std::cout << "j[\"Animation\"][\"CurrentFrame\"] == " << currentFrame << "\n";
-
 						animSystem.SetAnimatorFrame(mAnimatorId, currentFrame);
 					}
 				}
@@ -212,33 +212,27 @@ bool RenderComponent::FromJson(const nlohmann::json & j)
 
 bool RenderComponent::VerifyJson(const nlohmann::json & j)
 {
+	auto log = GetConsoleLogger();
+
 	if (j.empty()) {
-		std::cout << "JSON object is empty!" << std::endl;
+		log->error("JSON object is empty!");
 		return false;
 	}
 
-	auto VerifyFieldIsPresent = [](std::string name, const nlohmann::json & j) -> bool {
-		if (j.find(name) != j.end()) {
-			return true;
-		}
-		std::cout << name << " field missing!" << std::endl;
-		return false;
-	};
-
-	if (j.count("Height") && !j["Height"].is_number())       return false;
+	if (j.count("Height")       && !j["Height"].is_number())       return false;
 	if (j.count("GroundOffset") && !j["GroundOffset"].is_number()) return false;
 
 	if (j.count("Colour") && !ColourUtils::VerifyColourJson(j["Colour"])) return false;
 	
 	if (j.find("Texture") != j.end()) {
 		if (!j["Texture"].is_string()) {
-			std::cout << "Texture field must be a filename (string)." << std::endl;
+			log->error("Texture field must be a filename (string).");
 		}
 	}
 
 	if (j.find("SpriteRadius") != j.end()) {
 		if (!j["SpriteRadius"].is_number()) {
-			std::cout << "SpriteRadius field must be a number." << std::endl;
+			log->error("SpriteRadius field must be a number.");
 		}
 	}
 
@@ -343,6 +337,8 @@ void RenderComponent::SetDetached(const bool detached)
 
 void RenderComponent::SetSpriteRadius(const float spriteRadius) 
 {
+	auto log = GetConsoleLogger();
+
 	mFixtureRenderData->mSpriteRadius = spriteRadius;
 
 	if (IsDetached())
@@ -357,7 +353,7 @@ void RenderComponent::SetSpriteRadius(const float spriteRadius)
 		b2Fixture* newFixture = CreateFlatSpriteFixture(mDetachedBody.get(), GetSpriteRadius());
 		newFixture->SetUserData(mFixtureRenderData.get());
 
-		std::cout << "RenderComponent::SetSpriteRadius: Recreated fixture for flat sprite.\n";
+		log->debug("RenderComponent::SetSpriteRadius: Recreated fixture for flat sprite.");
 	}
 }
 
@@ -402,10 +398,12 @@ bool RenderComponent::SetAnimation(const AnimationId animationId)
 
 bool RenderComponent::SetAnimation(const AnimationId animationId, AnimatorRepeatSetting repeatSetting)
 {
+	auto log = GetConsoleLogger();
+
 	AnimationSystem& animationSystem = GetAnimationSystem(*this);
 
 	if (!animationSystem.GetAnimations().Contains(animationId)) {
-		std::cout << "There is no Animation with ID " << animationId << "!\n";
+		log->error("There is no Animation with ID {}", animationId);
 		return false;
 	}
 
@@ -419,7 +417,7 @@ bool RenderComponent::SetAnimation(const AnimationId animationId, AnimatorRepeat
 			mAnimatorId,
 			AnimatorStartSetting(animationId, repeatSetting)))
 		{
-			std::cout << "AnimationSystem::SetAnimatorAnimation failed!\n";
+			log->error("AnimationSystem::SetAnimatorAnimation failed!");
 			return false;
 		}
 	}
@@ -429,7 +427,7 @@ bool RenderComponent::SetAnimation(const AnimationId animationId, AnimatorRepeat
 			AnimatorStartSetting(animationId, repeatSetting));
 
 		if (mAnimatorId == AnimatorId::Invalid) {
-			std::cout << "AnimationSystem::AddAnimator failed!\n";
+			log->error("AnimationSystem::AddAnimator failed!");
 			return false;
 		}
 	}
@@ -438,14 +436,14 @@ bool RenderComponent::SetAnimation(const AnimationId animationId, AnimatorRepeat
 		// The old animation did not have impostor frames, but the new one does.
 		// Register with the thing.
 		if (!GetEntity().GetWorld().RegisterAnimatorWithAltViews(*this)) {
-			std::cout << "RegisterAnimatorWithAltViews failed!" << std::endl;
+			log->error("RegisterAnimatorWithAltViews failed!");
 		}
 	}
 	else if (hadImpostors) {
 		// The old animation had impostor frames, but the new one doesn't.
 		// Unregister from the thing.
 		if (!GetEntity().GetWorld().UnregisterAnimatorWithAltViews(*this)) {
-			std::cout << "UnregisterAnimatorWithAltViews failed!" << std::endl;
+			log->error("UnregisterAnimatorWithAltViews failed!");
 		}
 	}
 

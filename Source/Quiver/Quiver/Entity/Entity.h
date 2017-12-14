@@ -35,7 +35,7 @@ public:
 		const nlohmann::json & j, 
 		const CustomComponentTypeLibrary& customComponentTypes);
 
-	void SetInput(std::unique_ptr<CustomComponent> newInput);
+	void AddCustomComponent(std::unique_ptr<CustomComponent> newInput);
 
 	void AddGraphics();                                          // Add a RenderComponent.
 	void AddGraphics(const nlohmann::json& renderComponentJson); // Add a RenderComponent from JSON.

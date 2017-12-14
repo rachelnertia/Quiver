@@ -307,7 +307,7 @@ Entity* Crossbow::MakeProjectile(
 
 	// Set up CustomComponent
 	{
-		projectile->SetInput(std::make_unique<CrossbowBolt>(*projectile));
+		projectile->AddCustomComponent(std::make_unique<CrossbowBolt>(*projectile));
 	}
 
 	return projectile;

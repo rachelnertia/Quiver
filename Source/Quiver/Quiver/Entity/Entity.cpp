@@ -143,7 +143,7 @@ std::unique_ptr<Entity> Entity::FromJson(World& world, const nlohmann::json & j)
 
 	if (j.count("CustomComponent") > 0)
 	{
-		entity->SetInput(
+		entity->AddCustomComponent(
 			world.GetCustomComponentTypes().CreateInstance(*entity.get(), j["CustomComponent"]));
 	}
 
@@ -190,7 +190,7 @@ bool Entity::VerifyJson(
 	return true;
 }
 
-void Entity::SetInput(std::unique_ptr<CustomComponent> newCustomComponent)
+void Entity::AddCustomComponent(std::unique_ptr<CustomComponent> newCustomComponent)
 {
 	mCustomComponent.reset(newCustomComponent.release());
 }

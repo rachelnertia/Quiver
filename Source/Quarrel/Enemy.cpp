@@ -223,7 +223,7 @@ Entity* MakeProjectile(
 	}
 
 	// Set up CustomComponent
-	projectile->SetInput(std::make_unique<EnemyProjectile>(*projectile));
+	projectile->AddCustomComponent(std::make_unique<EnemyProjectile>(*projectile));
 
 	return projectile;
 }
@@ -302,8 +302,8 @@ void Enemy::OnStep(float timestep)
 		log->debug("{} Dying - received {}/{} damage", logCtx, m_Damage, MaxDamage);
 		SetAnimation(m_DieAnim, AnimatorRepeatSetting::Never);
 		// Remove the CustomComponent, but not the Entity.
-		GetEntity().SetInput(nullptr);
-		// It's super important that this method immediately return after SetInput!
+		GetEntity().AddCustomComponent(nullptr);
+		// It's super important that this method immediately return after AddCustomComponent!
 		return;
 	}
 

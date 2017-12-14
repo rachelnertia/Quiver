@@ -145,7 +145,7 @@ void Player::OnStep(float deltaSeconds)
 	if (mDamage >= 100.0f) {
 		log->debug("{} Oh no! I've taken too much damage!", logCtx);
 		
-		GetEntity().SetInput(std::make_unique<DeadPlayer>(GetEntity(), *this));
+		GetEntity().AddCustomComponent(std::make_unique<DeadPlayer>(GetEntity(), *this));
 
 		// Super important to return here!
 		return;

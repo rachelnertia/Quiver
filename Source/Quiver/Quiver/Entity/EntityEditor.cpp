@@ -141,7 +141,7 @@ void EntityEditor::GuiControls() {
 			ImGui::Separator();
 
 			if (ImGui::Button("Remove Custom Component")) {
-				m_Entity.SetInput(nullptr); // SetInput handles deletion.
+				m_Entity.AddCustomComponent(nullptr); // AddCustomComponent handles deletion.
 			}
 			else {
 				// Display controls
@@ -180,7 +180,7 @@ void EntityEditor::GuiControls() {
 				(void*)&typeNames,
 				(int)typeNames.size()))
 			{
-				m_Entity.SetInput(
+				m_Entity.AddCustomComponent(
 					m_Entity.GetWorld().GetCustomComponentTypes().GetType(typeNames[selection])
 					->CreateInstance(m_Entity));
 			}

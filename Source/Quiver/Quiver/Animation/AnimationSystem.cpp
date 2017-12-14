@@ -13,6 +13,7 @@
 #include "Quiver/Animation/AnimationLibraryGui.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
 #include "Quiver/Misc/JsonHelpers.h"
+#include "Quiver/Misc/Logging.h"
 
 namespace qvr {
 
@@ -371,7 +372,8 @@ AnimationId AddAnimationFromJson(
 	const nlohmann::json& j, 
 	const AnimationSourceInfo& sourceInfo)
 {
-	static const char* logCtx = "AddAnimationFromJson: ";
+	auto log = GetConsoleLogger();
+	static const char* logCtx = "AddAnimationFromJson:";
 
 	// TODO: Restructure for early-out.
 
@@ -379,22 +381,30 @@ AnimationId AddAnimationFromJson(
 		if ((*anim).IsValid()) {
 			auto ret = animSystem.AddAnimation(*anim, sourceInfo);
 			if (ret != AnimationId::Invalid) {
-				std::cout << logCtx << "Successfully added animation from JSON to the system with ID " <<
-					ret.GetValue() << ".\n";
+				log->debug(
+					"{} Successfully added animation from JSON to the system with ID {}",
+					logCtx,
+					ret);
 				return GenerateAnimationId(*anim);
 			}
 			else {
-				std::cout << logCtx << "Could not add animation data from JSON to the system.\n";
+				log->error(
+					"{} Could not add animation data from JSON to the system",
+					logCtx);
 				return AnimationId::Invalid;
 			}
 		}
 		else {
-			std::cout << logCtx << "Animation data from JSON is not valid.\n";
+			log->error(
+				"{} Animation data from JSON is not valid",
+				logCtx);
 			return AnimationId::Invalid;
 		}
 	}
 	else {
-		std::cout << logCtx << "Could not deserialize animation from JSON.\n";
+		log->error(
+			"{} Could not deserialize animation from JSON",
+			logCtx);
 		return AnimationId::Invalid;
 	}
 }

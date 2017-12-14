@@ -14,15 +14,15 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 
+#include "Quiver/Application/WorldEditor/WorldEditor.h"
 #include "Quiver/Entity/Entity.h"
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
 #include "Quiver/Entity/RenderComponent/RenderComponent.h"
 #include "Quiver/Graphics/Camera2D.h"
 #include "Quiver/Graphics/Camera3D.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
+#include "Quiver/Misc/Logging.h"
 #include "Quiver/World/World.h"
-
-#include "WorldEditor.h"
 
 namespace {
 
@@ -65,9 +65,11 @@ namespace qvr {
 
 void SelectTool::OnMouseClick(WorldEditor & editor, const Camera2D& camera, const sf::Event::MouseButtonEvent & mouseInfo)
 {
+	auto log = GetConsoleLogger();
+
 	b2Vec2 clickPos = camera.ScreenToWorld(b2Vec2((float)mouseInfo.x, (float)mouseInfo.y));
 
-	std::cout << "LMB clicked at (" << clickPos.x << ", " << clickPos.y << "). ";
+	log->info("LMB clicked at ({}, {}).", clickPos.x, clickPos.y);
 
 	const b2Fixture* foundFixture = GetFixtureAtPoint(*editor.GetWorld()->GetPhysicsWorld(), clickPos);
 
@@ -79,19 +81,17 @@ void SelectTool::OnMouseClick(WorldEditor & editor, const Camera2D& camera, cons
 			PhysicsComponent* physicsComponent = (PhysicsComponent*)bodyUserData;
 			editor.SetCurrentSelection(&physicsComponent->GetEntity());
 
-			std::cout << "Selected an Entity. " << std::endl;
+			log->info("Selected an Entity.");
 
 			return;
 		}
 	}
 
-	std::cout << "Found nothing. ";
+	log->info("Found nothing.");
+	
 	if (editor.GetCurrentSelection()) {
 		editor.SetCurrentSelection(nullptr);
-		std::cout << "Deselected an Entity. " << std::endl;
-	}
-	else {
-		std::cout << '\n';
+		log->info("Deselected an Entity.");
 	}
 }
 
@@ -148,15 +148,17 @@ void SelectTool::OnMouseClick3D(WorldEditor & editor,
 
 void CopySelectedEntityTool::OnMouseClick(WorldEditor & editor, const Camera2D & camera, const sf::Event::MouseButtonEvent & mouseInfo)
 {
+	auto log = GetConsoleLogger();
+
 	if (editor.GetCurrentSelection() == nullptr) {
-		std::cout << "No Entity is selected.\n";
+		log->info("No Entity is selected.");
 		return;
 	}
 
 	b2Vec2 clickPos = camera.ScreenToWorld(b2Vec2((float)mouseInfo.x, (float)mouseInfo.y));
 
-	std::cout << "LMB clicked at (" << clickPos.x << ", " << clickPos.y << "). \n";
-	std::cout << "Copying Entity " << std::hex << editor.GetCurrentSelection() << '\n';
+	log->info("LMB clicked at ({}, {}).", clickPos.x, clickPos.y);
+	log->info("Copying Entity {X}", (void*)editor.GetCurrentSelection());
 
 	const nlohmann::json j = editor.GetCurrentSelection()->ToJson();
 
@@ -168,15 +170,15 @@ void CopySelectedEntityTool::OnMouseClick(WorldEditor & editor, const Camera2D &
 	const b2Transform t(clickPos, camera.mTransform.q);
 	entity->GetPhysics()->GetBody().SetTransform(t.p, t.q.GetAngle());
 
-	std::cout << "New Entity: " << std::hex << entity.get() << '\n';
+	log->info("New Entity: {X}", (void*)entity.get());
 
 	if (editor.GetWorld()->AddEntity(std::move(entity)))
 	{
-		std::cout << "Added Entity to World.\n";
+		log->debug("Added new Entity to the World.");
 	}
 	else
 	{
-		std::cout << "Failed to add Entity to World.\n";
+		log->error("Failed to add Entity to World.");
 	}
 }
 
@@ -402,10 +404,12 @@ void CreateInstanceOfPrefabTool::DoGui(WorldEditor& editor)
 
 void CreateInstanceOfPrefabTool::OnMouseClick(WorldEditor & editor, const Camera2D& camera, const sf::Event::MouseButtonEvent & mouseInfo)
 {
-	constexpr const char* logContext = "CreateInstanceOfPrefabTool::OnMouseClick: ";
+	auto log = GetConsoleLogger();
+
+	constexpr const char* logContext = "CreateInstanceOfPrefabTool::OnMouseClick:";
 
 	if (mCurrentPrefabIndex < 0) {
-		std::cout << logContext << "No Prefab is selected.\n";
+		log->info("{} No Prefab is selected.", logContext);
 	}
 
 	const auto prefabs = editor.GetWorld()->mEntityPrefabs;
@@ -413,14 +417,14 @@ void CreateInstanceOfPrefabTool::OnMouseClick(WorldEditor & editor, const Camera
 	const auto prefab = prefabs.GetPrefab(mCurrentPrefabName);
 
 	if (!prefab) {
-		std::cout << logContext << "Selected Prefab is not real, or something.\n";
+		log->error("{} Selected Prefab is not real, or something.");
 		mCurrentPrefabIndex = -1;
 		mCurrentPrefabName.clear();
 		return;
 	}
 
 	if (!Entity::VerifyJson(*prefab, editor.GetWorld()->GetCustomComponentTypes())) {
-		std::cout << logContext << "Prefab JSON is not valid.\n";
+		log->error("{} Prefab JSON is not valid.");
 		return;
 	}
 
@@ -433,13 +437,13 @@ void CreateInstanceOfPrefabTool::OnMouseClick(WorldEditor & editor, const Camera
 		Entity* entity = editor.GetWorld()->CreateEntity(*prefab, &transform);
 
 		if (entity == nullptr) {
-			std::cout << logContext << "Failed to instantiate Prefab \"" << mCurrentPrefabName << "\".\n";
+			log->error("{} Failed to instantiate Prefab {}.", logContext, mCurrentPrefabName);
 			return;
 		}
 
 		entity->SetPrefab(mCurrentPrefabName);
 
-		std::cout << logContext << "Successfully instantiated Prefab \"" << mCurrentPrefabName << "\".\n";
+		log->info("{} Successfully instantiated Prefab {}.", logContext, mCurrentPrefabName);
 	}
 }
 
@@ -509,7 +513,8 @@ void CreatePolygonTool::OnMouseClick(WorldEditor & editor, const Camera2D & came
 		else {
 			// Place a new vertex or select an existing one.
 			{
-				const float radius = RadiusMetres; // TODO: This probably ought to scale based on how zoomed out the camera is.
+				// TODO: This probably ought to scale based on how zoomed out the camera is.
+				const float radius = RadiusMetres; 
 				mGrabbedVertex = GetIndexOfClosestPoint(mVertices, worldPos, radius);
 			}
 			if (!mGrabbedVertex) {

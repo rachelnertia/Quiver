@@ -5,6 +5,8 @@
 #include <ImGui/imgui-SFML.h>
 #include <spdlog/fmt/fmt.h>
 
+#include "Quiver/Misc/Logging.h"
+
 namespace qvr {
 
 using namespace std::literals::chrono_literals;
@@ -135,6 +137,8 @@ Rect EditRect(Animation::Rect rect) {
 }
 
 void AnimationEditor::ProcessGui() {
+	auto log = GetConsoleLogger();
+
 	ImGui::Begin("Animation Editor", &mIsOpen);
 
 	if (ImGui::CollapsingHeader("Texture")) {
@@ -197,9 +201,11 @@ void AnimationEditor::ProcessGui() {
 					std::ofstream file(mAnimationCollectionFilename);
 					if (file.is_open()) {
 						file << j.dump(4);
-						std::cout << "AnimationEditor: Saved collection of "
-							<< mAnimationCollection.size() << " animations to \""
-							<< mAnimationCollectionFilename << "\".\n";
+
+						log->info(
+							"AnimationEditor: Saved animation collection of size {} to {}",
+							mAnimationCollection.size(),
+							mAnimationCollectionFilename);
 					}
 				}
 			}
@@ -235,7 +241,7 @@ void AnimationEditor::ProcessGui() {
 					}
 				}
 				else {
-					std::cout << "AnimationEditor: Failed to load \"" << mAnimationToLoadFilename << "\".\n";
+					log->error("AnimationEditor: Failed to load '{}'", mAnimationToLoadFilename);
 				}
 			}
 
@@ -265,12 +271,14 @@ void AnimationEditor::ProcessGui() {
 								count++;
 							}
 							else {
-								std::cout << "AnimationEditor: Failed to load \"" << name << "\".\n";
+								log->error("AnimationEditor: Failed to load '{}'", name);
 							}
 						}
 
-						std::cout << "AnimationEditor: Loaded " << count << " animations into collection from \""
-							<< mAnimationCollectionFilename << "\".\n";
+						log->info(
+							"AnimationEditor: Loaded {} animations into collection from '{}'",
+							count, 
+							mAnimationCollectionFilename);
 					}
 				}
 			}
@@ -426,8 +434,9 @@ void AnimationEditor::ProcessGui() {
 				for (auto& entry : mAnimationCollection) {
 					if (entry.first == mCurrentAnimName) {
 						entry = std::make_pair(mCurrentAnimName, mCurrentAnim);
-						std::cout << "AnimationEditor: Overwrote AnimationData in collection under the name \""
-							<< mCurrentAnimName << "\".\n";
+						log->info(
+							"AnimationEditor: Overwrote AnimationData in collection under the name '{}'", 
+							mCurrentAnimName);
 						found = true;
 						break;
 					}
@@ -435,8 +444,7 @@ void AnimationEditor::ProcessGui() {
 
 				if (!found) {
 					mAnimationCollection.push_back(make_pair(mCurrentAnimName, mCurrentAnim));
-					std::cout << "AnimationEditor: Added AnimationData to collection under the name \""
-						<< mCurrentAnimName << "\".\n";
+					log->info("AnimationEditor: Added AnimationData to collection under the name '{}'", mCurrentAnimName);
 				}
 			}
 
@@ -445,15 +453,15 @@ void AnimationEditor::ProcessGui() {
 					const nlohmann::json j = mCurrentAnim.ToJson();
 					std::ofstream file(mCurrentAnimName);
 					if (!file.is_open()) {
-						std::cout << "AnimationEditor: File \"" << mCurrentAnimName << " is already open\"\n";
+						log->error("AnimationEditor: File '{}' is already open", mCurrentAnimName);
 					}
 					else {
 						file << j.dump(4);
-						std::cout << "AnimationEditor: Saved current animation to \"" << mCurrentAnimName << "\"\n";
+						log->error("AnimationEditor: Saved current animation to '{}'", mCurrentAnimName);
 					}
 				}
 				else {
-					std::cout << "AnimationEditor: Cannot save to file without a name!\n";
+					log->error("AnimationEditor: Cannot save to file without a name");
 				}
 			}
 

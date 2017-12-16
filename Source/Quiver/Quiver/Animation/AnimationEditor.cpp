@@ -474,27 +474,27 @@ void AnimationEditor::ProcessGui() {
 	if (ImGui::CollapsingHeader("Preview")) {
 		if (ImGui::Button("Update Preview")) {
 			if (mCurrentAnimationId != AnimationId::Invalid && 
-				mAnimationSystem.GetAnimations().Contains(mCurrentAnimationId)) 
+				mAnimators.GetAnimations().Contains(mCurrentAnimationId)) 
 			{
-				mAnimationSystem.RemoveAnimation(mCurrentAnimationId);
+				mAnimators.RemoveAnimation(mCurrentAnimationId);
 			}
 			
-			mCurrentAnimationId = mAnimationSystem.AddAnimation(mCurrentAnim);
+			mCurrentAnimationId = mAnimators.AddAnimation(mCurrentAnim);
 			
 			if (mCurrentAnimationId != AnimationId::Invalid) 
 			{
-				mAnimatorId = mAnimationSystem.AddAnimator(mAnimationPreviewRect, mCurrentAnimationId);
+				mAnimatorId = mAnimators.AddAnimator(mAnimationPreviewRect, mCurrentAnimationId);
 			}
 		}
 
 		ImGui::SliderFloat("Playback Speed Multiplier", &mAnimationPlaybackSpeedMultiplier, 0.1f, 5.0f);
 
 		if (ImGui::SliderAngle("View Angle", &mAnimationPreviewViewAngle, 0, 360.0f)) {
-			mAnimationSystem.UpdateAnimatorAltView(mAnimatorId, mAnimationPreviewObjectAngle, mAnimationPreviewViewAngle);
+			mAnimators.UpdateAnimatorAltView(mAnimatorId, mAnimationPreviewObjectAngle, mAnimationPreviewViewAngle);
 		}
 
 		if (ImGui::SliderAngle("Object Angle", &mAnimationPreviewObjectAngle, 0, 360.0f)) {
-			mAnimationSystem.UpdateAnimatorAltView(mAnimatorId, mAnimationPreviewObjectAngle, mAnimationPreviewViewAngle);
+			mAnimators.UpdateAnimatorAltView(mAnimatorId, mAnimationPreviewObjectAngle, mAnimationPreviewViewAngle);
 		}
 
 		PutFrame(mTexture, mAnimationPreviewRect.rect);
@@ -513,7 +513,7 @@ void AnimationEditor::Update(const float dt) {
 	const auto timestep = 1.0f / 60.0f;
 
 	if (mTimeCounter >= timestep) {
-		mAnimationSystem.Animate(AnimationSystem::TimeUnit(int(timestep * 1000)));
+		mAnimators.Animate(AnimatorCollection::TimeUnit(int(timestep * 1000)));
 		mTimeCounter = 0.0f;
 	}
 }

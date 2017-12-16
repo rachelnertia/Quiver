@@ -5,7 +5,7 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
-#include "Quiver/Animation/AnimationSystem.h"
+#include "Quiver/Animation/Animators.h"
 
 namespace qvr
 {

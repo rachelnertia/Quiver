@@ -394,7 +394,7 @@ void Enemy::OnStep(float timestep)
 			{
 				m_Awake = true;
 				
-				const AnimationSystem& animSystem = GetEntity().GetWorld().GetAnimationSystem();
+				const AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
 				const AnimatorId animator = GetEntity().GetGraphics()->GetAnimatorId();
 				if ((!animSystem.AnimatorExists(animator)) ||
 					(animSystem.GetAnimatorAnimation(animator) != m_AwakeAnim))
@@ -422,7 +422,7 @@ bool Enemy::CanShoot() const
 {
 	{
 		// Prevent shooting while playing the awakening anim.
-		const AnimationSystem& animSystem = GetEntity().GetWorld().GetAnimationSystem();
+		const AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
 		const AnimatorId animator = GetEntity().GetGraphics()->GetAnimatorId();
 		if (animSystem.AnimatorExists(animator) &&
 			animSystem.GetAnimatorAnimation(animator) == m_AwakeAnim)
@@ -483,7 +483,7 @@ void Enemy::SetAnimation(std::initializer_list<AnimatorStartSetting> animChain)
 
 	for (auto it = animChain.begin() + 1; it != animChain.end(); ++it)
 	{
-		if (!GetEntity().GetWorld().GetAnimationSystem().QueueAnimation(animator, *it)) {
+		if (!GetEntity().GetWorld().GetAnimators().QueueAnimation(animator, *it)) {
 			log->warn("{} Couldn't queue Animation {}", logCtx, it->m_AnimationId);
 			continue;
 		}
@@ -514,7 +514,7 @@ b2Vec2 Enemy::GetDirection() const
 optional<AnimationId> PickAnimationGui(
 	const char* title, 
 	const AnimationId currentAnim, 
-	const AnimationSystem& animationSystem)
+	const AnimatorCollection& animators)
 {
 	if (ImGui::CollapsingHeader(title))
 	{
@@ -522,7 +522,7 @@ optional<AnimationId> PickAnimationGui(
 
 		if (currentAnim != AnimationId::Invalid)
 		{
-			if (auto animSourceInfo = animationSystem.GetAnimations().GetSourceInfo(currentAnim))
+			if (auto animSourceInfo = animators.GetAnimations().GetSourceInfo(currentAnim))
 			{
 				ImGui::Text("Animation ID: %d", currentAnim.GetValue());
 				ImGui::Text("Animation Data Source:");
@@ -538,7 +538,7 @@ optional<AnimationId> PickAnimationGui(
 		else
 		{
 			int selection = -1;
-			return PickAnimation(animationSystem.GetAnimations(), selection);
+			return PickAnimation(animators.GetAnimations(), selection);
 		}
 	}
 
@@ -547,7 +547,7 @@ optional<AnimationId> PickAnimationGui(
 
 void Enemy::GUIControls()
 {
-	AnimationSystem& animSystem = GetEntity().GetWorld().GetAnimationSystem();
+	AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
 
 	if (const auto animationId = PickAnimationGui("Run Animation", m_RunAnim, animSystem))
 	{
@@ -580,7 +580,7 @@ bool Enemy::VerifyJson(const json& j)
 	return true;
 }
 
-json AnimationToJson(const AnimationSystem& animationSystem, const AnimationId animationId)
+json AnimationToJson(const AnimatorCollection& animators, const AnimationId animationId)
 {
 	if (animationId == AnimationId::Invalid) return {};
 	
@@ -589,13 +589,13 @@ json AnimationToJson(const AnimationSystem& animationSystem, const AnimationId a
 
 	const std::string logCtx = fmt::format("AnimationToJson({}):", animationId);
 
-	if (!animationSystem.GetAnimations().Contains(animationId))
+	if (!animators.GetAnimations().Contains(animationId))
 	{
 		log->error("{} Animation does not exist", logCtx);
 		return {};
 	}
 
-	const auto animSource = animationSystem.GetAnimations().GetSourceInfo(animationId);
+	const auto animSource = animators.GetAnimations().GetSourceInfo(animationId);
 	
 	if (!animSource)
 	{
@@ -608,16 +608,16 @@ json AnimationToJson(const AnimationSystem& animationSystem, const AnimationId a
 	return j;
 }
 
-AnimationId AnimationFromJson(const AnimationSystem& animationSystem, const nlohmann::json& j)
+AnimationId AnimationFromJson(const AnimatorCollection& animators, const nlohmann::json& j)
 {
 	AnimationSourceInfo animSource = j;
 
-	return animationSystem.GetAnimations().GetAnimation(animSource);
+	return animators.GetAnimations().GetAnimation(animSource);
 }
 
 json Enemy::ToJson() const
 {
-	const AnimationSystem& animSystem = GetEntity().GetWorld().GetAnimationSystem();
+	const AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
 
 	json j;
 
@@ -632,7 +632,7 @@ json Enemy::ToJson() const
 
 bool Enemy::FromJson(const nlohmann::json& j)
 {
-	AnimationSystem& animSystem = GetEntity().GetWorld().GetAnimationSystem();
+	AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
 
 	m_RunAnim = AnimationFromJson(animSystem, j.value<json>("RunAnim", {}));
 	m_ShootAnim = AnimationFromJson(animSystem, j.value<json>("ShootAnim", {}));

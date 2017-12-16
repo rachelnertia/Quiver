@@ -1,4 +1,4 @@
-#include "AnimationSystem.h"
+#include "Animators.h"
 
 #include <fstream>
 #include <iostream>
@@ -24,7 +24,7 @@ const AnimatorRepeatSetting AnimatorRepeatSetting::Never = AnimatorRepeatSetting
 const AnimatorRepeatSetting AnimatorRepeatSetting::Once = AnimatorRepeatSetting(1);
 const AnimatorRepeatSetting AnimatorRepeatSetting::Twice = AnimatorRepeatSetting(2);
 
-bool AnimationSystem::FromJson(const nlohmann::json & j)
+bool AnimatorCollection::FromJson(const nlohmann::json & j)
 {
 	animations = j;
 
@@ -32,27 +32,27 @@ bool AnimationSystem::FromJson(const nlohmann::json & j)
 }
 
 // Store the source info of every Animation currently in the System so that we can reload later.
-nlohmann::json AnimationSystem::ToJson() const
+nlohmann::json AnimatorCollection::ToJson() const
 {
 	return qvr::ToJson(animations);
 }
 
-AnimationId AnimationSystem::AddAnimation(const AnimationData & anim) 
+AnimationId AnimatorCollection::AddAnimation(const AnimationData & anim) 
 {
 	return animations.Add(anim);
 }
 
-AnimationId AnimationSystem::AddAnimation(const AnimationData& data, const AnimationSourceInfo& sourceInfo)
+AnimationId AnimatorCollection::AddAnimation(const AnimationData& data, const AnimationSourceInfo& sourceInfo)
 {
 	return animations.Add(data, sourceInfo);
 }
 
-bool AnimationSystem::RemoveAnimation(const AnimationId id)
+bool AnimatorCollection::RemoveAnimation(const AnimationId id)
 {
 	auto log = spdlog::get("console");
 	assert(log);
 
-	std::string logCtx = fmt::format("AnimationSystem::RemoveAnimation({}): ", id);
+	std::string logCtx = fmt::format("AnimatorCollection::RemoveAnimation({}): ", id);
 
 	// Animators that reference this Animation are now invalid, so we need to delete them.
 	{
@@ -77,13 +77,13 @@ bool AnimationSystem::RemoveAnimation(const AnimationId id)
 	return animations.Remove(id);
 }
 
-AnimatorId AnimationSystem::Animators::GetNextAnimatorId() {
+AnimatorId AnimatorCollection::Animators::GetNextAnimatorId() {
 	lastId = AnimatorId(lastId.GetValue() + 1);
 	// TODO: Check for lastId == Invalid and increment if so.
 	return lastId;
 }
 
-AnimatorId AnimationSystem::AddAnimator(
+AnimatorId AnimatorCollection::AddAnimator(
 	AnimatorTarget & target,
 	const AnimatorStartSetting& startSetting)
 {
@@ -116,7 +116,7 @@ AnimatorId AnimationSystem::AddAnimator(
 	return newAnimatorId;
 }
 
-bool AnimationSystem::RemoveAnimator(const AnimatorId id)
+bool AnimatorCollection::RemoveAnimator(const AnimatorId id)
 {
 	assert(id != AnimatorId::Invalid);
 
@@ -149,7 +149,7 @@ bool AnimationSystem::RemoveAnimator(const AnimatorId id)
 	return true;
 }
 
-void AnimationSystem::AnimatorGui(const AnimatorId id)
+void AnimatorCollection::AnimatorGui(const AnimatorId id)
 {
 	if (!AnimatorExists(id)) {
 		ImGui::Text("Animator #%u does not exist", id);
@@ -169,7 +169,7 @@ void AnimationSystem::AnimatorGui(const AnimatorId id)
 	}
 }
 
-bool AnimationSystem::ClearAnimationQueue(const AnimatorId id)
+bool AnimatorCollection::ClearAnimationQueue(const AnimatorId id)
 {
 	if (!AnimatorExists(id)) return false;
 
@@ -180,7 +180,7 @@ bool AnimationSystem::ClearAnimationQueue(const AnimatorId id)
 	return true;
 }
 
-bool AnimationSystem::SetAnimatorAnimation(const AnimatorId animatorId, const AnimatorStartSetting& startSetting, const bool clearQueue)
+bool AnimatorCollection::SetAnimatorAnimation(const AnimatorId animatorId, const AnimatorStartSetting& startSetting, const bool clearQueue)
 {
 	if (!AnimatorExists(animatorId)) return false;
 	if (!animations.Contains(startSetting.m_AnimationId)) return false;
@@ -218,7 +218,7 @@ bool AnimationSystem::SetAnimatorAnimation(const AnimatorId animatorId, const An
 	return true;
 }
 
-bool AnimationSystem::SetAnimatorTarget(const AnimatorId id, AnimatorTarget & newTarget)
+bool AnimatorCollection::SetAnimatorTarget(const AnimatorId id, AnimatorTarget & newTarget)
 {
 	if (!AnimatorExists(id)) return false;
 
@@ -229,12 +229,12 @@ bool AnimationSystem::SetAnimatorTarget(const AnimatorId id, AnimatorTarget & ne
 	return true;
 }
 
-bool AnimationSystem::QueueAnimation(const AnimatorId id, const AnimatorStartSetting& pendingAnimation)
+bool AnimatorCollection::QueueAnimation(const AnimatorId id, const AnimatorStartSetting& pendingAnimation)
 {
 	auto log = spdlog::get("console");
 	assert(log);
 
-	const auto logCtx = "AnimationSystem::QueueAnimation:";
+	const auto logCtx = "AnimatorCollection::QueueAnimation:";
 
 	if (!AnimatorExists(id)) {
 		log->error("{} Animator {} does not exist.", logCtx, id);
@@ -247,19 +247,19 @@ bool AnimationSystem::QueueAnimation(const AnimatorId id, const AnimatorStartSet
 	return true;
 }
 
-AnimationId AnimationSystem::GetAnimatorAnimation(const AnimatorId animatorId) const
+AnimationId AnimatorCollection::GetAnimatorAnimation(const AnimatorId animatorId) const
 {
 	assert(AnimatorExists(animatorId));
 	return animators.states.at(animatorId).currentAnimation;
 }
 
-unsigned AnimationSystem::GetAnimatorFrame(const AnimatorId animatorId) const
+unsigned AnimatorCollection::GetAnimatorFrame(const AnimatorId animatorId) const
 {
 	assert(AnimatorExists(animatorId));
 	return animators.states.at(animatorId).currentFrame;
 }
 
-bool AnimationSystem::SetAnimatorFrame(
+bool AnimatorCollection::SetAnimatorFrame(
 	const AnimatorId id,
 	const int frameIndex)
 {
@@ -288,7 +288,7 @@ bool AnimationSystem::SetAnimatorFrame(
 
 using namespace std::chrono_literals;
 
-void AnimationSystem::Animate(const AnimationSystem::TimeUnit ms) {
+void AnimatorCollection::Animate(const AnimatorCollection::TimeUnit ms) {
 	// because this system doesn't support rewinding.
 	assert(ms >= TimeUnit::zero());
 
@@ -367,49 +367,7 @@ void AnimationSystem::Animate(const AnimationSystem::TimeUnit ms) {
 	}
 }
 
-AnimationId AddAnimationFromJson(
-	AnimationSystem& animSystem, 
-	const nlohmann::json& j, 
-	const AnimationSourceInfo& sourceInfo)
-{
-	auto log = GetConsoleLogger();
-	static const char* logCtx = "AddAnimationFromJson:";
-
-	// TODO: Restructure for early-out.
-
-	if (const auto anim = AnimationData::FromJson(j)) {
-		if ((*anim).IsValid()) {
-			auto ret = animSystem.AddAnimation(*anim, sourceInfo);
-			if (ret != AnimationId::Invalid) {
-				log->debug(
-					"{} Successfully added animation from JSON to the system with ID {}",
-					logCtx,
-					ret);
-				return GenerateAnimationId(*anim);
-			}
-			else {
-				log->error(
-					"{} Could not add animation data from JSON to the system",
-					logCtx);
-				return AnimationId::Invalid;
-			}
-		}
-		else {
-			log->error(
-				"{} Animation data from JSON is not valid",
-				logCtx);
-			return AnimationId::Invalid;
-		}
-	}
-	else {
-		log->error(
-			"{} Could not deserialize animation from JSON",
-			logCtx);
-		return AnimationId::Invalid;
-	}
-}
-
-void AnimationSystem::UpdateAnimatorAltView(
+void AnimatorCollection::UpdateAnimatorAltView(
 	const AnimatorId animatorId,
 	const float objectAngle,
 	const float viewAngle)
@@ -441,67 +399,38 @@ void AnimationSystem::UpdateAnimatorAltView(
 	}
 }
 
-void GuiControls(AnimationSystem& animationSystem, AnimationSystemEditorData& editorData)
+void GuiControls(AnimatorCollection& animators, AnimationLibraryEditorData& editorData)
 {
-	ImGui::Text("Num. Animations: %u", animationSystem.GetAnimations().GetCount());
-	ImGui::Text("Num. Animators:  %u", animationSystem.GetAnimatorCount());
+	ImGui::Text("Num. Animations: %u", animators.GetAnimations().GetCount());
+	ImGui::Text("Num. Animators:  %u", animators.GetAnimatorCount());
 
 	if (ImGui::CollapsingHeader("View Animations"))
 	{
 		ImGui::AutoIndent indent;
 
-		const AnimationId anim = PickAnimation(animationSystem.GetAnimations(), editorData.mCurrentSelection);
+		const AnimationId anim = 
+			PickAnimation(animators.GetAnimations(), editorData.mCurrentSelection);
 
 		if (anim != AnimationId::Invalid)
 		{
 			AnimationSourceInfo animSourceInfo =
-				animationSystem.GetAnimations().GetSourceInfo(anim).value();
+				animators.GetAnimations().GetSourceInfo(anim).value();
 
 			ImGui::Text("Name: %s", animSourceInfo.name.c_str());
 			ImGui::Text("File: %s", animSourceInfo.filename.c_str());
-			ImGui::Text("Ref Count: %d", animationSystem.GetReferenceCount(anim));
+			ImGui::Text("Ref Count: %d", animators.GetReferenceCount(anim));
 
 			if (ImGui::Button("Remove")) {
-				animationSystem.RemoveAnimation(anim);
+				animators.RemoveAnimation(anim);
 			}
 		}
 	}
 
-	if (ImGui::CollapsingHeader("Add Animations")) 
+	if (ImGui::CollapsingHeader("Add Animations"))
 	{
-		using namespace JsonHelp;
-		
 		ImGui::AutoIndent indent;
 
-		ImGui::InputText("JSON Filename", editorData.mFilenameBuffer);
-
-		if (ImGui::Button("Load Individual") && 
-			strlen(editorData.mFilenameBuffer)) 
-		{
-
-			const nlohmann::json j = LoadJsonFromFile(editorData.mFilenameBuffer);
-
-			AddAnimationFromJson(
-				animationSystem, 
-				j, 
-				AnimationSourceInfo{ {}, editorData.mFilenameBuffer });
-		}
-
-		if (ImGui::Button("Load Collection") && 
-			strlen(editorData.mFilenameBuffer)) 
-		{
-			const nlohmann::json j = LoadJsonFromFile(editorData.mFilenameBuffer);
-
-			auto animCollection = j.get<std::map<std::string, nlohmann::json>>();
-
-			for (auto& kvp : animCollection) 
-			{
-				AddAnimationFromJson(
-					animationSystem, 
-					kvp.second, 
-					AnimationSourceInfo{ kvp.first, editorData.mFilenameBuffer});
-			}
-		}
+		AddAnimations(animators.animations, editorData);
 	}
 }
 

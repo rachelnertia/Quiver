@@ -2,7 +2,7 @@
     "AmbientLight": {
         "Colour": "bb81ffff"
     },
-    "AnimationSystem": {
+    "Animators": {
         "AnimationSources": [
             {
                 "File": "animations/darkmage_anims.json",
@@ -27,7 +27,7 @@
     },
     "DirectionalLight": {
         "Angle": 0.872664630413055,
-        "Color": "ff4b1a00"
+        "Color": "450a1d00"
     },
     "Entities": [
         {

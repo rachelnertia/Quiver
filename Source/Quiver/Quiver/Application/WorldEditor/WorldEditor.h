@@ -7,6 +7,7 @@
 #include <SFML/System/Clock.hpp>
 
 #include "Quiver/Animation/AnimationEditor.h"
+#include "Quiver/Animation/AnimationLibraryGui.h"
 #include "Quiver/Application/ApplicationState.h"
 #include "Quiver/Graphics/Camera2D.h"
 #include "Quiver/Graphics/Camera3D.h"
@@ -94,7 +95,7 @@ private:
 
 	AnimationEditor mAnimationEditor;
 
-	AnimationSystemEditorData mAnimationSystemEditorData;
+	AnimationLibraryEditorData mAnimationLibraryEditorData;
 
 	std::string mWorldFilename;
 

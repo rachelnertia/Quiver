@@ -5,7 +5,7 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/ostr.h>
 
-#include "Quiver/Animation/AnimationSystem.h"
+#include "Quiver/Animation/Animators.h"
 #include "Quiver/Animation/AnimationLibraryGui.h"
 #include "Quiver/Entity/Entity.h"
 #include "Quiver/Entity/RenderComponent/RenderComponent.h"
@@ -18,8 +18,8 @@ namespace
 
 using namespace qvr;
 
-AnimationSystem& GetAnimationSystem(const RenderComponent& renderComponent) {
-	return renderComponent.GetEntity().GetWorld().GetAnimationSystem();
+AnimatorCollection& GetAnimators(const RenderComponent& renderComponent) {
+	return renderComponent.GetEntity().GetWorld().GetAnimators();
 }
 
 }
@@ -107,7 +107,7 @@ void RenderComponentEditor::GuiControls()
 	if (ImGui::CollapsingHeader("Animation##RC")) {
 		ImGui::AutoIndent indent;
 
-		AnimationSystem& animSystem = GetAnimationSystem(m_RenderComponent);
+		AnimatorCollection& animSystem = GetAnimators(m_RenderComponent);
 
 		if (ImGui::CollapsingHeader("Pick Animation")) {
 			int selection = -1;

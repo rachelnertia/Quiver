@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics/Texture.hpp>
 
-#include "AnimationSystem.h"
+#include "Animators.h"
 #include "AnimationData.h"
 
 namespace qvr {
@@ -39,7 +39,7 @@ private:
 
 	sf::Texture mTexture;
 
-	AnimationSystem mAnimationSystem;
+	AnimatorCollection mAnimators;
 	AnimationId mCurrentAnimationId = AnimationId::Invalid;
 	AnimatorId  mAnimatorId = AnimatorId::Invalid;
 	AnimatorTarget mAnimationPreviewRect;

@@ -6,7 +6,7 @@
 #include <SFML/Graphics/Color.hpp>
 #include <json.hpp>
 
-#include "Quiver/Animation/AnimationSystem.h"
+#include "Quiver/Animation/Animators.h"
 #include "Quiver/Graphics/FixtureRenderData.h"
 #include "Quiver/Physics/PhysicsUtils.h"
 

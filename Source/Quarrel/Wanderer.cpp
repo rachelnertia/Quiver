@@ -6,7 +6,7 @@
 #include <ImGui/imgui.h>
 #include <spdlog/spdlog.h>
 
-#include "Quiver/Animation/AnimationSystem.h"
+#include "Quiver/Animation/Animators.h"
 #include "Quiver/Entity/Entity.h"
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
 #include "Quiver/Entity/RenderComponent/RenderComponent.h"

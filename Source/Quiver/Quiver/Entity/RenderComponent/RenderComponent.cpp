@@ -22,8 +22,8 @@ namespace
 
 using namespace qvr;
 
-AnimationSystem& GetAnimationSystem(const RenderComponent& renderComponent) {
-	return renderComponent.GetEntity().GetWorld().GetAnimationSystem();
+AnimatorCollection& GetAnimators(const RenderComponent& renderComponent) {
+	return renderComponent.GetEntity().GetWorld().GetAnimators();
 }
 
 TextureLibrary& GetTextureLibrary(const RenderComponent& renderComponent) {
@@ -69,7 +69,7 @@ RenderComponent::~RenderComponent()
 	auto log = GetConsoleLogger();
 
 	if (mAnimatorId != AnimatorId::Invalid) {
-		if (GetEntity().GetWorld().GetAnimationSystem().RemoveAnimator(mAnimatorId)) {
+		if (GetEntity().GetWorld().GetAnimators().RemoveAnimator(mAnimatorId)) {
 			log->debug("RenderComponent::Destroy: Removed Animator {}", mAnimatorId);
 		}
 		else {
@@ -99,7 +99,7 @@ bool RenderComponent::ToJson(nlohmann::json & j) const
 	}
 
 	{
-		const AnimationSystem& animSystem = GetAnimationSystem(*this);
+		const AnimatorCollection& animSystem = GetAnimators(*this);
 
 		if ((mAnimatorId != AnimatorId::Invalid) && animSystem.AnimatorExists(mAnimatorId))
 		{
@@ -189,7 +189,7 @@ bool RenderComponent::FromJson(const nlohmann::json & j)
 		const AnimationSourceInfo animSource = j["Animation"];
 		
 		if (!animSource.filename.empty()) {
-			AnimationSystem& animSystem = GetEntity().GetWorld().GetAnimationSystem();
+			AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
 
 			AnimationId animId = animSystem.GetAnimations().GetAnimation(animSource);
 
@@ -270,7 +270,7 @@ void RenderComponent::UpdateAnimatorAltView(const float cameraAngle, const b2Vec
 	const b2Vec2 disp = position - cameraPosition;
 	const float viewAngle = b2Atan2(disp.y, disp.x) + b2_pi;
 
-	GetAnimationSystem(*this).UpdateAnimatorAltView(
+	GetAnimators(*this).UpdateAnimatorAltView(
 		GetAnimatorId(), 
 		GetAnimatorRotation(), 
 		viewAngle);
@@ -400,39 +400,39 @@ bool RenderComponent::SetAnimation(const AnimationId animationId, AnimatorRepeat
 {
 	auto log = GetConsoleLogger();
 
-	AnimationSystem& animationSystem = GetAnimationSystem(*this);
+	AnimatorCollection& animators = GetAnimators(*this);
 
-	if (!animationSystem.GetAnimations().Contains(animationId)) {
+	if (!animators.GetAnimations().Contains(animationId)) {
 		log->error("There is no Animation with ID {}", animationId);
 		return false;
 	}
 
 	bool hadImpostors = false;
 
-	if (animationSystem.AnimatorExists(mAnimatorId)) {
-		const AnimationId oldAnimation = animationSystem.GetAnimatorAnimation(mAnimatorId);
-		hadImpostors = animationSystem.GetAnimations().HasAltViews(oldAnimation);
+	if (animators.AnimatorExists(mAnimatorId)) {
+		const AnimationId oldAnimation = animators.GetAnimatorAnimation(mAnimatorId);
+		hadImpostors = animators.GetAnimations().HasAltViews(oldAnimation);
 
-		if (!animationSystem.SetAnimatorAnimation(
+		if (!animators.SetAnimatorAnimation(
 			mAnimatorId,
 			AnimatorStartSetting(animationId, repeatSetting)))
 		{
-			log->error("AnimationSystem::SetAnimatorAnimation failed!");
+			log->error("AnimatorCollection::SetAnimatorAnimation failed!");
 			return false;
 		}
 	}
 	else {
-		mAnimatorId = animationSystem.AddAnimator(
+		mAnimatorId = animators.AddAnimator(
 			mFixtureRenderData->mTextureRect,
 			AnimatorStartSetting(animationId, repeatSetting));
 
 		if (mAnimatorId == AnimatorId::Invalid) {
-			log->error("AnimationSystem::AddAnimator failed!");
+			log->error("AnimatorCollection::AddAnimator failed!");
 			return false;
 		}
 	}
 
-	if ((!hadImpostors) && animationSystem.GetAnimations().HasAltViews(animationId)) {
+	if ((!hadImpostors) && animators.GetAnimations().HasAltViews(animationId)) {
 		// The old animation did not have impostor frames, but the new one does.
 		// Register with the thing.
 		if (!GetEntity().GetWorld().RegisterAnimatorWithAltViews(*this)) {
@@ -452,11 +452,11 @@ bool RenderComponent::SetAnimation(const AnimationId animationId, AnimatorRepeat
 
 void RenderComponent::RemoveAnimation()
 {
-	AnimationSystem& animationSystem = GetAnimationSystem(*this);
+	AnimatorCollection& animators = GetAnimators(*this);
 
-	if (!animationSystem.AnimatorExists(mAnimatorId)) return;
+	if (!animators.AnimatorExists(mAnimatorId)) return;
 
-	animationSystem.RemoveAnimator(mAnimatorId);
+	animators.RemoveAnimator(mAnimatorId);
 
 	mAnimatorId = AnimatorId::Invalid;
 

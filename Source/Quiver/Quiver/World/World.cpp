@@ -78,11 +78,6 @@ std::unique_ptr<World> LoadWorld(
 
 	const nlohmann::json j = JsonHelp::LoadJsonFromFile(filename);
 
-	if (!World::VerifyJson(j)) {
-		log->error("JSON is not valid!");
-		return nullptr;
-	}
-
 	try
 	{
 		auto world = std::make_unique<World>(worldContext, j);
@@ -168,7 +163,7 @@ void World::TakeStep(qvr::RawInputDevices& inputDevices)
 
 	const auto timestepDuration = duration<float>((GetTimestep()));
 
-	mAnimationSystem.Animate(duration_cast<AnimationSystem::TimeUnit>(timestepDuration));
+	mAnimators.Animate(duration_cast<AnimatorCollection::TimeUnit>(timestepDuration));
 
 	mTotalTime += timestepDuration;
 
@@ -481,7 +476,7 @@ bool World::ToJson(nlohmann::json & j) const {
 		mSky.ToJson(j["Sky"]);
 	}
 
-	j["AnimationSystem"] = mAnimationSystem.ToJson();
+	j["Animators"] = mAnimators.ToJson();
 
 	unsigned serializedEntityCount = 0;
 
@@ -545,7 +540,7 @@ World::World(
 		log->error("Failed to deserialize directional light.");
 	}
 
-	mAnimationSystem.FromJson(JsonHelp::GetValue<nlohmann::json>(j, "AnimationSystem", {}));
+	mAnimators.FromJson(JsonHelp::GetValue<nlohmann::json>(j, "Animators", {}));
 
 	if (j.find("Prefabs") != j.end()) {
 		if (!mEntityPrefabs.FromJson(j["Prefabs"])) {
@@ -570,43 +565,6 @@ World::World(
 	}
 
 	log->info("Deserialized {} Entitites.", mEntities.size());
-}
-
-// This can also be kind of like a compiler which gives helpful messages to the user about things that are wrong
-// with JSON they may have written by hand.
-bool World::VerifyJson(const nlohmann::json & j) {
-	// A lot of things are non-critical. Like, the World doesn't *have* to have any Entities in it.
-	// Or a sky colour.
-
-	// Not sure how to report absence of non-critical fields.
-	// Maybe there should be a flag, passed to this, that tells the function to be strict.
-
-	auto log = spdlog::get("console");
-	assert(log.get());
-
-	if (j.find("Gravity") != j.end()) {
-		if (!j["Gravity"].is_array()
-			|| j["Gravity"].size() != 2
-			|| !j["Gravity"][0].is_number()
-			|| !j["Gravity"][1].is_number())
-		{
-			log->warn("Gravity should be an array containing 2 numbers.");
-		}
-	}
-
-	// Additionally, the 'strict' flag could tell the function to return false
-	// if it finds fields that shouldn't be there.
-
-	if (j.find("Entities") != j.end()) {
-		if (!j["Entities"].is_array()) {
-			log->warn("Found Entities field, but it's not an array.");
-		}
-		else {
-			// Iterate through the Json objects in Entities and make sure they're valid.
-		}
-	}
-
-	return true;
 }
 
 bool World::RegisterCamera(const Camera3D& camera)

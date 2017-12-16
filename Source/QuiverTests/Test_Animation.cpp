@@ -1,7 +1,7 @@
 #include <Catch.hpp>
 
 #include "Quiver/Animation/AnimationData.h"
-#include "Quiver/Animation/AnimationSystem.h"
+#include "Quiver/Animation/Animators.h"
 #include "Quiver/Misc/Logging.h"
 
 using namespace std::chrono_literals;
@@ -200,114 +200,114 @@ TEST_CASE("AnimationData can be modified", "[Animation]")
 	}
 }
 
-TEST_CASE("AnimationSystem", "[Animation]")
+TEST_CASE("AnimatorCollection", "[Animation]")
 {
 	qvr::InitLoggers(spdlog::level::off);
 
-	AnimationSystem animationSystem;
+	AnimatorCollection animators;
 
 	// Animate is fine when there's no Animations and no Animators
-	animationSystem.Animate(10ms);
+	animators.Animate(10ms);
 
 	AnimationData animationData;
 
 	const AnimationId animationId = GenerateAnimationId(animationData);
 
-	REQUIRE(animationSystem.AddAnimation(animationData) == AnimationId::Invalid);
+	REQUIRE(animators.AddAnimation(animationData) == AnimationId::Invalid);
 
 	animationData.AddFrame(Frame{ 10ms, Rect{ 0,0,1,1 },{} });
 	animationData.AddFrame(Frame{ 10ms, Rect{ 1,0,2,1 },{} });
 
 	{
 		AnimatorTarget animatorTarget{};
-		REQUIRE(animationSystem.AddAnimator(animatorTarget, animationId) == AnimatorId::Invalid);
+		REQUIRE(animators.AddAnimator(animatorTarget, animationId) == AnimatorId::Invalid);
 	}
 
-	REQUIRE(animationSystem.AddAnimation(animationData) == animationId);
+	REQUIRE(animators.AddAnimation(animationData) == animationId);
 	
 	AnimatorTarget animatorTarget{};
-	const AnimatorId animatorId = animationSystem.AddAnimator(animatorTarget, animationId);
+	const AnimatorId animatorId = animators.AddAnimator(animatorTarget, animationId);
 
 	REQUIRE(animatorId != AnimatorId::Invalid);
-	REQUIRE(animationSystem.GetAnimatorAnimation(animatorId) == animationId);
-	REQUIRE(animationSystem.GetAnimatorFrame(animatorId) == 0);
+	REQUIRE(animators.GetAnimatorAnimation(animatorId) == animationId);
+	REQUIRE(animators.GetAnimatorFrame(animatorId) == 0);
 	REQUIRE(animatorTarget.rect == animationData.GetRect(0).value());
 
 	SECTION("Animate plays the animation") {
 		for (int i = 0; i < animationData.GetFrameCount(); ++i) {
-			REQUIRE(animationSystem.GetAnimatorAnimation(animatorId) == animationId);
-			REQUIRE((int)animationSystem.GetAnimatorFrame(animatorId) == i);
+			REQUIRE(animators.GetAnimatorAnimation(animatorId) == animationId);
+			REQUIRE((int)animators.GetAnimatorFrame(animatorId) == i);
 			REQUIRE(animatorTarget.rect == animationData.GetRect(i).value());
 
-			animationSystem.Animate(animationData.GetTime(i).value());
+			animators.Animate(animationData.GetTime(i).value());
 		}
 
 		SECTION("It loops") {
-			REQUIRE(animationSystem.GetAnimatorAnimation(animatorId) == animationId);
-			REQUIRE(animationSystem.GetAnimatorFrame(animatorId) == 0);
+			REQUIRE(animators.GetAnimatorAnimation(animatorId) == animationId);
+			REQUIRE(animators.GetAnimatorFrame(animatorId) == 0);
 			REQUIRE(animatorTarget.rect == animationData.GetRect(0).value());
 		}
 	}
 
 	SECTION("RemoveAnimation removes the animation and the animator that references it") {
-		REQUIRE(animationSystem.RemoveAnimation(animationId));
-		REQUIRE(animationSystem.AnimatorExists(animatorId) == false);
+		REQUIRE(animators.RemoveAnimation(animationId));
+		REQUIRE(animators.AnimatorExists(animatorId) == false);
 	}
 
 	SECTION("RemoveAnimator removes the animator but keeps the animation") {
-		REQUIRE(animationSystem.RemoveAnimator(animatorId));
-		REQUIRE(animationSystem.AnimatorExists(animatorId) == false);
+		REQUIRE(animators.RemoveAnimator(animatorId));
+		REQUIRE(animators.AnimatorExists(animatorId) == false);
 	}
 
 	SECTION("SetAnimatorFrame") {
 		SECTION("Reject invalid AnimatorIds") {
 			for (const AnimatorId invalidAnimatorId : { AnimatorId::Invalid, AnimatorId(animatorId.GetValue() + 1) })
 			{
-				REQUIRE(animationSystem.SetAnimatorFrame(invalidAnimatorId, 0) == false);
+				REQUIRE(animators.SetAnimatorFrame(invalidAnimatorId, 0) == false);
 			}
 		}
 
 		const Rect originalTargetVal = animatorTarget.rect;
-		const int originalFrame = animationSystem.GetAnimatorFrame(animatorId);
+		const int originalFrame = animators.GetAnimatorFrame(animatorId);
 
 		SECTION("Reject invalid frame") {
 			for (const int invalidFrame : { -1, animationData.GetFrameCount() })
 			{
-				REQUIRE(animationSystem.SetAnimatorFrame(animatorId, invalidFrame) == false);
-				REQUIRE((int)animationSystem.GetAnimatorFrame(animatorId) == originalFrame);
+				REQUIRE(animators.SetAnimatorFrame(animatorId, invalidFrame) == false);
+				REQUIRE((int)animators.GetAnimatorFrame(animatorId) == originalFrame);
 				REQUIRE(animatorTarget.rect == originalTargetVal);
 			}
 		}
 
 		SECTION("Set to current frame") {
-			REQUIRE(animationSystem.SetAnimatorFrame(animatorId, 0));
-			REQUIRE((int)animationSystem.GetAnimatorFrame(animatorId) == originalFrame);
+			REQUIRE(animators.SetAnimatorFrame(animatorId, 0));
+			REQUIRE((int)animators.GetAnimatorFrame(animatorId) == originalFrame);
 			REQUIRE(animatorTarget.rect == originalTargetVal);
 		}
 
 		SECTION("Set to other frame") {
 			const int otherIndex = 1;
 
-			REQUIRE(animationSystem.SetAnimatorFrame(animatorId, otherIndex));
-			REQUIRE(animationSystem.GetAnimatorFrame(animatorId) == otherIndex);
+			REQUIRE(animators.SetAnimatorFrame(animatorId, otherIndex));
+			REQUIRE(animators.GetAnimatorFrame(animatorId) == otherIndex);
 			REQUIRE(animatorTarget.rect == animationData.GetRect(otherIndex).value());
 		}
 	}
 
 	SECTION("SetAnimatorAnimation") {
 		SECTION("SetAnimatorAnimation fails if given an invalid AnimationId") {
-			REQUIRE(animationSystem.SetAnimatorAnimation(animatorId, AnimationId::Invalid) == false);
+			REQUIRE(animators.SetAnimatorAnimation(animatorId, AnimationId::Invalid) == false);
 		}
 
 		SECTION("SetAnimatorAnimation works with the current animation") {
-			const int currentFrame = animationSystem.GetAnimatorFrame(animatorId);
+			const int currentFrame = animators.GetAnimatorFrame(animatorId);
 			const Rect currentRect = animatorTarget.rect;
 
-			REQUIRE(animationSystem.SetAnimatorAnimation(animatorId, animationId));
+			REQUIRE(animators.SetAnimatorAnimation(animatorId, animationId));
 			
 			// Check that the animator & target are left unchanged
-			REQUIRE(animationSystem.GetAnimatorAnimation(animatorId) == animationId);
-			REQUIRE((int)animationSystem.GetAnimatorFrame(animatorId) == currentFrame);
+			REQUIRE(animators.GetAnimatorAnimation(animatorId) == animationId);
+			REQUIRE((int)animators.GetAnimatorFrame(animatorId) == currentFrame);
 			REQUIRE(currentRect == animatorTarget.rect);
 		}
 
@@ -328,7 +328,7 @@ TEST_CASE("AnimationSystem", "[Animation]")
 
 			SECTION("... but not if it hasn't been added yet") {
 				REQUIRE(
-					animationSystem.SetAnimatorAnimation(
+					animators.SetAnimatorAnimation(
 						animatorId, 
 						AnimatorStartSetting(newAnimationId)) 
 					== false);
@@ -336,15 +336,15 @@ TEST_CASE("AnimationSystem", "[Animation]")
 				// TODO: Check that the animator is left unchanged
 			}
 
-			animationSystem.AddAnimation(animationData);
+			animators.AddAnimation(animationData);
 			
 			REQUIRE(
-				animationSystem.SetAnimatorAnimation(
+				animators.SetAnimatorAnimation(
 					animatorId, 
 					AnimatorStartSetting(newAnimationId)));
 
 			REQUIRE(
-				animationSystem.GetAnimatorAnimation(animatorId) 
+				animators.GetAnimatorAnimation(animatorId) 
 				== newAnimationId);
 
 			// ...
@@ -356,7 +356,7 @@ TEST_CASE("AnimationSystem", "[Animation]")
 	}
 }
 
-TEST_CASE("More AnimationSystem", "[Animation]") {
+TEST_CASE("More AnimatorCollection", "[Animation]") {
 	
 }
 

@@ -12,7 +12,7 @@
 
 #include "json.hpp"
 
-#include "Quiver/Animation/AnimationSystem.h"
+#include "Quiver/Animation/Animators.h"
 #include "Quiver/Entity/CustomComponent/CustomComponentUpdater.h"
 #include "Quiver/Entity/EntityPrefab.h"
 #include "Quiver/Graphics/Fog.h"
@@ -94,8 +94,6 @@ public:
 
 	bool ToJson(nlohmann::json & j) const;
 
-	static bool VerifyJson(const nlohmann::json & j);
-
 	bool SetMainCamera(const Camera3D& camera);
 
 	const Camera3D* GetMainCamera() const;
@@ -124,7 +122,7 @@ public:
 
 	inline const b2World* GetPhysicsWorld() const { return mPhysicsWorld.get(); }
 
-	AnimationSystem& GetAnimationSystem() { return mAnimationSystem; }
+	AnimatorCollection& GetAnimators() { return mAnimators; }
 	AudioLibrary&    GetAudioLibrary() { return *mAudioLibrary.get(); }
 	TextureLibrary&  GetTextureLibrary() { return *mTextureLibrary.get(); }
 
@@ -184,7 +182,7 @@ private:
 
 	Fog mFog;
 
-	AnimationSystem mAnimationSystem;
+	AnimatorCollection mAnimators;
 
 	WorldContext& mContext;
 

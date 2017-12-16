@@ -348,7 +348,7 @@ void WorldEditor::ProcessGUI()
 	if (ImGui::CollapsingHeader("World Animation System")) {
 		ImGui::AutoIndent indent;
 
-		GuiControls(mWorld->GetAnimationSystem(), mAnimationSystemEditorData);
+		GuiControls(mWorld->GetAnimators(), mAnimationLibraryEditorData);
 	}
 
 	if (ImGui::CollapsingHeader("Texture Library")) {

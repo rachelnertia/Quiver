@@ -68,16 +68,18 @@ inline bool operator!=(const AnimatorRepeatSetting& a, const AnimatorRepeatSetti
 	return a.GetRepeatCount() != b.GetRepeatCount();
 }
 
+struct AnimationLibraryEditorData;
+
 class AnimationData;
 
-class AnimationSystem {
+class AnimatorCollection {
 public:
-	AnimationSystem() = default;
+	AnimatorCollection() = default;
 
-	AnimationSystem(const AnimationSystem&) = delete;
-	AnimationSystem(const AnimationSystem&&) = delete;
-	AnimationSystem& operator=(const AnimationSystem&) = delete;
-	AnimationSystem& operator=(const AnimationSystem&&) = delete;
+	AnimatorCollection(const AnimatorCollection&) = delete;
+	AnimatorCollection(const AnimatorCollection&&) = delete;
+	AnimatorCollection& operator=(const AnimatorCollection&) = delete;
+	AnimatorCollection& operator=(const AnimatorCollection&&) = delete;
 
 	bool FromJson(const nlohmann::json& j);
 	auto ToJson() const -> nlohmann::json;
@@ -228,14 +230,14 @@ private:
 	AnimationLibrary animations;
 
 	std::unordered_map<AnimationId, unsigned> animationReferenceCounts;
+
+	// friends:
+
+	friend void GuiControls(
+		AnimatorCollection& animators, 
+		AnimationLibraryEditorData& editorData);
 };
 
-// TODO: Put this in a different file.
-struct AnimationSystemEditorData {
-	char mFilenameBuffer[128] = { 0 };
-	int mCurrentSelection = -1;
-};
-
-void GuiControls(AnimationSystem& animationSystem, AnimationSystemEditorData& editorData);
+void GuiControls(AnimatorCollection& animators, AnimationLibraryEditorData& editorData);
 
 }

@@ -85,27 +85,6 @@ workspace "Quiver"
 		}
 		IncludeSFML()
 
-	project "Quiver"
-		kind "StaticLib"
-		files 
-		{ 
-			"Source/Quiver/**.h", 
-			"Source/Quiver/**.cpp"
-		}
-		includedirs 
-		{
-			"Source/Quiver",
-			"External/json",
-			"External/spdlog/include",
-			"External/Box2D",
-			"External/ImGui",
-			"External/cxxopts",
-			"External/Optional"
-		}
-		IncludeSFML()
-		configuration "vs*"
-			warnings "Extra"
-
 	function IncludeQuiver()
 		includedirs 
 		{ 
@@ -114,10 +93,24 @@ workspace "Quiver"
 			"External/json", 
 			"External/spdlog/include",
 			"External/Box2D",
-			"External/Optional"
+			"External/Optional",
+			"External/gsl",
+			"External/cxxopts"
 		}
 		IncludeSFML()
 	end
+
+	project "Quiver"
+		kind "StaticLib"
+		files 
+		{ 
+			"Source/Quiver/**.h", 
+			"Source/Quiver/**.cpp"
+		}
+		IncludeQuiver()
+		IncludeSFML()
+		configuration "vs*"
+			warnings "Extra"
 
 	function LinkQuiver()
 		links

@@ -263,6 +263,8 @@ bool AnimatorCollection::SetAnimatorFrame(
 	const AnimatorId id,
 	const int frameIndex)
 {
+	if (frameIndex < 0) return false;
+
 	if (!AnimatorExists(id)) return false;
 
 	AnimatorState& animator = animators.states[id];

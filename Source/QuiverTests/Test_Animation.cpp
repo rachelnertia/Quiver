@@ -211,12 +211,17 @@ TEST_CASE("AnimatorCollection", "[Animation]")
 
 	AnimationData animationData;
 
-	const AnimationId animationId = GenerateAnimationId(animationData);
-
-	REQUIRE(animators.AddAnimation(animationData) == AnimationId::Invalid);
+	{
+		const AnimationId animationId = GenerateAnimationId(animationData);
+		REQUIRE(animationId == AnimationId::Invalid);
+		//REQUIRE(animators.AddAnimation(animationData) == AnimationId::Invalid);
+	}
 
 	animationData.AddFrame(Frame{ 10ms, Rect{ 0,0,1,1 },{} });
 	animationData.AddFrame(Frame{ 10ms, Rect{ 1,0,2,1 },{} });
+
+	const AnimationId animationId = GenerateAnimationId(animationData);
+	REQUIRE(animationId != AnimationId::Invalid);
 
 	{
 		AnimatorTarget animatorTarget{};
@@ -387,8 +392,11 @@ TEST_CASE("AnimationLibrary", "[Animation]") {
 
 	REQUIRE(animationId != AnimationId::Invalid);
 
+	// Can't remove animation that hasn't been added.
 	REQUIRE(animations.Remove(animationId) == false);
 	REQUIRE(animations.Remove(AnimationId::Invalid) == false);
+
+	animations.Add(animationData);
 
 	REQUIRE(animations.GetCount() == 1);
 	REQUIRE(animations.GetFrameCount(animationId) == animationData.GetFrameCount());

@@ -4,7 +4,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "json.hpp"
+#include <gsl/span>
+#include <json.hpp>
 
 #include "Quiver/Animation/AnimationId.h"
 #include "Quiver/Animation/AnimationLibrary.h"
@@ -24,6 +25,26 @@ struct AnimatorTarget {
 	AnimatorTarget& operator=(AnimatorTarget&) = delete;
 	AnimatorTarget& operator=(AnimatorTarget&&) = delete;
 };
+
+struct ViewBuffer {
+	int viewCount = 0;
+	std::array<Animation::Rect, 8> views;
+
+	ViewBuffer() = default;
+
+	ViewBuffer(const ViewBuffer&) = delete;
+	ViewBuffer(const ViewBuffer&&) = delete;
+
+	ViewBuffer& operator=(ViewBuffer&) = delete;
+	ViewBuffer& operator=(ViewBuffer&&) = delete;
+};
+
+inline void SetViews(ViewBuffer& target, const gsl::span<const Animation::Rect> newViews)
+{
+	target.viewCount = std::max((int)newViews.length(), (int)target.views.max_size());
+
+	std::copy(std::begin(newViews), std::end(newViews), std::begin(target.views));
+}
 
 class AnimatorRepeatSetting
 {

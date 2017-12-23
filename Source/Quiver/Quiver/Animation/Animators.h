@@ -11,11 +11,12 @@
 #include "Quiver/Animation/AnimationLibrary.h"
 #include "Quiver/Animation/AnimatorId.h"
 #include "Quiver/Animation/Rect.h"
+#include "Quiver/Graphics/ViewBuffer.h"
 
 namespace qvr {
 
 struct AnimatorTarget {
-	Animation::Rect rect;
+	ViewBuffer views;
 
 	AnimatorTarget() = default;
 
@@ -143,57 +144,20 @@ public:
 
 	void Animate(const TimeUnit ms);
 
-	// animatorId  - id for an Animator whose Animation has alternate-viewpoint frames in it.
-	// objectAngle - between 0 and tau (2 * pi), the angle the object is facing.
-	// viewAngle   - between 0 and tau (2 * pi), the angle the object is being viewed from.
-	void UpdateAnimatorAltView(const AnimatorId animatorId, const float objectAngle, const float viewAngle);
-
 private:
-	struct AnimatorAltViewState {
-		// TODO: There is too much here.
-
-		AnimatorAltViewState(const unsigned numAltViews)
-			: numAltViews(numAltViews)
-			, currentAltView(0)
-		{}
-
-		AnimatorAltViewState(const AnimatorAltViewState& other)
-			: numAltViews(other.NumAltViews())
-			, currentAltView(other.currentAltView)
-		{}
-
-		AnimatorAltViewState() = default;
-
-		AnimatorAltViewState& operator=(const AnimatorAltViewState& other)
-		{
-			numAltViews = other.NumAltViews();
-			currentAltView = other.currentAltView;
-			return *this;
-		}
-
-		unsigned currentAltView = 0; // 0 = base frame
-
-		unsigned NumAltViews() const { return numAltViews; }
-
-	private:
-		unsigned numAltViews = 0;
-	};
-
 	struct AnimatorState {
 		AnimatorState(
 			const AnimationId animation,
 			const int frameIndex,
 			const int index,
 			AnimatorTarget& target,
-			const AnimatorRepeatSetting& repeat,
-			const AnimatorAltViewState& altViewState)
+			const AnimatorRepeatSetting& repeat)
 			: index(index)
 			, currentFrame(frameIndex)
 			, currentAnimation(animation)
 			, target(&target)
 			, repeatSetting(repeat)
 			, repeatCount(0)
-			, altViewState(altViewState)
 		{}
 
 		AnimatorState() = default;
@@ -203,7 +167,6 @@ private:
 		int repeatCount;
 		AnimationId currentAnimation;
 		AnimatorRepeatSetting repeatSetting;
-		AnimatorAltViewState altViewState;
 		AnimatorTarget* target;
 		std::vector<AnimatorStartSetting> queuedAnimations;
 	};

@@ -82,7 +82,6 @@ RenderComponent::~RenderComponent()
 
 	if (mDetachedBody) {
 		GetEntity().GetWorld().UnregisterDetachedRenderComponent(*this);
-		GetEntity().GetWorld().UnregisterAnimatorWithAltViews(*this);
 	}
 }
 
@@ -119,7 +118,7 @@ bool RenderComponent::ToJson(nlohmann::json & j) const
 		}
 		else if (GetTexture())
 		{
-			GetTextureRect().ToJson(j["TextureRect"]);
+			GetViews().views[0].ToJson(j["TextureRect"]);
 		}
 	}
 
@@ -168,7 +167,9 @@ bool RenderComponent::FromJson(const nlohmann::json & j)
 				mFixtureRenderData->mTexture = GetEntity().GetWorld().GetTextureLibrary().LoadTexture(filename);
 				if (GetTexture()) {
 					mTextureFilename = filename;
-					mFixtureRenderData->mTextureRect.rect = SfVecToRect(GetTexture()->getSize());
+					SetView(
+						mFixtureRenderData->mTextureRects.views, 
+						SfVecToRect(GetTexture()->getSize()));
 				}
 				else {
 					mTextureFilename.clear();
@@ -181,7 +182,10 @@ bool RenderComponent::FromJson(const nlohmann::json & j)
 
 		if (FieldExistsInJson("TextureRect", j))
 		{
-			mFixtureRenderData->mTextureRect.rect.FromJson(j["TextureRect"]);
+			Animation::Rect singleView;
+			singleView.FromJson(j["TextureRect"]);
+
+			SetView(mFixtureRenderData->mTextureRects.views, singleView);
 		}
 	}
 
@@ -255,25 +259,6 @@ void RenderComponent::UpdateDetachedBodyPosition()
 	mDetachedBody->SetTransform(position, mDetachedBody->GetAngle());
 
 	mFixtureRenderData->mSpritePosition = position;
-}
-
-// TODO: Remove RenderComponents from the list of those who have Animators who have alt views
-// when the Animator dequeues an Animation that does not have alt views.
-// Also re-add them when the Animator de-queues an Animation that does have alt views.
-// To do this we'll need some way to make other systems aware when an Animator has finished one 
-// Animation and started another.
-void RenderComponent::UpdateAnimatorAltView(const float cameraAngle, const b2Vec2& cameraPosition)
-{
-	assert(mAnimatorId != AnimatorId::Invalid);
-
-	const b2Vec2 position = GetBody()->GetPosition();
-	const b2Vec2 disp = position - cameraPosition;
-	const float viewAngle = b2Atan2(disp.y, disp.x) + b2_pi;
-
-	GetAnimators(*this).UpdateAnimatorAltView(
-		GetAnimatorId(), 
-		GetAnimatorRotation(), 
-		viewAngle);
 }
 
 // User is responsible for setting the resulting fixture's user data.
@@ -387,7 +372,7 @@ void RenderComponent::SetTextureRect(const Animation::Rect& rect)
 	// If there is no Animator, set the texture rect to the size of the texture.
 	// Otherwise leave it; the Animator owns control over the texture rect.
 	if (this->mAnimatorId == AnimatorId::Invalid) {
-		mFixtureRenderData->mTextureRect.rect = rect;
+		SetView(mFixtureRenderData->mTextureRects.views, rect);
 	}
 }
 
@@ -423,27 +408,12 @@ bool RenderComponent::SetAnimation(const AnimationId animationId, AnimatorRepeat
 	}
 	else {
 		mAnimatorId = animators.AddAnimator(
-			mFixtureRenderData->mTextureRect,
+			mFixtureRenderData->mTextureRects,
 			AnimatorStartSetting(animationId, repeatSetting));
 
 		if (mAnimatorId == AnimatorId::Invalid) {
 			log->error("AnimatorCollection::AddAnimator failed!");
 			return false;
-		}
-	}
-
-	if ((!hadImpostors) && animators.GetAnimations().HasAltViews(animationId)) {
-		// The old animation did not have impostor frames, but the new one does.
-		// Register with the thing.
-		if (!GetEntity().GetWorld().RegisterAnimatorWithAltViews(*this)) {
-			log->error("RegisterAnimatorWithAltViews failed!");
-		}
-	}
-	else if (hadImpostors) {
-		// The old animation had impostor frames, but the new one doesn't.
-		// Unregister from the thing.
-		if (!GetEntity().GetWorld().UnregisterAnimatorWithAltViews(*this)) {
-			log->error("UnregisterAnimatorWithAltViews failed!");
 		}
 	}
 
@@ -459,9 +429,6 @@ void RenderComponent::RemoveAnimation()
 	animators.RemoveAnimator(mAnimatorId);
 
 	mAnimatorId = AnimatorId::Invalid;
-
-	// Just do this anyway. Checks are for nerds.
-	GetEntity().GetWorld().UnregisterAnimatorWithAltViews(*this);
 }
 
 }

@@ -4,8 +4,9 @@
 #include <unordered_map>
 #include <vector>
 
-#include <optional.hpp>
+#include <gsl/span>
 #include <json.hpp>
+#include <optional.hpp>
 
 #include "Quiver/Animation/AnimationData.h"
 #include "Quiver/Animation/AnimationId.h"
@@ -61,6 +62,11 @@ public:
 		const int viewIndex = 0) 
 			const -> Animation::Rect;
 
+	auto GetRects(
+		const AnimationId anim,
+		const int frameIndex)
+			const -> gsl::span<const Animation::Rect>;
+
 	auto GetTime(
 		const AnimationId anim,
 		const int frameIndex) 
@@ -106,7 +112,7 @@ private:
 	std::vector<AnimationId> allIds;
 	std::unordered_map<AnimationId, AnimationInfo> infosById;
 	std::vector<Animation::TimeUnit> allFrameTimes;
-	std::vector<Animation::Rect> allFrameRects; // Rects for each frame in every animation plus their alt view rects.
+	std::vector<Animation::Rect> allFrameRects; // Rects for each frame in every animation plus their alt view views.
 	std::unordered_map<AnimationId, AnimationSourceInfo> sourcesById;
 };
 

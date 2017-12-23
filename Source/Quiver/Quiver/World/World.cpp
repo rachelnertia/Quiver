@@ -290,7 +290,6 @@ void World::Render3D(sf::RenderTarget & target, const Camera3D & camera)
 		auto startTimePoint{ std::chrono::high_resolution_clock::now() };
 
 		UpdateDetachedRenderComponents(camera);
-		UpdateAnimatorAltViews(camera);
 
 		auto endTimePoint{ std::chrono::high_resolution_clock::now() };
 
@@ -707,47 +706,11 @@ bool World::UnregisterDetachedRenderComponent(const RenderComponent& renderCompo
 	return false;
 }
 
-bool World::RegisterAnimatorWithAltViews(const RenderComponent& renderComponent)
-{
-	const auto it = FindByAddress(mAnimatedWithAltViews, renderComponent);
-
-	if (it != mAnimatedWithAltViews.end())
-	{
-		return true;
-	}
-
-	mAnimatedWithAltViews.push_back(const_cast<RenderComponent&>(renderComponent));
-
-	return true;
-}
-
-bool World::UnregisterAnimatorWithAltViews(const RenderComponent& renderComponent)
-{
-	const auto it = FindByAddress(mAnimatedWithAltViews, renderComponent);
-
-	if (it != mAnimatedWithAltViews.end())
-	{
-		mAnimatedWithAltViews.erase(it);
-		return true;
-	}
-
-	return false;
-}
-
 void World::UpdateDetachedRenderComponents(const Camera3D& camera)
 {
 	for (auto renderComp : mDetachedRenderComponents) {
 		renderComp.get().UpdateDetachedBodyPosition();
 		renderComp.get().UpdateDetachedBodyRotation(camera.GetRotation());
-	}
-}
-
-void World::UpdateAnimatorAltViews(const Camera3D & camera)
-{
-	for (auto renderComponent : mAnimatedWithAltViews) {
-		renderComponent.get().UpdateAnimatorAltView(
-			camera.GetRotation(), 
-			camera.GetPosition());
 	}
 }
 

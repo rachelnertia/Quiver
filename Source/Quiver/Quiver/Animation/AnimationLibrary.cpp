@@ -35,7 +35,7 @@ AnimationId AnimationLibrary::Add(const AnimationData& anim)
 			anim.GetRectCount(),
 			anim.GetAltViewsPerFrame());
 
-	// Pack the animation's frame rects and times into the arrays.
+	// Pack the animation's frame views and times into the arrays.
 	const auto frameTimes = anim.GetTimes();
 	allFrameTimes.insert(
 		allFrameTimes.end(),
@@ -84,7 +84,7 @@ bool AnimationLibrary::Remove(const AnimationId anim)
 
 	infosById.erase(anim);
 
-	// Erase rects.
+	// Erase views.
 	{
 		auto start = allFrameRects.begin() + animInfo.IndexOfFirstRect();
 		auto end = start + animInfo.NumRects();
@@ -191,7 +191,7 @@ auto AnimationLibrary::GetRect(
 	const AnimationId anim,
 	const int frameIndex,
 	const int viewIndex)
-	const -> Animation::Rect
+		const -> Animation::Rect
 {
 	const AnimationInfo info = infosById.at(anim);
 
@@ -200,10 +200,24 @@ auto AnimationLibrary::GetRect(
 	return allFrameRects[info.IndexOfFirstRect() + rectIndex];
 }
 
+auto AnimationLibrary::GetRects(
+	const AnimationId anim,
+	const int frameIndex)
+		const -> gsl::span<const Animation::Rect>
+{
+	const AnimationInfo info = infosById.at(anim);
+
+	const int firstRectIndex = (frameIndex * (info.NumRectsPerTime()));
+
+	return gsl::make_span(
+		&allFrameRects[info.IndexOfFirstRect() + firstRectIndex],
+		info.NumRectsPerTime());
+}
+
 auto AnimationLibrary::GetTime(
 	const AnimationId anim,
 	const int frameIndex)
-	const -> Animation::TimeUnit
+		const -> Animation::TimeUnit
 {
 	const AnimationInfo info = infosById.at(anim);
 

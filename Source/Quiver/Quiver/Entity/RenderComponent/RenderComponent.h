@@ -34,8 +34,6 @@ public:
 	void UpdateDetachedBodyRotation(const float cameraAngle);
 	void UpdateDetachedBodyPosition();
 
-	void UpdateAnimatorAltView(const float cameraAngle, const b2Vec2& cameraPosition);
-
 	float GetHeight() const { return mFixtureRenderData->GetHeight(); }
 	float GetGroundOffset() const { return mFixtureRenderData->GetGroundOffset(); }
 	float GetSpriteRadius() const { return mFixtureRenderData->GetSpriteRadius(); }
@@ -56,7 +54,7 @@ public:
 
 	void RemoveTexture();
 
-	const Animation::Rect& GetTextureRect() const { return mFixtureRenderData->GetTextureRect(); }
+	const ViewBuffer& GetViews() const { return mFixtureRenderData->GetViews(); }
 
 	void SetTextureRect(const Animation::Rect& rect);
 

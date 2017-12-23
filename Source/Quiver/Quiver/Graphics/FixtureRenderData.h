@@ -25,7 +25,7 @@ class FixtureRenderData
 
 	std::shared_ptr<sf::Texture> mTexture;
 
-	AnimatorTarget mTextureRect;
+	AnimatorTarget mTextureRects;
 
 public:
 	float GetHeight() const { return mHeight; }
@@ -38,7 +38,7 @@ public:
 
 	const sf::Texture* GetTexture() const { return mTexture.get(); }
 
-	const Animation::Rect& GetTextureRect() const { return mTextureRect.rect; }
+	const ViewBuffer& GetViews() const { return mTextureRects.views; }
 };
 
 }

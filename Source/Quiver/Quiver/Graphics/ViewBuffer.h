@@ -11,7 +11,21 @@ namespace qvr {
 struct ViewBuffer {
 	int viewCount = 0;
 	std::array<Animation::Rect, 8> views;
+
+	// TODO: Consider making initial value of viewCount == 1.
+	// TODO: Consider making viewCount < 1 illegal.
 };
+
+// TODO: Consider making these public member functions of ViewBuffer and
+// making the data members private.
+
+inline void SetView(
+	ViewBuffer& vb,
+	const Animation::Rect& singleView)
+{
+	vb.viewCount = 1;
+	vb.views[0] = singleView;
+}
 
 inline void SetViews(
 	ViewBuffer& target,

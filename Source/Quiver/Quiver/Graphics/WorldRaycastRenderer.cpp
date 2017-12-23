@@ -295,7 +295,7 @@ void WorldRaycastRendererImpl::Render(const World & world, const Camera3D & came
 		const float lineStartY = ((targetSize.y - lineHeight + lineOffset) / 2) + cameraPitchOffset;
 		const float lineEndY = ((targetSize.y + lineHeight + lineOffset) / 2) + cameraPitchOffset;
 
-		const Animation::Rect textureRect = renderData.GetTextureRect();
+		const Animation::Rect textureRect = renderData.GetViews().views[0];
 
 		auto CalculateU = [&camera](
 			const b2Vec2& hitPoint,

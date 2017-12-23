@@ -5,9 +5,9 @@
 using namespace qvr;
 using Rect = Animation::Rect;
 
-void GenerateRectValues(const gsl::span<Rect> rects) {
+void GenerateRectValues(const gsl::span<Rect> views) {
 	int i = 0;
-	for (auto& rect : rects) {
+	for (auto& rect : views) {
 		rect = Rect{ i, i, i, i };
 		i++;
 	}
@@ -15,9 +15,9 @@ void GenerateRectValues(const gsl::span<Rect> rects) {
 
 template<int size>
 std::array<Rect, size> GenerateRects() {
-	std::array<Rect, size> rects;
-	GenerateRectValues(rects);
-	return rects;
+	std::array<Rect, size> views;
+	GenerateRectValues(views);
+	return views;
 }
 
 TEST_CASE("ViewBuffer", "[Graphics]") {
@@ -26,13 +26,13 @@ TEST_CASE("ViewBuffer", "[Graphics]") {
 	REQUIRE(vb.viewCount == 0);
 
 	SECTION("SetViews clamps input") {
-		const auto rects = GenerateRects<vb.views.size() + 1>();
+		const auto views = GenerateRects<vb.views.size() + 1>();
 
-		SetViews(vb, rects);
+		SetViews(vb, views);
 
 		REQUIRE(vb.viewCount == (int)vb.views.size());
-		REQUIRE(GetViews(vb) == gsl::make_span(&rects[0], vb.viewCount));
-		REQUIRE(GetViews(vb) != gsl::make_span(rects));
+		REQUIRE(GetViews(vb) == gsl::make_span(&views[0], vb.viewCount));
+		REQUIRE(GetViews(vb) != gsl::make_span(views));
 	}
 
 	SetViews(vb, GenerateRects<4>());  

@@ -71,7 +71,7 @@ void Wanderer::OnStep(float timestep)
 			// Just flip direction.
 			mWalkingState.direction *= -1.0f;
 
-			GetEntity().GetGraphics()->SetAnimatorRotation(
+			GetEntity().GetGraphics()->SetObjectAngle(
 				b2Atan2(mWalkingState.direction.y, mWalkingState.direction.x) + b2_pi);
 		}
 	}

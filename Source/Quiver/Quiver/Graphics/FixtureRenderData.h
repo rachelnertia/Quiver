@@ -19,6 +19,7 @@ class FixtureRenderData
 	float mHeight = 1.0f;
 	float mGroundOffset = 0.0f;
 	float mSpriteRadius = 0.5f;
+	float mObjectAngle = 0.0f;
 	b2Vec2 mSpritePosition;
 
 	sf::Color mBlendColor = sf::Color(255, 255, 255, 255);
@@ -31,6 +32,7 @@ public:
 	float GetHeight() const { return mHeight; }
 	float GetGroundOffset() const { return mGroundOffset; }
 	float GetSpriteRadius() const { return mSpriteRadius; }
+	float GetObjectAngle() const { return mObjectAngle; }
 
 	const b2Vec2& GetSpritePosition() const { return mSpritePosition; }
 

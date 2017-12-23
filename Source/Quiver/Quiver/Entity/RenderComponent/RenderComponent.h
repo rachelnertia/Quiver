@@ -34,24 +34,22 @@ public:
 	void UpdateDetachedBodyRotation(const float cameraAngle);
 	void UpdateDetachedBodyPosition();
 
-	float GetHeight() const { return mFixtureRenderData->GetHeight(); }
-	float GetGroundOffset() const { return mFixtureRenderData->GetGroundOffset(); }
-	float GetSpriteRadius() const { return mFixtureRenderData->GetSpriteRadius(); }
-	float GetAnimatorRotation() const { return mImpostorRotation; }
+	float GetHeight()                 const { return mFixtureRenderData->GetHeight(); }
+	float GetGroundOffset()           const { return mFixtureRenderData->GetGroundOffset(); }
+	float GetSpriteRadius()           const { return mFixtureRenderData->GetSpriteRadius(); }
+	float GetObjectAngle()            const { return mFixtureRenderData->GetObjectAngle(); }
 	const b2Vec2& GetSpritePosition() const { return mFixtureRenderData->GetSpritePosition(); }
-	const sf::Color GetColor() const { return mFixtureRenderData->GetColor(); }
+	const sf::Color GetColor()        const { return mFixtureRenderData->GetColor(); }
 
-	void SetHeight(const float height) { mFixtureRenderData->mHeight = height; }
+	void SetHeight      (const float height)       { mFixtureRenderData->mHeight = height; }
 	void SetGroundOffset(const float groundOffset) { mFixtureRenderData->mGroundOffset = groundOffset; }
-	void SetAnimatorRotation(const float radians) { mImpostorRotation = radians; }
+	void SetObjectAngle (const float radians)      { mFixtureRenderData->mObjectAngle = radians; }
+	void SetColor       (const sf::Color& color)   { mFixtureRenderData->mBlendColor = color; }
 	void SetSpriteRadius(const float spriteRadius);
-	void SetColor(const sf::Color& color) { mFixtureRenderData->mBlendColor = color; }
 
 	const sf::Texture* GetTexture()         const { return mFixtureRenderData->GetTexture(); }
 	const char*        GetTextureFilename() const { return mTextureFilename.c_str(); }
-
 	bool SetTexture(const std::string& filename);
-
 	void RemoveTexture();
 
 	const ViewBuffer& GetViews() const { return mFixtureRenderData->GetViews(); }
@@ -83,9 +81,6 @@ private:
 
 	// Set when the RenderComponent has a different b2Body from the PhysicsComponent.
 	Physics::b2BodyUniquePtr mDetachedBody;
-
-	// For when using impostors.
-	float mImpostorRotation = 0.0f;
 };
 
 }

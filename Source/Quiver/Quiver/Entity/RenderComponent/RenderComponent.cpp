@@ -392,11 +392,8 @@ bool RenderComponent::SetAnimation(const AnimationId animationId, AnimatorRepeat
 		return false;
 	}
 
-	bool hadImpostors = false;
-
 	if (animators.AnimatorExists(mAnimatorId)) {
 		const AnimationId oldAnimation = animators.GetAnimatorAnimation(mAnimatorId);
-		hadImpostors = animators.GetAnimations().HasAltViews(oldAnimation);
 
 		if (!animators.SetAnimatorAnimation(
 			mAnimatorId,

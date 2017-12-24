@@ -224,24 +224,14 @@ auto AnimationLibrary::GetTime(
 	return allFrameTimes[info.IndexOfFirstTime() + frameIndex];
 }
 
-
 using json = nlohmann::json;
 
-auto ToJson(const AnimationSourceInfo& animationSource) -> json
-{
-	nlohmann::json j;
-
+void to_json(json& j, const AnimationSourceInfo& animationSource) {
 	j["File"] = animationSource.filename;
 
 	if (!animationSource.name.empty()) {
 		j["Name"] = animationSource.name;
 	}
-
-	return j;
-}
-
-void to_json(json& j, const AnimationSourceInfo& sourceInfo) {
-	j = ToJson(sourceInfo);
 }
 
 void from_json(const json& j, AnimationSourceInfo& animationSource)
@@ -252,16 +242,12 @@ void from_json(const json& j, AnimationSourceInfo& animationSource)
 
 static const char* AnimationSourcesFieldTitle = "AnimationSources";
 
-auto ToJson(const AnimationLibrary& animations) -> json
+void to_json(nlohmann::json& j, const AnimationLibrary& animations)
 {
-	json j;
-
 	for (auto kvp : animations.sourcesById)
 	{
-		j[AnimationSourcesFieldTitle].push_back(ToJson(kvp.second));
+		j[AnimationSourcesFieldTitle].push_back(kvp.second);
 	}
-
-	return j;
 }
 
 bool AddFromSource(AnimationLibrary& library, const AnimationSourceInfo& sourceInfo)

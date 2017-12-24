@@ -361,10 +361,6 @@ TEST_CASE("AnimatorCollection", "[Animation]")
 	}
 }
 
-TEST_CASE("More AnimatorCollection", "[Animation]") {
-	
-}
-
 TEST_CASE("AnimationLibrary", "[Animation]") {
 	qvr::InitLoggers(spdlog::level::off);
 
@@ -377,7 +373,7 @@ TEST_CASE("AnimationLibrary", "[Animation]") {
 	REQUIRE(animations.GetIds().empty());
 
 	{
-		const json j = ToJson(animations);
+		const json j = animations;
 		REQUIRE(j.empty());
 	}
 

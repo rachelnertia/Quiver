@@ -31,10 +31,9 @@ bool AnimatorCollection::FromJson(const nlohmann::json & j)
 	return true;
 }
 
-// Store the source info of every Animation currently in the System so that we can reload later.
 nlohmann::json AnimatorCollection::ToJson() const
 {
-	return qvr::ToJson(animations);
+	return animations;
 }
 
 AnimationId AnimatorCollection::AddAnimation(const AnimationData & anim) 

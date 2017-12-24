@@ -76,7 +76,7 @@ public:
 		return allIds;
 	}
 
-	friend nlohmann::json ToJson(const AnimationLibrary& animations);
+	friend void to_json(nlohmann::json& j, const AnimationLibrary& animations);
 
 private:
 	struct AnimationInfo {
@@ -116,8 +116,7 @@ private:
 	std::unordered_map<AnimationId, AnimationSourceInfo> sourcesById;
 };
 
-auto ToJson(const AnimationLibrary& animations) -> nlohmann::json;
-
+void to_json(nlohmann::json& j, const AnimationLibrary& animations);
 void to_json(nlohmann::json& j, const AnimationSourceInfo& sourceInfo);
 
 void from_json(const nlohmann::json& j, AnimationLibrary& animations);

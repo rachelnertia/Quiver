@@ -104,11 +104,7 @@ public:
 	bool RegisterDetachedRenderComponent(const RenderComponent& renderComponent);
 	bool UnregisterDetachedRenderComponent(const RenderComponent& renderComponent);
 
-	bool RegisterAnimatorWithAltViews(const RenderComponent& renderComponent);
-	bool UnregisterAnimatorWithAltViews(const RenderComponent& renderComponent);
-
 	void UpdateDetachedRenderComponents(const Camera3D& camera);
-	void UpdateAnimatorAltViews(const Camera3D& camera);
 
 	bool RegisterAudioComponent(const AudioComponent& audioComponent);
 	bool UnregisterAudioComponent(const AudioComponent& audioComponent);
@@ -194,7 +190,6 @@ private:
 
 	std::vector<std::reference_wrapper<Camera3D>>        mCameras;
 	std::vector<std::reference_wrapper<RenderComponent>> mDetachedRenderComponents;
-	std::vector<std::reference_wrapper<RenderComponent>> mAnimatedWithAltViews;
 	std::vector<std::reference_wrapper<AudioComponent>>  mAudioComponents;
 
 	std::vector<std::unique_ptr<Entity>> mEntities;

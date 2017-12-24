@@ -42,7 +42,7 @@ private:
 	AnimatorCollection mAnimators;
 	AnimationId mCurrentAnimationId = AnimationId::Invalid;
 	AnimatorId  mAnimatorId = AnimatorId::Invalid;
-	AnimatorTarget mAnimationPreviewRect;
+	AnimatorTarget mAnimationPreviewTarget;
 
 	float mAnimationPlaybackSpeedMultiplier = 1.0f;
 	float mTimeCounter = 0.0f;

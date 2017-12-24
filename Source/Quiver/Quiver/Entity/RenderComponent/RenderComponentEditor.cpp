@@ -82,7 +82,7 @@ void RenderComponentEditor::GuiControls()
 			else {
 				ImGui::Image(*m_RenderComponent.GetTexture());
 
-				const Animation::Rect rect = m_RenderComponent.GetTextureRect();
+				const Animation::Rect rect = m_RenderComponent.GetViews().views[0];
 
 				ImGui::Image(*m_RenderComponent.GetTexture(),
 					sf::FloatRect(
@@ -132,7 +132,7 @@ void RenderComponentEditor::GuiControls()
 			if (ImGui::CollapsingHeader("Set Texture Rect")) {
 				ImGui::AutoIndent indent2;
 
-				Animation::Rect rect = m_RenderComponent.GetTextureRect();
+				Animation::Rect rect = m_RenderComponent.GetViews().views[0];
 
 				int corner[2] = { rect.left, rect.top };
 				if (ImGui::InputInt2("Top Left (X, Y)", corner)) {

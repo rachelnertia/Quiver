@@ -101,15 +101,16 @@ AnimatorId AnimatorCollection::AddAnimator(
 			frameIndex,
 			animators.hotStates.size(),
 			target,
-			startSetting.m_RepeatSetting,
-			AnimatorAltViewState(animations.GetViewCount(startSetting.m_AnimationId) - 1));
+			startSetting.m_RepeatSetting);
 
 	animators.hotStates.emplace_back(
 		newAnimatorId,
 		animations.GetTime(startSetting.m_AnimationId, 0));
 
 	// Update target.
-	target.rect = animations.GetRect(startSetting.m_AnimationId, 0, 0);
+	SetViews(
+		target.views,
+		animations.GetRects(startSetting.m_AnimationId, 0));
 
 	animationReferenceCounts[startSetting.m_AnimationId]++;
 
@@ -194,8 +195,6 @@ bool AnimatorCollection::SetAnimatorAnimation(const AnimatorId animatorId, const
 
 	animator.currentAnimation = startSetting.m_AnimationId;
 	animator.currentFrame = 0;
-	animator.altViewState =
-		AnimatorAltViewState(animations.GetViewCount(animator.currentAnimation) - 1);
 	animator.repeatCount = 0;
 	animator.repeatSetting = startSetting.m_RepeatSetting;
 
@@ -203,12 +202,9 @@ bool AnimatorCollection::SetAnimatorAnimation(const AnimatorId animatorId, const
 		animator.queuedAnimations.clear();
 	}
 
-	// Don't worry about alt views when doing this, the user will call the function
-	// to update them at some point.
-	animator.target->rect = 
-		animations.GetRect(
-			animator.currentAnimation, 
-			animator.currentFrame);
+	SetViews(
+		animator.target->views,
+		animations.GetRects(animator.currentAnimation, animator.currentFrame));
 
 	animators.hotStates[animator.index].timeLeftInFrame
 		= animations.GetTime(
@@ -274,11 +270,9 @@ bool AnimatorCollection::SetAnimatorFrame(
 
 	animator.currentFrame = frameIndex;
 
-	animator.target->rect = 
-		animations.GetRect(
-			animator.currentAnimation, 
-			animator.currentFrame, 
-			animator.altViewState.currentAltView);
+	SetViews(
+		animator.target->views,
+		animations.GetRects(animator.currentAnimation, animator.currentFrame));
 
 	animators.hotStates[animator.index].timeLeftInFrame =
 		animations.GetTime(
@@ -354,11 +348,9 @@ void AnimatorCollection::Animate(const AnimatorCollection::TimeUnit ms) {
 		}
 
 		// Update target.
-		animator.target->rect = 
-			animations.GetRect(
-				animator.currentAnimation,
-				animator.currentFrame,
-				animator.altViewState.currentAltView);
+		SetViews(
+			animator.target->views,
+			animations.GetRects(animator.currentAnimation, animator.currentFrame));
 
 		animators.hotStates[animator.index].timeLeftInFrame += 
 			animations.GetTime(animator.currentAnimation, animator.currentFrame);
@@ -366,38 +358,6 @@ void AnimatorCollection::Animate(const AnimatorCollection::TimeUnit ms) {
 
 	for (auto animatorId : animatorsToRemove) {
 		RemoveAnimator(animatorId);
-	}
-}
-
-void AnimatorCollection::UpdateAnimatorAltView(
-	const AnimatorId animatorId,
-	const float objectAngle,
-	const float viewAngle)
-{
-	const float Tau = 6.28318530718f;
-
-	AnimatorState& animator =
-		animators.states.at(animatorId);
-	AnimatorAltViewState& altViewState = animator.altViewState;
-
-	// Yup! This is it!
-	const unsigned viewIndex =
-		(unsigned)((fmodf((objectAngle - viewAngle + Tau), Tau) / Tau)
-			* (altViewState.NumAltViews() + 1));
-
-	// Make sure my maths is right.
-	assert(viewIndex >= 0);
-	assert(viewIndex <= altViewState.NumAltViews());
-
-	if (viewIndex != altViewState.currentAltView) {
-		// Update the Animator.
-		altViewState.currentAltView = viewIndex;
-
-		animator.target->rect =
-			animations.GetRect(
-				animator.currentAnimation,
-				animator.currentFrame,
-				viewIndex);
 	}
 }
 

@@ -15,7 +15,7 @@ using namespace Animation;
 // Returns true if every frame in the AnimationData is of the same size.
 bool IsAnimationTiled(const AnimationData & animation)
 {
-	// If all the frame rects have the same width and height, then tiled is true.
+	// If all the frame views have the same width and height, then tiled is true.
 
 	if (animation.GetRectCount() < 2) return false;
 
@@ -483,21 +483,22 @@ void AnimationEditor::ProcessGui() {
 			
 			if (mCurrentAnimationId != AnimationId::Invalid) 
 			{
-				mAnimatorId = mAnimators.AddAnimator(mAnimationPreviewRect, mCurrentAnimationId);
+				mAnimatorId = mAnimators.AddAnimator(mAnimationPreviewTarget, mCurrentAnimationId);
 			}
 		}
 
 		ImGui::SliderFloat("Playback Speed Multiplier", &mAnimationPlaybackSpeedMultiplier, 0.1f, 5.0f);
 
-		if (ImGui::SliderAngle("View Angle", &mAnimationPreviewViewAngle, 0, 360.0f)) {
-			mAnimators.UpdateAnimatorAltView(mAnimatorId, mAnimationPreviewObjectAngle, mAnimationPreviewViewAngle);
-		}
+		ImGui::SliderAngle("View Angle", &mAnimationPreviewViewAngle, 0, 360.0f);
 
-		if (ImGui::SliderAngle("Object Angle", &mAnimationPreviewObjectAngle, 0, 360.0f)) {
-			mAnimators.UpdateAnimatorAltView(mAnimatorId, mAnimationPreviewObjectAngle, mAnimationPreviewViewAngle);
-		}
+		ImGui::SliderAngle("Object Angle", &mAnimationPreviewObjectAngle, 0, 360.0f);
 
-		PutFrame(mTexture, mAnimationPreviewRect.rect);
+		PutFrame(
+			mTexture, 
+			CalculateView(
+				mAnimationPreviewTarget.views, 
+				mAnimationPreviewObjectAngle,
+				mAnimationPreviewViewAngle));
 	}
 
 	ImGui::End();

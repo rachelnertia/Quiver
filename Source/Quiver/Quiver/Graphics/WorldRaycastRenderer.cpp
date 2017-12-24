@@ -245,8 +245,7 @@ void WorldRaycastRendererImpl::Render(const World & world, const Camera3D & came
 		m_RaycastCallbacks.end(),
 		DoRaycast);
 
-	using RayIntersection = RaycastCallback::RayIntersection;
-
+	// shove all intersections into one big array
 	for (const auto& raycastCallback : m_RaycastCallbacks)
 	{
 		const auto begin = std::begin(raycastCallback.m_Intersections);
@@ -257,6 +256,8 @@ void WorldRaycastRendererImpl::Render(const World & world, const Camera3D & came
 			begin,
 			end);
 	}
+	
+	using RayIntersection = RaycastCallback::RayIntersection;
 
 	// sort by distance such that further away intersections come first
 	std::sort(
@@ -295,7 +296,16 @@ void WorldRaycastRendererImpl::Render(const World & world, const Camera3D & came
 		const float lineStartY = ((targetSize.y - lineHeight + lineOffset) / 2) + cameraPitchOffset;
 		const float lineEndY = ((targetSize.y + lineHeight + lineOffset) / 2) + cameraPitchOffset;
 
-		const Animation::Rect textureRect = renderData.GetTextureRect();
+		const Animation::Rect textureRect = 
+			renderData.GetViews().viewCount <= 1 ?
+			renderData.GetViews().views[0] :
+			CalculateView(
+				renderData.GetViews(),
+				renderData.GetObjectAngle(),
+				[&camera, &renderData]() {
+					const b2Vec2 disp = renderData.GetSpritePosition() - camera.GetPosition();
+					return b2Atan2(disp.y, disp.x) + b2_pi;
+				}());
 
 		auto CalculateU = [&camera](
 			const b2Vec2& hitPoint,

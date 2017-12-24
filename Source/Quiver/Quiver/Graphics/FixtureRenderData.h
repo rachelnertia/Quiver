@@ -19,18 +19,20 @@ class FixtureRenderData
 	float mHeight = 1.0f;
 	float mGroundOffset = 0.0f;
 	float mSpriteRadius = 0.5f;
+	float mObjectAngle = 0.0f;
 	b2Vec2 mSpritePosition;
 
 	sf::Color mBlendColor = sf::Color(255, 255, 255, 255);
 
 	std::shared_ptr<sf::Texture> mTexture;
 
-	AnimatorTarget mTextureRect;
+	AnimatorTarget mTextureRects;
 
 public:
 	float GetHeight() const { return mHeight; }
 	float GetGroundOffset() const { return mGroundOffset; }
 	float GetSpriteRadius() const { return mSpriteRadius; }
+	float GetObjectAngle() const { return mObjectAngle; }
 
 	const b2Vec2& GetSpritePosition() const { return mSpritePosition; }
 
@@ -38,7 +40,7 @@ public:
 
 	const sf::Texture* GetTexture() const { return mTexture.get(); }
 
-	const Animation::Rect& GetTextureRect() const { return mTextureRect.rect; }
+	const ViewBuffer& GetViews() const { return mTextureRects.views; }
 };
 
 }

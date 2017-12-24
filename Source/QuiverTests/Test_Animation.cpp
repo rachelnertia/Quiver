@@ -155,7 +155,7 @@ TEST_CASE("AnimationData can be modified", "[Animation]")
 		}
 		SECTION("SetFrame rejects invalid frames") {
 			const Frame frame3{ 3ms,{ 9,9,9,9 },{ { 0,1,2,3 } } };
-			// Number of alt rects does not the AnimationData's.
+			// Number of alt views does not the AnimationData's.
 			REQUIRE(!animationData.SetFrame(0, frame3));
 		}
 		const Frame frame3{ 3ms, {9,9,9,9}, {} };
@@ -236,13 +236,13 @@ TEST_CASE("AnimatorCollection", "[Animation]")
 	REQUIRE(animatorId != AnimatorId::Invalid);
 	REQUIRE(animators.GetAnimatorAnimation(animatorId) == animationId);
 	REQUIRE(animators.GetAnimatorFrame(animatorId) == 0);
-	REQUIRE(animatorTarget.rect == animationData.GetRect(0).value());
+	REQUIRE(animatorTarget.views.views[0] == animationData.GetRect(0).value());
 
 	SECTION("Animate plays the animation") {
 		for (int i = 0; i < animationData.GetFrameCount(); ++i) {
 			REQUIRE(animators.GetAnimatorAnimation(animatorId) == animationId);
 			REQUIRE((int)animators.GetAnimatorFrame(animatorId) == i);
-			REQUIRE(animatorTarget.rect == animationData.GetRect(i).value());
+			REQUIRE(animatorTarget.views.views[0] == animationData.GetRect(i).value());
 
 			animators.Animate(animationData.GetTime(i).value());
 		}
@@ -250,7 +250,7 @@ TEST_CASE("AnimatorCollection", "[Animation]")
 		SECTION("It loops") {
 			REQUIRE(animators.GetAnimatorAnimation(animatorId) == animationId);
 			REQUIRE(animators.GetAnimatorFrame(animatorId) == 0);
-			REQUIRE(animatorTarget.rect == animationData.GetRect(0).value());
+			REQUIRE(animatorTarget.views.views[0] == animationData.GetRect(0).value());
 		}
 	}
 
@@ -272,7 +272,7 @@ TEST_CASE("AnimatorCollection", "[Animation]")
 			}
 		}
 
-		const Rect originalTargetVal = animatorTarget.rect;
+		const Rect originalTargetVal = animatorTarget.views.views[0];
 		const int originalFrame = animators.GetAnimatorFrame(animatorId);
 
 		SECTION("Reject invalid frame") {
@@ -280,14 +280,14 @@ TEST_CASE("AnimatorCollection", "[Animation]")
 			{
 				REQUIRE(animators.SetAnimatorFrame(animatorId, invalidFrame) == false);
 				REQUIRE((int)animators.GetAnimatorFrame(animatorId) == originalFrame);
-				REQUIRE(animatorTarget.rect == originalTargetVal);
+				REQUIRE(animatorTarget.views.views[0] == originalTargetVal);
 			}
 		}
 
 		SECTION("Set to current frame") {
 			REQUIRE(animators.SetAnimatorFrame(animatorId, 0));
 			REQUIRE((int)animators.GetAnimatorFrame(animatorId) == originalFrame);
-			REQUIRE(animatorTarget.rect == originalTargetVal);
+			REQUIRE(animatorTarget.views.views[0] == originalTargetVal);
 		}
 
 		SECTION("Set to other frame") {
@@ -295,7 +295,7 @@ TEST_CASE("AnimatorCollection", "[Animation]")
 
 			REQUIRE(animators.SetAnimatorFrame(animatorId, otherIndex));
 			REQUIRE(animators.GetAnimatorFrame(animatorId) == otherIndex);
-			REQUIRE(animatorTarget.rect == animationData.GetRect(otherIndex).value());
+			REQUIRE(animatorTarget.views.views[0] == animationData.GetRect(otherIndex).value());
 		}
 	}
 
@@ -306,14 +306,14 @@ TEST_CASE("AnimatorCollection", "[Animation]")
 
 		SECTION("SetAnimatorAnimation works with the current animation") {
 			const int currentFrame = animators.GetAnimatorFrame(animatorId);
-			const Rect currentRect = animatorTarget.rect;
+			const Rect currentRect = animatorTarget.views.views[0];
 
 			REQUIRE(animators.SetAnimatorAnimation(animatorId, animationId));
 			
 			// Check that the animator & target are left unchanged
 			REQUIRE(animators.GetAnimatorAnimation(animatorId) == animationId);
 			REQUIRE((int)animators.GetAnimatorFrame(animatorId) == currentFrame);
-			REQUIRE(currentRect == animatorTarget.rect);
+			REQUIRE(currentRect == animatorTarget.views.views[0]);
 		}
 
 		SECTION("SetAnimatorAnimation works with different animation") {

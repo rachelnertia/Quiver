@@ -76,16 +76,6 @@ class AnimationData;
 
 class AnimatorCollection {
 public:
-	AnimatorCollection() = default;
-
-	AnimatorCollection(const AnimatorCollection&) = delete;
-	AnimatorCollection(const AnimatorCollection&&) = delete;
-	AnimatorCollection& operator=(const AnimatorCollection&) = delete;
-	AnimatorCollection& operator=(const AnimatorCollection&&) = delete;
-
-	bool FromJson(const nlohmann::json& j);
-	auto ToJson() const -> nlohmann::json;
-
 	auto GetAnimations() const -> const AnimationLibrary& {
 		return animations;
 	}
@@ -200,8 +190,14 @@ private:
 	friend void GuiControls(
 		AnimatorCollection& animators, 
 		AnimationLibraryEditorData& editorData);
+
+	friend void to_json(nlohmann::json& j, const AnimatorCollection& animators);
+	friend void from_json(const nlohmann::json& j, AnimatorCollection& animators);
 };
 
 void GuiControls(AnimatorCollection& animators, AnimationLibraryEditorData& editorData);
+
+void to_json(nlohmann::json& j, const AnimatorCollection& animators);
+void from_json(const nlohmann::json& j, AnimatorCollection& animators);
 
 }

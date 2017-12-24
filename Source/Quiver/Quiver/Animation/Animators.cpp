@@ -24,18 +24,6 @@ const AnimatorRepeatSetting AnimatorRepeatSetting::Never = AnimatorRepeatSetting
 const AnimatorRepeatSetting AnimatorRepeatSetting::Once = AnimatorRepeatSetting(1);
 const AnimatorRepeatSetting AnimatorRepeatSetting::Twice = AnimatorRepeatSetting(2);
 
-bool AnimatorCollection::FromJson(const nlohmann::json & j)
-{
-	animations = j;
-
-	return true;
-}
-
-nlohmann::json AnimatorCollection::ToJson() const
-{
-	return animations;
-}
-
 AnimationId AnimatorCollection::AddAnimation(const AnimationData & anim) 
 {
 	return animations.Add(anim);
@@ -393,6 +381,16 @@ void GuiControls(AnimatorCollection& animators, AnimationLibraryEditorData& edit
 
 		AddAnimations(animators.animations, editorData);
 	}
+}
+
+using json = nlohmann::json;
+
+void to_json(json& j, const AnimatorCollection& animators) {
+	j = animators.animations;
+}
+
+void from_json(const json& j, AnimatorCollection& animators) {
+	animators.animations = j;
 }
 
 }

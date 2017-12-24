@@ -240,13 +240,11 @@ void from_json(const json& j, AnimationSourceInfo& animationSource)
 	animationSource.name     = j.value<std::string>("Name", {});
 }
 
-static const char* AnimationSourcesFieldTitle = "AnimationSources";
-
 void to_json(nlohmann::json& j, const AnimationLibrary& animations)
 {
 	for (auto kvp : animations.sourcesById)
 	{
-		j[AnimationSourcesFieldTitle].push_back(kvp.second);
+		j.push_back(kvp.second);
 	}
 }
 
@@ -275,9 +273,7 @@ void from_json(const json& j, AnimationLibrary& animations)
 {
 	if (j.is_null()) return;
 
-	std::vector<AnimationSourceInfo> animSources;
-
-	animSources = j.at(AnimationSourcesFieldTitle).get<std::vector<AnimationSourceInfo>>();
+	const auto animSources = j.get<std::vector<AnimationSourceInfo>>();
 	
 	for (auto& animSource : animSources) {
 		AddFromSource(animations, animSource);

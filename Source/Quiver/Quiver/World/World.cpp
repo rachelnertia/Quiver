@@ -445,6 +445,12 @@ bool World::AddEntity(std::unique_ptr<Entity> entity)
 	return true;
 }
 
+namespace {
+
+const char* animationsFieldName = "Animations";
+
+}
+
 bool World::ToJson(nlohmann::json & j) const {
 	using json = nlohmann::json;
 
@@ -471,11 +477,9 @@ bool World::ToJson(nlohmann::json & j) const {
 		j["Gravity"] = { gravity.x, gravity.y };
 	}
 
-	{
-		mSky.ToJson(j["Sky"]);
-	}
+	mSky.ToJson(j["Sky"]);
 
-	j["Animators"] = mAnimators.ToJson();
+	j[animationsFieldName] = mAnimators;
 
 	unsigned serializedEntityCount = 0;
 
@@ -539,7 +543,7 @@ World::World(
 		log->error("Failed to deserialize directional light.");
 	}
 
-	mAnimators.FromJson(JsonHelp::GetValue<nlohmann::json>(j, "Animators", {}));
+	mAnimators = JsonHelp::GetValue<nlohmann::json>(j, animationsFieldName, {});
 
 	if (j.find("Prefabs") != j.end()) {
 		if (!mEntityPrefabs.FromJson(j["Prefabs"])) {

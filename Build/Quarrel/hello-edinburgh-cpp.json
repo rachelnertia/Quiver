@@ -2,29 +2,27 @@
     "AmbientLight": {
         "Colour": "bb81ffff"
     },
-    "Animators": {
-        "AnimationSources": [
-            {
-                "File": "animations/darkmage_anims.json",
-                "Name": "awaken"
-            },
-            {
-                "File": "animations/flyghelm_fly_impo.json"
-            },
-            {
-                "File": "animations/darkmage_anims.json",
-                "Name": "attack"
-            },
-            {
-                "File": "animations/darkmage_anims.json",
-                "Name": "die"
-            },
-            {
-                "File": "animations/darkmage_anims.json",
-                "Name": "idle"
-            }
-        ]
-    },
+    "Animations": [
+        {
+            "File": "animations/darkmage_anims.json",
+            "Name": "awaken"
+        },
+        {
+            "File": "animations/flyghelm_fly_impo.json"
+        },
+        {
+            "File": "animations/darkmage_anims.json",
+            "Name": "attack"
+        },
+        {
+            "File": "animations/darkmage_anims.json",
+            "Name": "die"
+        },
+        {
+            "File": "animations/darkmage_anims.json",
+            "Name": "idle"
+        }
+    ],
     "DirectionalLight": {
         "Angle": 0.872664630413055,
         "Color": "450a1d00"
@@ -2546,6 +2544,51 @@
                 }
             ],
             "PrefabName": "Darkmage"
+        },
+        {
+            "Diff": [
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Angle",
+                    "value": 0.0
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Friction",
+                    "value": 0.200000002980232
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/LinearDamping",
+                    "value": 1.22000002861023
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Position/0",
+                    "value": -2.125
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Position/1",
+                    "value": -2.34375
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Shape/Radius",
+                    "value": 0.39860674738884
+                },
+                {
+                    "op": "replace",
+                    "path": "/RenderComponent/Height",
+                    "value": 0.866000056266785
+                },
+                {
+                    "op": "replace",
+                    "path": "/RenderComponent/SpriteRadius",
+                    "value": 0.348000019788742
+                }
+            ],
+            "PrefabName": "Flyghelm"
         }
     ],
     "Fog": {
@@ -2617,6 +2660,41 @@
                     "right": 32,
                     "top": 0
                 }
+            }
+        },
+        "Flyghelm": {
+            "CustomComponent": {
+                "Data": null,
+                "Type": "Wanderer"
+            },
+            "PhysicsComponent": {
+                "Angle": 3.13799214363098,
+                "AngularDamping": 0.0,
+                "BodyType": "Dynamic",
+                "FixedRotation": true,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 1.22000002861023,
+                "Position": [
+                    -2.42923259735107,
+                    2.46389579772949
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Radius": 0.39860674738884,
+                    "Type": "Circle"
+                }
+            },
+            "RenderComponent": {
+                "Animation": {
+                    "File": "animations/flyghelm_fly_impo.json"
+                },
+                "Colour": "ffffffff",
+                "Detached": true,
+                "GroundOffset": 0.0,
+                "Height": 0.866000056266785,
+                "SpriteRadius": 0.348000019788742,
+                "Texture": "textures/flyghelm.png"
             }
         },
         "Pillar": {

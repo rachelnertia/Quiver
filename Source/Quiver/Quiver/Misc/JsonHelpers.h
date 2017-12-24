@@ -8,7 +8,7 @@ namespace JsonHelp
 
 	// json::value throws if called on a nlohmann::json that isn't an object.
 	// This protects us against that.
-	// Also protects us against the exception thrown when the key is found but it is
+	// Also protects us against the exception thrown when the key is found but the value
 	// not convertible to T.
 	template <typename T>
 	T GetValue(const nlohmann::json& j, const char* name, T defaultValue)

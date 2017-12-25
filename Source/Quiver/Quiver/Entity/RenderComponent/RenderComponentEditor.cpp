@@ -118,7 +118,7 @@ void RenderComponentEditor::GuiControls()
 			}
 		}
 
-		if (animSystem.AnimatorExists(m_RenderComponent.GetAnimatorId())) {
+		if (animSystem.Exists(m_RenderComponent.GetAnimatorId())) {
 			ImGui::Text("Animator ID:\t%u", m_RenderComponent.GetAnimatorId());
 			animSystem.AnimatorGui(m_RenderComponent.GetAnimatorId());
 

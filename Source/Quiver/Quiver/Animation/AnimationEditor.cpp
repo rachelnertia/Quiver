@@ -483,7 +483,7 @@ void AnimationEditor::ProcessGui() {
 			
 			if (mCurrentAnimationId != AnimationId::Invalid) 
 			{
-				mAnimatorId = mAnimators.AddAnimator(mAnimationPreviewTarget, mCurrentAnimationId);
+				mAnimatorId = mAnimators.Add(mAnimationPreviewTarget, mCurrentAnimationId);
 			}
 		}
 
@@ -514,7 +514,7 @@ void AnimationEditor::Update(const float dt) {
 	const auto timestep = 1.0f / 60.0f;
 
 	if (mTimeCounter >= timestep) {
-		mAnimators.Animate(AnimatorCollection::TimeUnit(int(timestep * 1000)));
+		mAnimators.Animate(Animation::TimeUnit(int(timestep * 1000)));
 		mTimeCounter = 0.0f;
 	}
 }

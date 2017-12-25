@@ -69,11 +69,11 @@ RenderComponent::~RenderComponent()
 	auto log = GetConsoleLogger();
 
 	if (mAnimatorId != AnimatorId::Invalid) {
-		if (GetEntity().GetWorld().GetAnimators().RemoveAnimator(mAnimatorId)) {
+		if (GetEntity().GetWorld().GetAnimators().Remove(mAnimatorId)) {
 			log->debug("RenderComponent::Destroy: Removed Animator {}", mAnimatorId);
 		}
 		else {
-			log->error("RenderComponent::Destroy: RemoveAnimator({}) FAILED!", mAnimatorId);
+			log->error("RenderComponent::Destroy: Remove({}) FAILED!", mAnimatorId);
 		}
 		mAnimatorId = AnimatorId::Invalid;
 	}
@@ -100,9 +100,9 @@ bool RenderComponent::ToJson(nlohmann::json & j) const
 	{
 		const AnimatorCollection& animSystem = GetAnimators(*this);
 
-		if ((mAnimatorId != AnimatorId::Invalid) && animSystem.AnimatorExists(mAnimatorId))
+		if ((mAnimatorId != AnimatorId::Invalid) && animSystem.Exists(mAnimatorId))
 		{
-			const AnimationId animId = animSystem.GetAnimatorAnimation(mAnimatorId);
+			const AnimationId animId = animSystem.GetAnimation(mAnimatorId);
 
 			if (const auto source = animSystem.GetAnimations().GetSourceInfo(animId)) 
 			{
@@ -112,8 +112,8 @@ bool RenderComponent::ToJson(nlohmann::json & j) const
 				}
 			}
 
-			if (animSystem.GetAnimatorFrame(mAnimatorId) > 0) {
-				j["Animation"]["CurrentFrame"] = animSystem.GetAnimatorFrame(mAnimatorId);
+			if (animSystem.GetFrame(mAnimatorId) > 0) {
+				j["Animation"]["CurrentFrame"] = animSystem.GetFrame(mAnimatorId);
 			}
 		}
 		else if (GetTexture())
@@ -202,7 +202,7 @@ bool RenderComponent::FromJson(const nlohmann::json & j)
 					if (FieldExistsInJson("CurrentFrame", j["Animation"])) {
 						const unsigned currentFrame = j["Animation"]["CurrentFrame"].get<unsigned>();
 
-						animSystem.SetAnimatorFrame(mAnimatorId, currentFrame);
+						animSystem.SetFrame(mAnimatorId, currentFrame);
 					}
 				}
 			}
@@ -392,24 +392,24 @@ bool RenderComponent::SetAnimation(const AnimationId animationId, AnimatorRepeat
 		return false;
 	}
 
-	if (animators.AnimatorExists(mAnimatorId)) {
-		const AnimationId oldAnimation = animators.GetAnimatorAnimation(mAnimatorId);
+	if (animators.Exists(mAnimatorId)) {
+		const AnimationId oldAnimation = animators.GetAnimation(mAnimatorId);
 
-		if (!animators.SetAnimatorAnimation(
+		if (!animators.SetAnimation(
 			mAnimatorId,
 			AnimatorStartSetting(animationId, repeatSetting)))
 		{
-			log->error("AnimatorCollection::SetAnimatorAnimation failed!");
+			log->error("AnimatorCollection::SetAnimation failed!");
 			return false;
 		}
 	}
 	else {
-		mAnimatorId = animators.AddAnimator(
+		mAnimatorId = animators.Add(
 			mFixtureRenderData->mTextureRects,
 			AnimatorStartSetting(animationId, repeatSetting));
 
 		if (mAnimatorId == AnimatorId::Invalid) {
-			log->error("AnimatorCollection::AddAnimator failed!");
+			log->error("AnimatorCollection::Add failed!");
 			return false;
 		}
 	}
@@ -421,9 +421,9 @@ void RenderComponent::RemoveAnimation()
 {
 	AnimatorCollection& animators = GetAnimators(*this);
 
-	if (!animators.AnimatorExists(mAnimatorId)) return;
+	if (!animators.Exists(mAnimatorId)) return;
 
-	animators.RemoveAnimator(mAnimatorId);
+	animators.Remove(mAnimatorId);
 
 	mAnimatorId = AnimatorId::Invalid;
 }

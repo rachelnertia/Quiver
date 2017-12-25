@@ -57,7 +57,7 @@ bool AnimatorCollection::RemoveAnimation(const AnimationId id)
 			animatorsToRemove.size());
 
 		for (auto animatorId : animatorsToRemove) {
-			RemoveAnimator(animatorId);
+			Remove(animatorId);
 		}
 	}
 
@@ -70,7 +70,7 @@ AnimatorId AnimatorCollection::Animators::GetNextAnimatorId() {
 	return lastId;
 }
 
-AnimatorId AnimatorCollection::AddAnimator(
+AnimatorId AnimatorCollection::Add(
 	AnimatorTarget & target,
 	const AnimatorStartSetting& startSetting)
 {
@@ -104,7 +104,7 @@ AnimatorId AnimatorCollection::AddAnimator(
 	return newAnimatorId;
 }
 
-bool AnimatorCollection::RemoveAnimator(const AnimatorId id)
+bool AnimatorCollection::Remove(const AnimatorId id)
 {
 	assert(id != AnimatorId::Invalid);
 
@@ -139,7 +139,7 @@ bool AnimatorCollection::RemoveAnimator(const AnimatorId id)
 
 void AnimatorCollection::AnimatorGui(const AnimatorId id)
 {
-	if (!AnimatorExists(id)) {
+	if (!Exists(id)) {
 		ImGui::Text("Animator #%u does not exist", id);
 		return;
 	}
@@ -153,13 +153,13 @@ void AnimatorCollection::AnimatorGui(const AnimatorId id)
 		const int numFrames = (int)animations.GetFrameCount(animator.currentAnimation);
 		int frameIndex = (int)animator.currentFrame;
 		if (ImGui::SliderInt("Current Frame", &frameIndex, 0, numFrames - 1))
-			SetAnimatorFrame(id, frameIndex);
+			SetFrame(id, frameIndex);
 	}
 }
 
 bool AnimatorCollection::ClearAnimationQueue(const AnimatorId id)
 {
-	if (!AnimatorExists(id)) return false;
+	if (!Exists(id)) return false;
 
 	AnimatorState& animator = animators.states[id];
 
@@ -168,9 +168,9 @@ bool AnimatorCollection::ClearAnimationQueue(const AnimatorId id)
 	return true;
 }
 
-bool AnimatorCollection::SetAnimatorAnimation(const AnimatorId animatorId, const AnimatorStartSetting& startSetting, const bool clearQueue)
+bool AnimatorCollection::SetAnimation(const AnimatorId animatorId, const AnimatorStartSetting& startSetting, const bool clearQueue)
 {
-	if (!AnimatorExists(animatorId)) return false;
+	if (!Exists(animatorId)) return false;
 	if (!animations.Contains(startSetting.m_AnimationId)) return false;
 
 	AnimatorState& animator = animators.states[animatorId];
@@ -201,9 +201,9 @@ bool AnimatorCollection::SetAnimatorAnimation(const AnimatorId animatorId, const
 	return true;
 }
 
-bool AnimatorCollection::SetAnimatorTarget(const AnimatorId id, AnimatorTarget & newTarget)
+bool AnimatorCollection::SetTarget(const AnimatorId id, AnimatorTarget & newTarget)
 {
-	if (!AnimatorExists(id)) return false;
+	if (!Exists(id)) return false;
 
 	AnimatorState& animator = animators.states[id];
 
@@ -219,7 +219,7 @@ bool AnimatorCollection::QueueAnimation(const AnimatorId id, const AnimatorStart
 
 	const auto logCtx = "AnimatorCollection::QueueAnimation:";
 
-	if (!AnimatorExists(id)) {
+	if (!Exists(id)) {
 		log->error("{} Animator {} does not exist.", logCtx, id);
 		return false;
 	}
@@ -230,25 +230,25 @@ bool AnimatorCollection::QueueAnimation(const AnimatorId id, const AnimatorStart
 	return true;
 }
 
-AnimationId AnimatorCollection::GetAnimatorAnimation(const AnimatorId animatorId) const
+AnimationId AnimatorCollection::GetAnimation(const AnimatorId animatorId) const
 {
-	assert(AnimatorExists(animatorId));
+	assert(Exists(animatorId));
 	return animators.states.at(animatorId).currentAnimation;
 }
 
-unsigned AnimatorCollection::GetAnimatorFrame(const AnimatorId animatorId) const
+unsigned AnimatorCollection::GetFrame(const AnimatorId animatorId) const
 {
-	assert(AnimatorExists(animatorId));
+	assert(Exists(animatorId));
 	return animators.states.at(animatorId).currentFrame;
 }
 
-bool AnimatorCollection::SetAnimatorFrame(
+bool AnimatorCollection::SetFrame(
 	const AnimatorId id,
 	const int frameIndex)
 {
 	if (frameIndex < 0) return false;
 
-	if (!AnimatorExists(id)) return false;
+	if (!Exists(id)) return false;
 
 	AnimatorState& animator = animators.states[id];
 
@@ -271,12 +271,12 @@ bool AnimatorCollection::SetAnimatorFrame(
 
 using namespace std::chrono_literals;
 
-void AnimatorCollection::Animate(const AnimatorCollection::TimeUnit ms) {
+void AnimatorCollection::Animate(const TimeUnit time) {
 	// because this system doesn't support rewinding.
-	assert(ms >= TimeUnit::zero());
+	assert(time >= TimeUnit::zero());
 
 	for (auto& animatorHotState : animators.hotStates) {
-		animatorHotState.timeLeftInFrame -= ms;
+		animatorHotState.timeLeftInFrame -= time;
 	}
 
 	// select entries for which timeLeftInFrame <= 0:
@@ -314,7 +314,7 @@ void AnimatorCollection::Animate(const AnimatorCollection::TimeUnit ms) {
 					{
 						const bool clearQueue = false;
 
-						if (!SetAnimatorAnimation(
+						if (!SetAnimation(
 							animatorId,
 							animator.queuedAnimations.front(),
 							clearQueue))
@@ -344,14 +344,14 @@ void AnimatorCollection::Animate(const AnimatorCollection::TimeUnit ms) {
 	}
 
 	for (auto animatorId : animatorsToRemove) {
-		RemoveAnimator(animatorId);
+		Remove(animatorId);
 	}
 }
 
 void GuiControls(AnimatorCollection& animators, AnimationLibraryEditorData& editorData)
 {
 	ImGui::Text("Num. Animations: %u", animators.GetAnimations().GetCount());
-	ImGui::Text("Num. Animators:  %u", animators.GetAnimatorCount());
+	ImGui::Text("Num. Animators:  %u", animators.GetCount());
 
 	if (ImGui::CollapsingHeader("View Animations"))
 	{

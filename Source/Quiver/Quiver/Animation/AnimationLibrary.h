@@ -1,6 +1,5 @@
 #pragma once
 
-#include <chrono>
 #include <unordered_map>
 #include <vector>
 
@@ -11,16 +10,10 @@
 #include "Quiver/Animation/AnimationData.h"
 #include "Quiver/Animation/AnimationId.h"
 #include "Quiver/Animation/Rect.h"
+#include "Quiver/Animation/TimeUnit.h"
 
 namespace qvr
 {
-
-namespace Animation
-{
-
-using TimeUnit = std::chrono::duration<int, std::milli>;
-
-}
 
 // Tells us about where to find an Animation on disk.
 struct AnimationSourceInfo {

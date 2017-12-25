@@ -225,98 +225,98 @@ TEST_CASE("AnimatorCollection", "[Animation]")
 
 	{
 		AnimatorTarget animatorTarget{};
-		REQUIRE(animators.AddAnimator(animatorTarget, animationId) == AnimatorId::Invalid);
+		REQUIRE(animators.Add(animatorTarget, animationId) == AnimatorId::Invalid);
 	}
 
 	REQUIRE(animators.AddAnimation(animationData) == animationId);
 	
 	AnimatorTarget animatorTarget{};
-	const AnimatorId animatorId = animators.AddAnimator(animatorTarget, animationId);
+	const AnimatorId animatorId = animators.Add(animatorTarget, animationId);
 
 	REQUIRE(animatorId != AnimatorId::Invalid);
-	REQUIRE(animators.GetAnimatorAnimation(animatorId) == animationId);
-	REQUIRE(animators.GetAnimatorFrame(animatorId) == 0);
+	REQUIRE(animators.GetAnimation(animatorId) == animationId);
+	REQUIRE(animators.GetFrame(animatorId) == 0);
 	REQUIRE(animatorTarget.views.views[0] == animationData.GetRect(0).value());
 
 	SECTION("Animate plays the animation") {
 		for (int i = 0; i < animationData.GetFrameCount(); ++i) {
-			REQUIRE(animators.GetAnimatorAnimation(animatorId) == animationId);
-			REQUIRE((int)animators.GetAnimatorFrame(animatorId) == i);
+			REQUIRE(animators.GetAnimation(animatorId) == animationId);
+			REQUIRE((int)animators.GetFrame(animatorId) == i);
 			REQUIRE(animatorTarget.views.views[0] == animationData.GetRect(i).value());
 
 			animators.Animate(animationData.GetTime(i).value());
 		}
 
 		SECTION("It loops") {
-			REQUIRE(animators.GetAnimatorAnimation(animatorId) == animationId);
-			REQUIRE(animators.GetAnimatorFrame(animatorId) == 0);
+			REQUIRE(animators.GetAnimation(animatorId) == animationId);
+			REQUIRE(animators.GetFrame(animatorId) == 0);
 			REQUIRE(animatorTarget.views.views[0] == animationData.GetRect(0).value());
 		}
 	}
 
 	SECTION("RemoveAnimation removes the animation and the animator that references it") {
 		REQUIRE(animators.RemoveAnimation(animationId));
-		REQUIRE(animators.AnimatorExists(animatorId) == false);
+		REQUIRE(animators.Exists(animatorId) == false);
 	}
 
-	SECTION("RemoveAnimator removes the animator but keeps the animation") {
-		REQUIRE(animators.RemoveAnimator(animatorId));
-		REQUIRE(animators.AnimatorExists(animatorId) == false);
+	SECTION("Remove removes the animator but keeps the animation") {
+		REQUIRE(animators.Remove(animatorId));
+		REQUIRE(animators.Exists(animatorId) == false);
 	}
 
-	SECTION("SetAnimatorFrame") {
+	SECTION("SetFrame") {
 		SECTION("Reject invalid AnimatorIds") {
 			for (const AnimatorId invalidAnimatorId : { AnimatorId::Invalid, AnimatorId(animatorId.GetValue() + 1) })
 			{
-				REQUIRE(animators.SetAnimatorFrame(invalidAnimatorId, 0) == false);
+				REQUIRE(animators.SetFrame(invalidAnimatorId, 0) == false);
 			}
 		}
 
 		const Rect originalTargetVal = animatorTarget.views.views[0];
-		const int originalFrame = animators.GetAnimatorFrame(animatorId);
+		const int originalFrame = animators.GetFrame(animatorId);
 
 		SECTION("Reject invalid frame") {
 			for (const int invalidFrame : { -1, animationData.GetFrameCount() })
 			{
-				REQUIRE(animators.SetAnimatorFrame(animatorId, invalidFrame) == false);
-				REQUIRE((int)animators.GetAnimatorFrame(animatorId) == originalFrame);
+				REQUIRE(animators.SetFrame(animatorId, invalidFrame) == false);
+				REQUIRE((int)animators.GetFrame(animatorId) == originalFrame);
 				REQUIRE(animatorTarget.views.views[0] == originalTargetVal);
 			}
 		}
 
 		SECTION("Set to current frame") {
-			REQUIRE(animators.SetAnimatorFrame(animatorId, 0));
-			REQUIRE((int)animators.GetAnimatorFrame(animatorId) == originalFrame);
+			REQUIRE(animators.SetFrame(animatorId, 0));
+			REQUIRE((int)animators.GetFrame(animatorId) == originalFrame);
 			REQUIRE(animatorTarget.views.views[0] == originalTargetVal);
 		}
 
 		SECTION("Set to other frame") {
 			const int otherIndex = 1;
 
-			REQUIRE(animators.SetAnimatorFrame(animatorId, otherIndex));
-			REQUIRE(animators.GetAnimatorFrame(animatorId) == otherIndex);
+			REQUIRE(animators.SetFrame(animatorId, otherIndex));
+			REQUIRE(animators.GetFrame(animatorId) == otherIndex);
 			REQUIRE(animatorTarget.views.views[0] == animationData.GetRect(otherIndex).value());
 		}
 	}
 
-	SECTION("SetAnimatorAnimation") {
-		SECTION("SetAnimatorAnimation fails if given an invalid AnimationId") {
-			REQUIRE(animators.SetAnimatorAnimation(animatorId, AnimationId::Invalid) == false);
+	SECTION("SetAnimation") {
+		SECTION("SetAnimation fails if given an invalid AnimationId") {
+			REQUIRE(animators.SetAnimation(animatorId, AnimationId::Invalid) == false);
 		}
 
-		SECTION("SetAnimatorAnimation works with the current animation") {
-			const int currentFrame = animators.GetAnimatorFrame(animatorId);
+		SECTION("SetAnimation works with the current animation") {
+			const int currentFrame = animators.GetFrame(animatorId);
 			const Rect currentRect = animatorTarget.views.views[0];
 
-			REQUIRE(animators.SetAnimatorAnimation(animatorId, animationId));
+			REQUIRE(animators.SetAnimation(animatorId, animationId));
 			
 			// Check that the animator & target are left unchanged
-			REQUIRE(animators.GetAnimatorAnimation(animatorId) == animationId);
-			REQUIRE((int)animators.GetAnimatorFrame(animatorId) == currentFrame);
+			REQUIRE(animators.GetAnimation(animatorId) == animationId);
+			REQUIRE((int)animators.GetFrame(animatorId) == currentFrame);
 			REQUIRE(currentRect == animatorTarget.views.views[0]);
 		}
 
-		SECTION("SetAnimatorAnimation works with different animation") {
+		SECTION("SetAnimation works with different animation") {
 			{
 				int frameIndex = 0;
 				Animation::Frame frame = animationData.GetFrame(frameIndex).value();
@@ -333,7 +333,7 @@ TEST_CASE("AnimatorCollection", "[Animation]")
 
 			SECTION("... but not if it hasn't been added yet") {
 				REQUIRE(
-					animators.SetAnimatorAnimation(
+					animators.SetAnimation(
 						animatorId, 
 						AnimatorStartSetting(newAnimationId)) 
 					== false);
@@ -344,12 +344,12 @@ TEST_CASE("AnimatorCollection", "[Animation]")
 			animators.AddAnimation(animationData);
 			
 			REQUIRE(
-				animators.SetAnimatorAnimation(
+				animators.SetAnimation(
 					animatorId, 
 					AnimatorStartSetting(newAnimationId)));
 
 			REQUIRE(
-				animators.GetAnimatorAnimation(animatorId) 
+				animators.GetAnimation(animatorId) 
 				== newAnimationId);
 
 			// ...

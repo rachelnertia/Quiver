@@ -163,7 +163,7 @@ void World::TakeStep(qvr::RawInputDevices& inputDevices)
 
 	const auto timestepDuration = duration<float>((GetTimestep()));
 
-	mAnimators.Animate(duration_cast<AnimatorCollection::TimeUnit>(timestepDuration));
+	mAnimators.Animate(duration_cast<Animation::TimeUnit>(timestepDuration));
 
 	mTotalTime += timestepDuration;
 

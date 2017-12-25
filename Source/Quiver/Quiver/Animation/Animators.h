@@ -91,32 +91,32 @@ public:
 		return animationReferenceCounts.at(animation); 
 	}
 
-	AnimatorId AddAnimator(
+	AnimatorId Add(
 		AnimatorTarget& target, 
 		const AnimatorStartSetting& startSetting);
 
-	bool RemoveAnimator(const AnimatorId id);
+	bool Remove(const AnimatorId id);
 
-	bool AnimatorExists(const AnimatorId id) const {
+	bool Exists(const AnimatorId id) const {
 		return animators.states.count(id) != 0;
 	}
 
-	int GetAnimatorCount() const { 
+	int GetCount() const { 
 		return animators.states.size(); 
 	}
 
 	void AnimatorGui(const AnimatorId id);
 
-	bool SetAnimatorAnimation(
+	bool SetAnimation(
 		const AnimatorId animatorId,
 		const AnimatorStartSetting& animation,
 		const bool clearQueue = true);
 
-	bool SetAnimatorTarget(
+	bool SetTarget(
 		const AnimatorId id,
 		AnimatorTarget& newTarget);
 
-	bool SetAnimatorFrame(
+	bool SetFrame(
 		const AnimatorId id, 
 		const int index);
 
@@ -126,13 +126,11 @@ public:
 
 	bool ClearAnimationQueue(const AnimatorId id);
 
-	unsigned GetAnimatorFrame(const AnimatorId animatorId) const;
+	unsigned GetFrame(const AnimatorId animatorId) const;
 
-	AnimationId GetAnimatorAnimation(const AnimatorId animatorId) const;
+	AnimationId GetAnimation(const AnimatorId animatorId) const;
 
-	using TimeUnit = std::chrono::duration<int, std::milli>;
-
-	void Animate(const TimeUnit ms);
+	void Animate(const Animation::TimeUnit ms);
 
 private:
 	struct AnimatorState {
@@ -164,12 +162,12 @@ private:
 	struct AnimatorState_Hot {
 		AnimatorState_Hot(
 			const AnimatorId animatorId,
-			const TimeUnit timeLeft)
+			const Animation::TimeUnit timeLeft)
 			: animatorId(animatorId)
 			, timeLeftInFrame(timeLeft)
 		{}
 
-		TimeUnit timeLeftInFrame;
+		Animation::TimeUnit timeLeftInFrame;
 		AnimatorId animatorId;
 	};
 

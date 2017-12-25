@@ -396,8 +396,8 @@ void Enemy::OnStep(float timestep)
 				
 				const AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
 				const AnimatorId animator = GetEntity().GetGraphics()->GetAnimatorId();
-				if ((!animSystem.AnimatorExists(animator)) ||
-					(animSystem.GetAnimatorAnimation(animator) != m_AwakeAnim))
+				if ((!animSystem.Exists(animator)) ||
+					(animSystem.GetAnimation(animator) != m_AwakeAnim))
 				{
 					SetAnimation(
 					{
@@ -424,8 +424,8 @@ bool Enemy::CanShoot() const
 		// Prevent shooting while playing the awakening anim.
 		const AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
 		const AnimatorId animator = GetEntity().GetGraphics()->GetAnimatorId();
-		if (animSystem.AnimatorExists(animator) &&
-			animSystem.GetAnimatorAnimation(animator) == m_AwakeAnim)
+		if (animSystem.Exists(animator) &&
+			animSystem.GetAnimation(animator) == m_AwakeAnim)
 		{
 			return false;
 		}

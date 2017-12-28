@@ -3,14 +3,12 @@
 #include <chrono>
 #include <vector>
 
-#include <optional.hpp>
-
 #include <Box2D/Common/b2Math.h>
-
+#include <function2.hpp>
+#include <json.hpp>
+#include <optional.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Texture.hpp>
-
-#include "json.hpp"
 
 #include "Quiver/Animation/Animators.h"
 #include "Quiver/Entity/CustomComponent/CustomComponentUpdater.h"
@@ -153,10 +151,10 @@ public:
 		return mNextWorld;
 	}
 
-	void SetNextApplicationState(
-		std::function<std::unique_ptr<ApplicationState>(ApplicationStateContext&)> factoryFunc);
-
-	std::unique_ptr<ApplicationState> GetNextApplicationState(ApplicationStateContext& context);
+	using ApplicationStateCreator =
+		fu2::unique_function<std::unique_ptr<ApplicationState>(std::reference_wrapper<ApplicationStateContext>)>;
+	void SetNextApplicationState(ApplicationStateCreator factoryFunc);
+	auto GetNextApplicationState(ApplicationStateContext& context) -> std::unique_ptr<ApplicationState>;
 
 private:
 
@@ -202,8 +200,7 @@ private:
 
 	WorldRaycastRenderer mRaycastRenderer;
 
-	std::function<std::unique_ptr<ApplicationState>(ApplicationStateContext&)> 
-		mNextApplicationStateFactory;
+	ApplicationStateCreator mNextApplicationStateFactory;
 };
 
 }

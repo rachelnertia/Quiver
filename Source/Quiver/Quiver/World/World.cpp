@@ -749,14 +749,15 @@ bool World::UnregisterAudioComponent(const AudioComponent & audioComponent)
 // Provide a factory function to create an ApplicationState.
 // It will hopefully be grabbed by whatever owns and is responsible for updating the World.
 
-void World::SetNextApplicationState(std::function<std::unique_ptr<ApplicationState>(ApplicationStateContext&)> factoryFunc)
+void World::SetNextApplicationState(World::ApplicationStateCreator factoryFunc)
 {
-	mNextApplicationStateFactory = factoryFunc;
+	mNextApplicationStateFactory = std::move(factoryFunc);
 }
 
-std::unique_ptr<ApplicationState> World::GetNextApplicationState(ApplicationStateContext & context)
+auto World::GetNextApplicationState(ApplicationStateContext & context) 
+	-> std::unique_ptr<ApplicationState>
 {
-	if (mNextApplicationStateFactory != nullptr) {
+	if (mNextApplicationStateFactory) {
 		auto appState = mNextApplicationStateFactory(context);
 		mNextApplicationStateFactory = nullptr;
 		return appState;

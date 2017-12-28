@@ -95,7 +95,8 @@ workspace "Quiver"
 			"External/Box2D",
 			"External/Optional",
 			"External/gsl",
-			"External/cxxopts"
+			"External/cxxopts",
+			"External/function2"
 		}
 		IncludeSFML()
 	end

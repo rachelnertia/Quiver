@@ -49,11 +49,6 @@ private:
 	ExitTarget targetType = ExitTarget::World;
 	ApplicationStateType targetApplicationState = ApplicationStateType::Game;
 	std::string worldFilePath;
-
-	struct EditorData {
-	};
-
-	EditorData editorData;
 };
 
 WorldExit::WorldExit(Entity& entity)

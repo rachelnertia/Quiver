@@ -9,13 +9,13 @@
 #include "Quiver/Input/SfmlKeyboard.h"
 #include "Quiver/Input/SfmlMouse.h"
 
-class World;
-
 namespace sf {
 class RenderTexture;
 }
 
 namespace qvr {
+
+class World;
 
 class Game : public ApplicationState {
 public:

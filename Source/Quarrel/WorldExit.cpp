@@ -6,8 +6,12 @@
 #include <ImGui/imgui.h>
 #include <spdlog/spdlog.h>
 
+#include "Quiver/Application/WorldEditor/WorldEditor.h"
+#include "Quiver/Application/Game/Game.h"
+#include "Quiver/Application/MainMenu/MainMenu.h"
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 #include "Quiver/Entity/Entity.h"
+#include "Quiver/Misc/ImGuiHelpers.h"
 #include "Quiver/World/World.h"
 #include "Quiver/World/WorldContext.h"
 
@@ -33,73 +37,170 @@ public:
 	static bool VerifyJson(const json& j);
 
 private:
-	// Path to the JSON file containing the World data this WorldExit leads to.
-	std::string mWorldFilename;
+	enum class ExitTarget
+	{
+		World,           // Transitions the Game to a new World
+		ApplicationState // Transitions the Application to a new ApplicationState
+	};
+	enum class ApplicationStateType
+	{
+		Game,
+		Editor,
+		MainMenu
+	};
+	ExitTarget targetType = ExitTarget::World;
+	ApplicationStateType targetApplicationState = ApplicationStateType::Game;
+	std::string worldFilePath;
 
-	//std::unique_ptr<World> mWorld;
+	struct EditorData {
+	};
 
-	// TODO: Move this into an editor object.
-	std::array<char, 64> mFilenameBuffer;
+	EditorData editorData;
 };
 
 WorldExit::WorldExit(Entity& entity)
 	: CustomComponent(entity)
 {}
 
+class WorldEditorCreator
+{
+	std::unique_ptr<World> world;
+public:
+	explicit WorldEditorCreator(std::unique_ptr<World> world) : world(std::move(world)) {}
+
+	std::unique_ptr<ApplicationState> operator()(ApplicationStateContext& ctx) {
+		return std::make_unique<WorldEditor>(ctx, std::move(world));
+	}
+};
+
 void WorldExit::OnBeginContact(Entity& other)
 {
-	if (other.GetCustomComponent() && other.GetCustomComponent()->GetTypeName() == "Player") {
-		auto world = LoadWorld(mWorldFilename, GetEntity().GetWorld().GetContext());
-		if (world) {
-			GetEntity().GetWorld().SetNextWorld(std::move(world));
+	if (!other.GetCustomComponent()) return;
+	if (other.GetCustomComponent()->GetTypeName() != "Player") return;
+
+	if (this->targetType == ExitTarget::World) {
+		GetEntity().GetWorld().SetNextWorld(
+			LoadWorld(this->worldFilePath, GetEntity().GetWorld().GetContext()));
+	}
+	else if (this->targetType == ExitTarget::ApplicationState) {
+		switch (this->targetApplicationState) {
+		case ApplicationStateType::Editor:
+		{
+			World::ApplicationStateCreator factory =
+				WorldEditorCreator(
+					LoadWorld(this->worldFilePath, GetEntity().GetWorld().GetContext()));
+
+			GetEntity().GetWorld().SetNextApplicationState(std::move(factory));
+		}
+		break;
+		case ApplicationStateType::Game:
+		{
+			World::ApplicationStateCreator factory = 
+				[worldFilePath = this->worldFilePath](ApplicationStateContext& ctx) {
+					return std::make_unique<qvr::Game>(
+						ctx, 
+						LoadWorld(worldFilePath, ctx.GetWorldContext()));
+				};
+
+			GetEntity().GetWorld().SetNextApplicationState(std::move(factory));
+		}
+		break;
+		case ApplicationStateType::MainMenu:
+		{
+			GetEntity().GetWorld().SetNextApplicationState(
+				[](ApplicationStateContext& ctx) {
+					return std::make_unique<qvr::MainMenu>(ctx);
+				});
+		}
+		break;
 		}
 	}
 }
 
-void WorldExit::OnEndContact(Entity& other)
-{
-
-}
+void WorldExit::OnEndContact(Entity& other) {}
 
 void WorldExit::GUIControls()
 {
-	const ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue;
-	if (ImGui::InputText("World File (JSON)", &mFilenameBuffer[0], mFilenameBuffer.size(), flags))
+	int exitTargetIndex = (int)targetType;
+	
 	{
-		mWorldFilename.assign(&mFilenameBuffer[0]);
+		std::array<const char*, 2> ExitTargetStrings = {
+			"To World",
+			"To Application State"
+		};
+
+		ImGui::ListBox(
+			"Target Type",
+			&exitTargetIndex,
+			ExitTargetStrings.data(),
+			ExitTargetStrings.size());
+	}
+
+	this->targetType = (ExitTarget)exitTargetIndex;
+
+	if (this->targetType == ExitTarget::ApplicationState)
+	{
+		int applicationStateIndex = (int)this->targetApplicationState;
+		
+		{
+			std::array<const char*, 3> ApplicationStateStrings = {
+				"Game",
+				"World Editor",
+				"Main Menu"
+			};
+
+			ImGui::ListBox(
+				"Target App State",
+				&applicationStateIndex,
+				ApplicationStateStrings.data(),
+				ApplicationStateStrings.size());
+		}
+
+		targetApplicationState = (ApplicationStateType)applicationStateIndex;
+	}
+
+	if (this->targetType == ExitTarget::World ||
+		this->targetApplicationState != ApplicationStateType::MainMenu)
+	{
+		ImGui::InputText<64>("World File to Load", this->worldFilePath);
 	}
 }
 
 json WorldExit::ToJson() const
 {
 	json j;
-	j["WorldFile"] = mWorldFilename;
+
+	j["TargetType"] = (int)targetType;
+	
+	if (!worldFilePath.empty() &&
+		(this->targetType == ExitTarget::World ||
+		this->targetApplicationState != ApplicationStateType::MainMenu))
+	{
+		j["WorldFile"] = worldFilePath;
+	}
+
+	if (this->targetType == ExitTarget::ApplicationState) {
+		j["TargetApplicationState"] = (int)targetApplicationState;
+	}
+
 	return j;
 }
 
 bool WorldExit::FromJson(const json& j)
 {
-	auto log = spdlog::get("console");
-	assert(log);
+	if (!j.is_object()) return false;
 
-	mWorldFilename = j.value<std::string>("WorldFile", std::string());
-
-	log->debug("World File: {}", mWorldFilename);
-
-	// Set up the WorldEditor-only filename buffer.
-	mFilenameBuffer[0] = '\0';
-
-	if (!mWorldFilename.empty())
-	{
-		std::strcpy(mFilenameBuffer.data(), mWorldFilename.c_str());
-	}
+	targetType = (ExitTarget)j.value<int>("TargetType", 0);
+	worldFilePath = j.value<std::string>("WorldFile", {});
+	targetApplicationState = 
+		(ApplicationStateType)j.value<int>("TargetApplicationState", 0);
 
 	return true;
 }
 
 bool WorldExit::VerifyJson(const json& j)
 {
-	return j.count("WorldFile") > 0 && j["WorldFile"].is_string();
+	return true;
 }
 
 std::unique_ptr<CustomComponent> CreateWorldExit(Entity& entity)

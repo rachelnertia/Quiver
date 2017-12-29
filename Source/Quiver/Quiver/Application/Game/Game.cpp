@@ -98,7 +98,8 @@ void Game::ProcessFrame()
 
 			mWorld->Render3D(
 				*mFrameTex,
-				mWorld->GetMainCamera() ? *mWorld->GetMainCamera() : mDefaultCamera3D);
+				mWorld->GetMainCamera() ? *mWorld->GetMainCamera() : mDefaultCamera3D,
+				mWorldRaycastRenderer);
 
 			mFrameTex->display();
 		}

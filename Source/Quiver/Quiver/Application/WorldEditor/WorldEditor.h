@@ -11,6 +11,7 @@
 #include "Quiver/Application/ApplicationState.h"
 #include "Quiver/Graphics/Camera2D.h"
 #include "Quiver/Graphics/Camera3D.h"
+#include "Quiver/Graphics/WorldRaycastRenderer.h"
 #include "Quiver/Input/SfmlJoystick.h"
 #include "Quiver/Input/SfmlKeyboard.h"
 #include "Quiver/Input/SfmlMouse.h"
@@ -59,6 +60,8 @@ private:
 	void OnMouseMove(const sf::Event::MouseMoveEvent& mouseInfo);
 
 	std::unique_ptr<World> mWorld;
+
+	WorldRaycastRenderer mWorldRaycastRenderer;
 
 	// TODO: Can probably do away with mCurrentSelection and just have the EntityEditor.
 	Entity* mCurrentSelection = nullptr;

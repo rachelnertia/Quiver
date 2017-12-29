@@ -79,8 +79,14 @@ public:
 	// While paused is true, TakeStep will do nothing.
 	void SetPaused(const bool paused);
 
-	void RenderDebug(sf::RenderTarget& target, const Camera2D & camera);
-	void Render3D(sf::RenderTarget& target, const Camera3D & camera);
+	void RenderDebug(
+		sf::RenderTarget& target, 
+		const Camera2D& camera);
+	
+	void Render3D(
+		sf::RenderTarget& target, 
+		const Camera3D& camera,
+		WorldRaycastRenderer& raycastRenderer);
 
 	Entity* CreateEntity(const b2Shape & shape, const b2Vec2 & position, const float angle = 0.0f);
 	Entity* CreateEntity(const nlohmann::json & json, const b2Transform* transform = nullptr);
@@ -197,8 +203,6 @@ private:
 	Sky mSky;
 
 	RenderSettings mRenderSettings;
-
-	WorldRaycastRenderer mRaycastRenderer;
 
 	ApplicationStateCreator mNextApplicationStateFactory;
 };

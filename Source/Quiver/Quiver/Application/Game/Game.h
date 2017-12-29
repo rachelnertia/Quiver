@@ -5,6 +5,7 @@
 #include "Quiver/Application/ApplicationState.h"
 #include "Quiver/Graphics/Camera2D.h"
 #include "Quiver/Graphics/Camera3D.h"
+#include "Quiver/Graphics/WorldRaycastRenderer.h"
 #include "Quiver/Input/SfmlJoystick.h"
 #include "Quiver/Input/SfmlKeyboard.h"
 #include "Quiver/Input/SfmlMouse.h"
@@ -42,6 +43,8 @@ private:
 	nlohmann::json mWorldJson;
 
 	std::unique_ptr<World> mWorld;
+
+	WorldRaycastRenderer mWorldRaycastRenderer;
 
 	Camera2D mCamera2D;
 

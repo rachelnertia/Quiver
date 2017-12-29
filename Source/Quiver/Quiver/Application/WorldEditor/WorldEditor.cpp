@@ -178,7 +178,7 @@ void WorldEditor::Render()
 	if (mInPreviewMode) {
 		mFrameTex->clear(sf::Color(128, 128, 255));
 
-		mWorld->Render3D(*mFrameTex, mCamera.Get3D());
+		mWorld->Render3D(*mFrameTex, mCamera.Get3D(), mWorldRaycastRenderer);
 
 		mFrameTex->display();
 

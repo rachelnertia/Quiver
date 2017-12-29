@@ -284,7 +284,10 @@ void DrawGradientRectVertical(
 	}
 }
 
-void World::Render3D(sf::RenderTarget & target, const Camera3D & camera)
+void World::Render3D(
+	sf::RenderTarget & target, 
+	const Camera3D & camera,
+	WorldRaycastRenderer & raycastRenderer)
 {
 	{
 		auto startTimePoint{ std::chrono::high_resolution_clock::now() };
@@ -374,7 +377,7 @@ void World::Render3D(sf::RenderTarget & target, const Camera3D & camera)
 
 	auto timePoint1{ std::chrono::high_resolution_clock::now() };
 
-	mRaycastRenderer.Render(*this, camera, mRenderSettings, target);
+	raycastRenderer.Render(*this, camera, mRenderSettings, target);
 
 	auto timePoint2{ std::chrono::high_resolution_clock::now() };
 

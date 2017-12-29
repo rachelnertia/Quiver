@@ -34,8 +34,6 @@ public:
 	json ToJson  () const override;
 	bool FromJson(const json& j) override;
 
-	static bool VerifyJson(const json& j);
-
 private:
 	enum class ExitTarget
 	{
@@ -198,17 +196,7 @@ bool WorldExit::FromJson(const json& j)
 	return true;
 }
 
-bool WorldExit::VerifyJson(const json& j)
-{
-	return true;
-}
-
 std::unique_ptr<CustomComponent> CreateWorldExit(Entity& entity)
 {
 	return std::make_unique<WorldExit>(entity);
-}
-
-bool VerifyWorldExitJson(const json& j)
-{
-	return WorldExit::VerifyJson(j);
 }

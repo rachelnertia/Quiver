@@ -196,7 +196,6 @@ nlohmann::json Player::ToJson() const
 {
 	nlohmann::json j;
 
-	j["TestMember"] = mTestMember;
 	j["MoveSpeed"] = mMoveSpeed;
 
 	{
@@ -212,8 +211,6 @@ nlohmann::json Player::ToJson() const
 
 bool Player::FromJson(const nlohmann::json& j)
 {
-	mTestMember = j["TestMember"];
-	
 	if (j.find("MoveSpeed") != j.end()) {
 		mMoveSpeed = j["MoveSpeed"];
 	}
@@ -222,19 +219,6 @@ bool Player::FromJson(const nlohmann::json& j)
 		mCamera.FromJson(j["Camera"], &GetEntity().GetWorld());
 	}
 	
-	return true;
-}
-
-bool Player::VerifyJson(const nlohmann::json& j) 
-{
-	if (j.find("TestMember") == j.end()) {
-		return false;
-	}
-
-	if (!j["TestMember"].is_boolean()) {
-		return false;
-	}
-
 	return true;
 }
 

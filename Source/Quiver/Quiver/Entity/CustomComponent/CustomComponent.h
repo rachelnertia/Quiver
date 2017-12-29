@@ -62,8 +62,7 @@ class CustomComponentType final {
 public:
 	CustomComponentType(
 		const std::string typeName,
-		std::function<std::unique_ptr<CustomComponent>(Entity&)> factoryFunc,
-		std::function<bool(const nlohmann::json&)> verifyJsonFunc);
+		std::function<std::unique_ptr<CustomComponent>(Entity&)> factoryFunc);
 
 	CustomComponentType(const CustomComponentType&) = delete;
 	CustomComponentType(const CustomComponentType&&) = delete;
@@ -75,10 +74,6 @@ public:
 		return mFactoryFunc(entity);
 	}
 
-	bool VerifyJson(const nlohmann::json& j) const {
-		return mVerifyJsonFunc(j);
-	}
-
 	std::unique_ptr<CustomComponent> CreateInstance(Entity& entity, const nlohmann::json& j);
 
 	std::string GetName() const { return mName; };
@@ -86,7 +81,6 @@ public:
 private:
 	std::string mName;
 	std::function<std::unique_ptr<CustomComponent>(Entity&)> mFactoryFunc;
-	std::function<bool(const nlohmann::json&)> mVerifyJsonFunc;
 };
 
 class CustomComponentTypeLibrary {

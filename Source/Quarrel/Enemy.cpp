@@ -248,8 +248,6 @@ public:
 
 	void GUIControls() override;
 
-	static bool VerifyJson(const json& j);
-
 	nlohmann::json ToJson() const override;
 
 	bool FromJson(const nlohmann::json& j) override;
@@ -573,11 +571,6 @@ void Enemy::GUIControls()
 	{
 		m_AwakeAnim = animationId.value();
 	}
-}
-
-bool Enemy::VerifyJson(const json& j)
-{
-	return true;
 }
 
 json AnimationToJson(const AnimatorCollection& animators, const AnimationId animationId)

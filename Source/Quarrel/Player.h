@@ -34,11 +34,7 @@ public:
 	nlohmann::json ToJson() const override;
 	bool FromJson(const nlohmann::json& j) override;
 
-	static bool VerifyJson(const nlohmann::json& j);
-
 	qvr::Camera3D mCamera;
-
-	bool mTestMember = false;
 
 private:
 	void RenderCurrentWeapon(sf::RenderTarget& target) const;

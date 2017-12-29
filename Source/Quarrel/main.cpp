@@ -17,27 +17,22 @@ qvr::CustomComponentTypeLibrary CreateQuarrelTypes()
 			// type name
 			"Player",
 			// factory function
-			[](Entity& entity) { return std::make_unique<Player>(entity); },
-			// json verification function 
-			&Player::VerifyJson));
+			[](Entity& entity) { return std::make_unique<Player>(entity); }));
 
 	library.RegisterType(
 		std::make_unique<CustomComponentType>(
 			"Wanderer",
-			[](Entity& entity) { return std::make_unique<Wanderer>(entity); },
-			[](const nlohmann::json&) { return true; }));
+			[](Entity& entity) { return std::make_unique<Wanderer>(entity); }));
 
 	library.RegisterType(
 		std::make_unique<CustomComponentType>(
 			"WorldExit",
-			&CreateWorldExit,
-			&VerifyWorldExitJson));
+			&CreateWorldExit));
 
 	library.RegisterType(
 		std::make_unique<CustomComponentType>(
 			"Enemy",
-			&CreateEnemy,
-			[](const nlohmann::json&) { return true; }));
+			&CreateEnemy));
 
 	return library;
 }

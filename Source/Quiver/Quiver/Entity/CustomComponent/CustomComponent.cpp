@@ -10,11 +10,9 @@ namespace qvr {
 
 CustomComponentType::CustomComponentType(
 	const std::string typeName,
-	std::function<std::unique_ptr<CustomComponent>(Entity&)> factoryFunc,
-	std::function<bool(const nlohmann::json&)> verifyJsonFunc)
+	std::function<std::unique_ptr<CustomComponent>(Entity&)> factoryFunc)
 	: mName(typeName),
-	mFactoryFunc(factoryFunc),
-	mVerifyJsonFunc(verifyJsonFunc)
+	mFactoryFunc(factoryFunc)
 {}
 
 std::unique_ptr<CustomComponent>
@@ -22,10 +20,6 @@ CustomComponentType::CreateInstance(
 	Entity & entity,
 	const nlohmann::json & j)
 {
-	if (!VerifyJson(j)) {
-		return nullptr;
-	}
-
 	auto instance = mFactoryFunc(entity);
 
 	if (instance) {
@@ -130,13 +124,6 @@ bool CustomComponentTypeLibrary::IsValid(const nlohmann::json& j) const
 	if (!type) {
 		log->error("{}: There is no CustomComponent Type with the name '{}'.", logCtx, typeName);
 		return false;
-	}
-
-	if (j.count("Data") != 0) {
-		if (!type->VerifyJson(j["Data"])) {
-			log->error("{}: 'Data' field is not valid for CustomComponent of Type '{}'.", logCtx, typeName);
-			return false;
-		}
 	}
 
 	return true;

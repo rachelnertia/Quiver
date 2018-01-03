@@ -47,8 +47,6 @@ AnimationId AnimationLibrary::Add(const AnimationData& anim)
 		frameRects.begin(),
 		frameRects.end());
 
-	count++;
-
 	return id;
 }
 
@@ -125,11 +123,9 @@ bool AnimationLibrary::Remove(const AnimationId anim)
 		}
 	}
 
-	count--;
-
 	sourcesById.erase(anim);
 
-	log->debug("{} Successfully removed animation. Remaining: {}", logCtx, count);
+	log->debug("{} Successfully removed animation. Remaining: {}", logCtx, GetCount());
 
 	return true;
 }

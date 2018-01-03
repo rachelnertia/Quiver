@@ -99,10 +99,14 @@ private:
 		unsigned mNumAltViewsPerFrame = 0;
 	};
 
-	int count = 0;
 	std::unordered_map<AnimationId, AnimationInfo> infosById;
+	
+	// Time values for each frame in every animation.
 	std::vector<Animation::TimeUnit> allFrameTimes;
-	std::vector<Animation::Rect> allFrameRects; // Rects for each frame in every animation plus their alt view views.
+
+	// Rects for each frame in every animation, including alt view rects.
+	std::vector<Animation::Rect> allFrameRects; 
+	
 	std::unordered_map<AnimationId, AnimationSourceInfo> sourcesById;
 };
 

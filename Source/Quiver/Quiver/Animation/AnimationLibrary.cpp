@@ -47,8 +47,6 @@ AnimationId AnimationLibrary::Add(const AnimationData& anim)
 		frameRects.begin(),
 		frameRects.end());
 
-	allIds.push_back(id);
-
 	count++;
 
 	return id;
@@ -126,8 +124,6 @@ bool AnimationLibrary::Remove(const AnimationId anim)
 			infosById.insert_or_assign(kvp.first, newAnimInfo);
 		}
 	}
-
-	allIds.erase(std::find(allIds.begin(), allIds.end(), anim));
 
 	count--;
 
@@ -222,6 +218,28 @@ auto AnimationLibrary::GetTime(
 	const AnimationInfo info = infosById.at(anim);
 
 	return allFrameTimes[info.IndexOfFirstTime() + frameIndex];
+}
+
+template<typename KeyType, typename ValType>
+auto ExtractKeys(const std::unordered_map<KeyType, ValType> map) -> std::vector<KeyType>
+{
+	std::vector<KeyType> keys;
+	
+	keys.reserve(map.size());
+	
+	std::transform(
+		std::begin(map),
+		std::end(map),
+		std::back_inserter(keys),
+		[](const std::pair<KeyType, ValType>& kvp) {
+			return kvp.first;
+		});
+	
+	return keys;
+}
+
+auto AnimationLibrary::GetIds() const -> std::vector<AnimationId> {
+	return ExtractKeys(infosById);
 }
 
 using json = nlohmann::json;

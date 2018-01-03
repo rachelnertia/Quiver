@@ -65,9 +65,7 @@ public:
 		const int frameIndex) 
 			const -> Animation::TimeUnit;
 
-	auto GetIds() const -> std::vector<AnimationId> {
-		return allIds;
-	}
+	auto GetIds() const -> std::vector<AnimationId>;
 
 	friend void to_json(nlohmann::json& j, const AnimationLibrary& animations);
 
@@ -102,7 +100,6 @@ private:
 	};
 
 	int count = 0;
-	std::vector<AnimationId> allIds;
 	std::unordered_map<AnimationId, AnimationInfo> infosById;
 	std::vector<Animation::TimeUnit> allFrameTimes;
 	std::vector<Animation::Rect> allFrameRects; // Rects for each frame in every animation plus their alt view views.

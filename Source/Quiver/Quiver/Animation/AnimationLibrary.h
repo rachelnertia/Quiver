@@ -75,22 +75,28 @@ private:
 			const unsigned indexOfFirstRect,
 			const unsigned indexOfFirstTime,
 			const unsigned numRects,
-			const unsigned numAltViewsPerFrame)
+			const unsigned numRectsPerFrame)
 			: mIndexOfFirstRect(indexOfFirstRect)
 			, mIndexOfFirstTime(indexOfFirstTime)
 			, mNumRects(numRects)
-			, mNumAltViewsPerFrame(numAltViewsPerFrame)
+			, mNumRectsPerFrame(numRectsPerFrame)
+		{}
+
+		AnimationInfo(const AnimationInfo& other)
+			: AnimationInfo(
+				other.IndexOfFirstRect(), 
+				other.IndexOfFirstTime(), 
+				other.NumRects(), 
+				other.NumRectsPerFrame())
 		{}
 
 		AnimationInfo() = default;
 
 		unsigned IndexOfFirstRect() const { return mIndexOfFirstRect; }
 		unsigned IndexOfFirstTime() const { return mIndexOfFirstTime; }
-		unsigned NumFrames() const { return mNumRects / (mNumAltViewsPerFrame + 1); }
+		unsigned NumFrames() const { return mNumRects / mNumRectsPerFrame; }
 		unsigned NumRects()  const { return mNumRects; }
-		unsigned NumTimes()  const { return NumFrames(); }
-		unsigned NumRectsPerTime() const { return NumRects() / NumTimes(); }
-		unsigned NumAltViewsPerFrame() const { return mNumAltViewsPerFrame; }
+		unsigned NumRectsPerFrame() const { return mNumRectsPerFrame; }
 
 		std::experimental::optional<AnimationSourceInfo> mSourceInfo;
 	
@@ -98,7 +104,7 @@ private:
 		unsigned mIndexOfFirstRect = 0;
 		unsigned mIndexOfFirstTime = 0;
 		unsigned mNumRects = 0;
-		unsigned mNumAltViewsPerFrame = 0;
+		unsigned mNumRectsPerFrame = 0;
 	};
 
 	std::unordered_map<AnimationId, AnimationInfo> infosById;

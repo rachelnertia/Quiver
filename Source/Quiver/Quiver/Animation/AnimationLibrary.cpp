@@ -33,7 +33,7 @@ AnimationId AnimationLibrary::Add(const AnimationData& anim)
 			allFrameRects.size(),
 			allFrameTimes.size(),
 			anim.GetRectCount(),
-			anim.GetAltViewsPerFrame());
+			anim.GetRectCount() / anim.GetFrameCount());
 
 	// Pack the animation's frame views and times into the arrays.
 	const auto frameTimes = anim.GetTimes();
@@ -90,7 +90,7 @@ bool AnimationLibrary::Remove(const AnimationId anim)
 	// Erase times.
 	{
 		auto start = allFrameTimes.begin() + animInfo.IndexOfFirstTime();
-		auto end = start + animInfo.NumTimes();
+		auto end = start + animInfo.NumFrames();
 		allFrameTimes.erase(start, end);
 	}
 
@@ -99,11 +99,7 @@ bool AnimationLibrary::Remove(const AnimationId anim)
 	// TODO: This smells!
 	for (auto& kvp : infosById) {
 		if (kvp.second.IndexOfFirstRect() > animInfo.IndexOfFirstRect()) {
-			AnimationInfo newAnimInfo(
-				kvp.second.IndexOfFirstRect() - animInfo.NumRects(),
-				kvp.second.IndexOfFirstTime(),
-				kvp.second.NumRects(),
-				kvp.second.NumAltViewsPerFrame());
+			AnimationInfo newAnimInfo(kvp.second);
 
 			infosById.insert_or_assign(kvp.first, newAnimInfo);
 		}
@@ -113,11 +109,7 @@ bool AnimationLibrary::Remove(const AnimationId anim)
 	// TODO: This smells!
 	for (auto& kvp : infosById) {
 		if (kvp.second.IndexOfFirstTime() > animInfo.IndexOfFirstTime()) {
-			AnimationInfo newAnimInfo(
-				kvp.second.IndexOfFirstRect(),
-				kvp.second.IndexOfFirstTime() - animInfo.NumTimes(),
-				kvp.second.NumRects(),
-				kvp.second.NumAltViewsPerFrame());
+			AnimationInfo newAnimInfo(kvp.second);
 
 			infosById.insert_or_assign(kvp.first, newAnimInfo);
 		}
@@ -177,7 +169,7 @@ bool AnimationLibrary::HasAltViews(const AnimationId anim) const
 
 int AnimationLibrary::GetViewCount(const AnimationId anim) const
 {
-	return infosById.at(anim).NumAltViewsPerFrame() + 1;
+	return infosById.at(anim).NumRectsPerFrame();
 }
 
 auto AnimationLibrary::GetRect(
@@ -188,7 +180,7 @@ auto AnimationLibrary::GetRect(
 {
 	const AnimationInfo info = infosById.at(anim);
 
-	const int rectIndex = (frameIndex * (info.NumAltViewsPerFrame() + 1)) + viewIndex;
+	const int rectIndex = (frameIndex * info.NumRectsPerFrame()) + viewIndex;
 
 	return allFrameRects[info.IndexOfFirstRect() + rectIndex];
 }
@@ -200,11 +192,11 @@ auto AnimationLibrary::GetRects(
 {
 	const AnimationInfo info = infosById.at(anim);
 
-	const int firstRectIndex = (frameIndex * (info.NumRectsPerTime()));
+	const int firstRectIndex = (frameIndex * (info.NumRectsPerFrame()));
 
 	return gsl::make_span(
 		&allFrameRects[info.IndexOfFirstRect() + firstRectIndex],
-		info.NumRectsPerTime());
+		info.NumRectsPerFrame());
 }
 
 auto AnimationLibrary::GetTime(

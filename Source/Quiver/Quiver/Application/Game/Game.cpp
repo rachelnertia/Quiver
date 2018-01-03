@@ -168,7 +168,7 @@ void Game::OnTogglePause()
 void Game::ProcessGui()
 {
 	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-	ImGui::SetNextWindowSize(ImVec2(350.0f, (float)GetContext().GetWindow().getSize().y));
+	ImGui::SetNextWindowSize(ImVec2(600.0f, (float)GetContext().GetWindow().getSize().y));
 
 	ImGui::AutoWindow window("Game", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 

@@ -220,7 +220,7 @@ void WorldEditor::ProcessGUI()
 	assert(log);
 
 	ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-	ImGui::SetNextWindowSize(ImVec2(400.0f, (float)GetContext().GetWindow().getSize().y));
+	ImGui::SetNextWindowSize(ImVec2(600.0f, (float)GetContext().GetWindow().getSize().y));
 
 	ImGui::AutoWindow window("World Editor", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
 

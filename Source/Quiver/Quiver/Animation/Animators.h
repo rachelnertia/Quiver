@@ -88,6 +88,10 @@ public:
 	bool RemoveAnimation(const AnimationId id);
 
 	int GetReferenceCount(const AnimationId animation) const { 
+		if (animationReferenceCounts.count(animation) == 0) {
+			return 0;
+		}
+
 		return animationReferenceCounts.at(animation); 
 	}
 

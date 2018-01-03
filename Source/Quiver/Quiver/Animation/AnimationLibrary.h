@@ -92,6 +92,8 @@ private:
 		unsigned NumRectsPerTime() const { return NumRects() / NumTimes(); }
 		unsigned NumAltViewsPerFrame() const { return mNumAltViewsPerFrame; }
 
+		std::experimental::optional<AnimationSourceInfo> mSourceInfo;
+	
 	private:
 		unsigned mIndexOfFirstRect = 0;
 		unsigned mIndexOfFirstTime = 0;
@@ -106,8 +108,6 @@ private:
 
 	// Rects for each frame in every animation, including alt view rects.
 	std::vector<Animation::Rect> allFrameRects; 
-	
-	std::unordered_map<AnimationId, AnimationSourceInfo> sourcesById;
 };
 
 void to_json(nlohmann::json& j, const AnimationLibrary& animations);

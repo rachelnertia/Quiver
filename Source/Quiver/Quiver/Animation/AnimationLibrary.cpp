@@ -56,7 +56,7 @@ AnimationId AnimationLibrary::Add(const AnimationData& anim, const AnimationSour
 
 	if (newAnim != AnimationId::Invalid)
 	{
-		sourcesById[newAnim] = sourceInfo;
+		infosById[newAnim].mSourceInfo = sourceInfo;
 	}
 
 	return newAnim;
@@ -123,8 +123,6 @@ bool AnimationLibrary::Remove(const AnimationId anim)
 		}
 	}
 
-	sourcesById.erase(anim);
-
 	log->debug("{} Successfully removed animation. Remaining: {}", logCtx, GetCount());
 
 	return true;
@@ -142,8 +140,11 @@ int AnimationLibrary::GetCount() const
 
 AnimationId AnimationLibrary::GetAnimation(const AnimationSourceInfo& sourceInfo) const
 {
-	for (const auto& kvp : sourcesById) {
-		if (kvp.second == sourceInfo) {
+	for (const auto& kvp : infosById) 
+	{
+		if (kvp.second.mSourceInfo && 
+			kvp.second.mSourceInfo.value() == sourceInfo) 
+		{
 			return kvp.first;
 		}
 	}
@@ -154,10 +155,10 @@ AnimationId AnimationLibrary::GetAnimation(const AnimationSourceInfo& sourceInfo
 auto AnimationLibrary::GetSourceInfo(const AnimationId anim) const -> std::experimental::optional<AnimationSourceInfo>
 {
 	if (Contains(anim)) {
-		const auto it = sourcesById.find(anim);
+		const auto it = infosById.find(anim);
 
-		if (it != sourcesById.end()) {
-			return it->second;
+		if (it != infosById.end()) {
+			return it->second.mSourceInfo;
 		}
 	}
 
@@ -256,9 +257,11 @@ void from_json(const json& j, AnimationSourceInfo& animationSource)
 
 void to_json(nlohmann::json& j, const AnimationLibrary& animations)
 {
-	for (auto kvp : animations.sourcesById)
+	for (auto kvp : animations.infosById)
 	{
-		j.push_back(kvp.second);
+		if (kvp.second.mSourceInfo.has_value() == false) continue;
+		
+		j.push_back(kvp.second.mSourceInfo.value());
 	}
 }
 

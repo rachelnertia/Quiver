@@ -40,6 +40,7 @@
 #include "Quiver/Misc/FindByAddress.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
 #include "Quiver/Misc/JsonHelpers.h"
+#include "Quiver/Misc/Profiler.h"
 #include "Quiver/Physics/ContactListener.h"
 #include "Quiver/World/WorldContext.h"
 
@@ -107,52 +108,13 @@ World::World(
 
 World::~World() {}
 
-class Profiler {
-public:
-	using SampleUnit = std::chrono::duration<float, std::milli>;
-
-	void AddSample(SampleUnit sample) {
-		int index = (mFront++) % mSamples.size();
-		mSamples[index] = sample;
-	}
-
-	int BufferSize() const { return mSamples.size(); }
-
-	SampleUnit GetSample(const int index) const {
-		return mSamples[index];
-	}
-
-	int GetFrontIndex() const {
-		return mFront;
-	}
-
-	SampleUnit GetAverage() const {
-		return std::accumulate(std::begin(mSamples), std::end(mSamples), SampleUnit(0)) / mSamples.size();
-	}
-
-	Profiler(const unsigned sampleCount) : mFront(0) {
-		mSamples.resize(sampleCount);
-	}
-
-	void Resize(const unsigned newSampleCount) {
-		mFront = 0;
-		mSamples.resize(newSampleCount);
-	}
-
-private:
-	// Rolling buffer of samples.
-	std::vector<SampleUnit> mSamples;
-
-	int mFront = 0;
-};
-
 static Profiler sStepProfiler(512);
 
 void World::TakeStep(qvr::RawInputDevices& inputDevices)
 {
 	using namespace std::chrono;
 
-	auto timePoint1{ high_resolution_clock::now() };
+	ProfilerScope ps(sStepProfiler);
 
 	// Update physics world.
 	{
@@ -181,8 +143,6 @@ void World::TakeStep(qvr::RawInputDevices& inputDevices)
 		mEntities.end());
 
 	mStepCount += 1;
-
-	sStepProfiler.AddSample(duration_cast<Profiler::SampleUnit>(high_resolution_clock::now() - timePoint1));
 }
 
 void World::SetPaused(const bool paused)
@@ -290,14 +250,9 @@ void World::Render3D(
 	WorldRaycastRenderer & raycastRenderer)
 {
 	{
-		auto startTimePoint{ std::chrono::high_resolution_clock::now() };
+		ProfilerScope ps(sPreRenderProfiler);
 
 		UpdateDetachedRenderComponents(camera);
-
-		auto endTimePoint{ std::chrono::high_resolution_clock::now() };
-
-		sPreRenderProfiler.AddSample(
-			std::chrono::duration_cast<Profiler::SampleUnit>(endTimePoint - startTimePoint));
 	}
 
 	const sf::Vector2u targetSize = target.getSize();
@@ -375,15 +330,11 @@ void World::Render3D(
 		mSky.Render(target, camera);
 	}
 
-	auto timePoint1{ std::chrono::high_resolution_clock::now() };
+	{
+		ProfilerScope ps(sRenderProfiler);
 
-	raycastRenderer.Render(*this, camera, mRenderSettings, target);
-
-	auto timePoint2{ std::chrono::high_resolution_clock::now() };
-
-	auto timeTaken{ std::chrono::duration_cast<Profiler::SampleUnit>(timePoint2 - timePoint1) };
-
-	sRenderProfiler.AddSample(timeTaken);
+		raycastRenderer.Render(*this, camera, mRenderSettings, target);
+	}
 
 	// Render stuff that goes on top of the 3D image (effects, HUD, weapons...)
 	camera.DrawOverlay(target);
@@ -427,10 +378,10 @@ bool World::RemoveEntityImmediate(const Entity & entity)
 			begin(mEntities),
 			end(mEntities),
 			[&](const std::unique_ptr<Entity>& entityUPtr)
-	{
-		return entityUPtr.get() == &entity;
-	}),
-		end(mEntities));
+			{
+				return entityUPtr.get() == &entity;
+			}),
+			end(mEntities));
 
 	return sizeBefore != mEntities.size();
 }

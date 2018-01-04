@@ -53,8 +53,8 @@ TEST_CASE("AnimationData can be converted from json and back")
 	for (int frameIndex = 0; frameIndex < animation.GetFrameCount(); frameIndex++)
 	{
 		// Check that frame time is correct.
-		const AnimationData::TimeUnit ms = 
-			AnimationData::TimeUnit(inputJson["frameTimes"][frameIndex].get<int>());
+		const Animation::TimeUnit ms = 
+			Animation::TimeUnit(inputJson["frameTimes"][frameIndex].get<int>());
 		REQUIRE(ms == animation.GetTime(frameIndex).value());
 
 		// Check that frame rect is correct.

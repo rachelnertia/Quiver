@@ -207,14 +207,14 @@ std::experimental::optional<Animation::Rect> AnimationData::GetRect(const int fr
 	return mFrameRects[realIndex];
 }
 
-std::experimental::optional<AnimationData::TimeUnit> AnimationData::GetTime(const int frameIndex) const
+std::experimental::optional<Animation::TimeUnit> AnimationData::GetTime(const int frameIndex) const
 {
 	if (!FrameIndexIsValid(*this, frameIndex)) return {};
 
 	return mFrameTimes[frameIndex];
 }
 
-std::vector<AnimationData::TimeUnit> AnimationData::GetTimes() const
+std::vector<Animation::TimeUnit> AnimationData::GetTimes() const
 {
 	return mFrameTimes;
 }
@@ -297,7 +297,7 @@ bool AnimationData::SetFrame(const int index, const Animation::Frame & frame)
 	return true;
 }
 
-bool TimeIsValid(const AnimationData::TimeUnit time) {
+bool TimeIsValid(const Animation::TimeUnit time) {
 	return time > 0ms;
 
 }

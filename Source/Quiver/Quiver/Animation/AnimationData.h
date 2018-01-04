@@ -5,8 +5,9 @@
 #include <json.hpp>
 #include <optional.hpp>
 
-#include "Rect.h"
-#include "AnimationId.h"
+#include "Quiver/Animation/AnimationId.h"
+#include "Quiver/Animation/Rect.h"
+#include "Quiver/Animation/TimeUnit.h"
 
 namespace qvr {
 
@@ -19,8 +20,6 @@ struct Frame;
 class AnimationData {
 public:
 	friend AnimationId GenerateAnimationId(const AnimationData& animation);
-
-	using TimeUnit = std::chrono::duration<int, std::milli>;
 
 	AnimationData() = default;
 
@@ -37,12 +36,12 @@ public:
 	int GetRectCount()        const { return mFrameRects.size(); }
 	int GetAltViewsPerFrame() const { return mAltViewsPerFrame; }
 
-	std::experimental::optional<Animation::Frame> GetFrame(const int frameIndex)                         const;
-	std::experimental::optional<Animation::Rect>  GetRect(const int frameIndex, const int viewIndex = 0) const;
-	std::experimental::optional<TimeUnit>         GetTime(const int frameIndex)                          const;
+	std::experimental::optional<Animation::Frame>    GetFrame(const int frameIndex)                         const;
+	std::experimental::optional<Animation::Rect>     GetRect(const int frameIndex, const int viewIndex = 0) const;
+	std::experimental::optional<Animation::TimeUnit> GetTime(const int frameIndex)                          const;
 
-	std::vector<TimeUnit>        GetTimes() const;
-	std::vector<Animation::Rect> GetRects() const;
+	std::vector<Animation::TimeUnit> GetTimes() const;
+	std::vector<Animation::Rect>     GetRects() const;
 
 	bool AddFrame(const Animation::Frame& frame);
 
@@ -55,14 +54,14 @@ public:
 	bool RemoveFrame(const int index);
 
 	bool SetFrame(const int index, const Animation::Frame& frame);
-	bool SetFrameTime(const int index, const TimeUnit time);
+	bool SetFrameTime(const int index, const Animation::TimeUnit time);
 	bool SetFrameRect(const int frameIndex, const int viewIndex, const Animation::Rect& rect);
 
 	bool SwapFrames(const int index1, const int index2);
 
 private:
-	std::vector<Animation::Rect> mFrameRects;
-	std::vector<TimeUnit>        mFrameTimes;
+	std::vector<Animation::Rect>     mFrameRects;
+	std::vector<Animation::TimeUnit> mFrameTimes;
 
 	unsigned mAltViewsPerFrame = 0;
 
@@ -71,7 +70,7 @@ private:
 namespace Animation {
 
 struct Frame {
-	AnimationData::TimeUnit mTime;
+	TimeUnit mTime;
 	Rect mBaseRect;
 	std::vector<Rect> mAltRects;
 };

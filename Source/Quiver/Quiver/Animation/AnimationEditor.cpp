@@ -387,7 +387,7 @@ void AnimationEditor::ProcessGui() {
 
 				int time = mCurrentAnim.GetTime(mCurrentFrameIndex).value().count();
 				if (ImGui::SliderInt("Time (Milliseconds)", &time, 1, 1000)) {
-					mCurrentAnim.SetFrameTime(mCurrentFrameIndex, (AnimationData::TimeUnit)time);
+					mCurrentAnim.SetFrameTime(mCurrentFrameIndex, (Animation::TimeUnit)time);
 				}
 			}
 

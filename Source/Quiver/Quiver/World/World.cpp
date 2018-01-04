@@ -139,7 +139,11 @@ void World::TakeStep(qvr::RawInputDevices& inputDevices)
 		std::remove_if(
 			mEntities.begin(),
 			mEntities.end(),
-			[](const auto& entity) { return entity->GetCustomComponent() && entity->GetCustomComponent()->GetRemoveFlag(); }),
+			[](const auto& entity) { 
+				return 
+					entity->GetCustomComponent() && 
+					entity->GetCustomComponent()->GetRemoveFlag(); 
+			}),
 		mEntities.end());
 
 	mStepCount += 1;

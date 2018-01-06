@@ -99,11 +99,6 @@ std::unique_ptr<Entity> Entity::FromJson(World& world, const nlohmann::json & j)
 
 	using json = nlohmann::json;
 
-	if (!VerifyJson(j, world.GetCustomComponentTypes())) {
-		log->error("{} Entity JSON is invalid.", logContext);
-		return nullptr;
-	}
-
 	// Determine if this is a instance of a prefab.
 	if (j.find("PrefabName") != j.end()) {
 		if (!j["PrefabName"].is_string()) {
@@ -148,46 +143,6 @@ std::unique_ptr<Entity> Entity::FromJson(World& world, const nlohmann::json & j)
 	}
 
 	return entity;
-}
-
-bool Entity::VerifyJson(
-	const nlohmann::json & j,
-	const CustomComponentTypeLibrary& customComponentTypes)
-{
-	if (j.empty()) {
-		return false;
-	}
-
-	if (!j.is_object()) {
-		return false;
-	}
-
-	if (j.find("PrefabName") != j.end()) {
-		// TODO: Try to find a Prefab with this name.
-		return true;
-	}
-
-	if (j.find("PhysicsComponent") == j.end()) {
-		return false;
-	}
-
-	if (!PhysicsComponentDef::VerifyJson(j["PhysicsComponent"])) {
-		return false;
-	}
-
-	if (j.count("RenderComponent") > 0) {
-		if (!RenderComponent::VerifyJson(j["RenderComponent"])) {
-			return false;
-		}
-	}
-
-	if (j.find("CustomComponent") != j.end()) {
-		if (!customComponentTypes.IsValid(j["CustomComponent"])) {
-			return false;
-		}
-	}
-
-	return true;
 }
 
 void Entity::AddCustomComponent(std::unique_ptr<CustomComponent> newCustomComponent)

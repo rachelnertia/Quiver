@@ -83,17 +83,6 @@ nlohmann::json PhysicsShape::ToJson(const b2Shape& shape)
 // Yes, that's a reference to a pointer.
 std::unique_ptr<b2Shape> PhysicsShape::FromJson(const nlohmann::json & j)
 {
-	auto log = GetConsoleLogger();
-
-	// How much validation should this function have in it?
-	// Should we assume that VerifyJson has already been run and
-	// not execute it here?
-
-	if (!VerifyJson(j)) {
-		log->error("JSON is not valid for a shape.");
-		return nullptr;
-	}
-
 	std::string typeString = j["Type"];
 
 	if (typeString == "Circle") {
@@ -114,74 +103,6 @@ std::unique_ptr<b2Shape> PhysicsShape::FromJson(const nlohmann::json & j)
 	}
 
 	return nullptr;
-}
-
-bool PhysicsShape::VerifyJson(const nlohmann::json & j)
-{
-	if (!j.is_object()) return false;
-
-	if (j.find("Type") == j.end()) {
-		return false;
-	}
-
-	if (!j["Type"].is_string()) {
-		return false;
-	}
-
-	std::string typeString = j["Type"];
-
-	// Check that typeString is valid.
-	{
-		const std::string validTypeStrings[] = {
-			"Circle",
-			"Polygon"
-		};
-		bool typeStringIsValid = false;
-		for (auto& validTypeString : validTypeStrings) {
-			if (typeString == validTypeString) {
-				typeStringIsValid = true;
-				break;
-			}
-		}
-		if (!typeStringIsValid) {
-			return false;
-		}
-	}
-
-	// Now we do different things depending on value of typeString.
-	if (typeString == "Circle") {
-		// Check there's a radius.
-		if (j.find("Radius") == j.end()) return false;
-		if (!j["Radius"].is_number()) return false;
-
-	}
-	else if (typeString == "Polygon") {
-		// Check for vertices.
-		if (j.find("Vertices") == j.end()) return false;
-		auto& vertices = j["Vertices"];
-		// Check that vertices is an array.
-		if (!vertices.is_array()) return false;
-		// Check that there are at least 3 verts.
-		if (vertices.size() < 3) return false;
-		// Check that there are no more than the maximum number of verts.
-		// TODO
-		// Check that each vertex is an array with 2 elements, each of which
-		// is a number.
-		for (auto& vertex : j["Vertices"]) {
-			if (!vertex.is_array()) return false;
-			if (vertex.size() != 2) return false;
-			if (!vertex[0].is_number()) return false;
-			if (!vertex[1].is_number()) return false;
-		}
-		// Phew!
-
-	}
-	else {
-		// Shouldn't reach here, but if we do, something's deffo borked.
-		return false;
-	}
-
-	return true;
 }
 
 }

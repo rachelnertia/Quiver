@@ -129,10 +129,6 @@ bool RenderComponent::FromJson(const nlohmann::json & j)
 {
 	auto log = GetConsoleLogger();
 
-	if (!VerifyJson(j)) {
-		return false;
-	}
-
 	SetHeight(j.value<float>("Height", 1.0f));
 	SetGroundOffset(j.value<float>("GroundOffset", 0.0f));
 
@@ -206,37 +202,6 @@ bool RenderComponent::FromJson(const nlohmann::json & j)
 					}
 				}
 			}
-		}
-	}
-
-	// All done!
-
-	return true;
-}
-
-bool RenderComponent::VerifyJson(const nlohmann::json & j)
-{
-	auto log = GetConsoleLogger();
-
-	if (j.empty()) {
-		log->error("JSON object is empty!");
-		return false;
-	}
-
-	if (j.count("Height")       && !j["Height"].is_number())       return false;
-	if (j.count("GroundOffset") && !j["GroundOffset"].is_number()) return false;
-
-	if (j.count("Colour") && !ColourUtils::VerifyColourJson(j["Colour"])) return false;
-	
-	if (j.find("Texture") != j.end()) {
-		if (!j["Texture"].is_string()) {
-			log->error("Texture field must be a filename (string).");
-		}
-	}
-
-	if (j.find("SpriteRadius") != j.end()) {
-		if (!j["SpriteRadius"].is_number()) {
-			log->error("SpriteRadius field must be a number.");
 		}
 	}
 

@@ -17,8 +17,6 @@ public:
 
 	// TODO: Look into std::variant/another alternative to dynamic allocation.
 	static std::unique_ptr<b2Shape> FromJson(const nlohmann::json & j);
-
-	static bool VerifyJson(const nlohmann::json & j);
 };
 
 // This is a nice idea but I don't have time to get it actually working.

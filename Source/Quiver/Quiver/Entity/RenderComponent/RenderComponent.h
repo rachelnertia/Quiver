@@ -29,8 +29,6 @@ public:
 	bool ToJson(nlohmann::json& j) const;
 	bool FromJson(const nlohmann::json& j);
 
-	static bool VerifyJson(const nlohmann::json& j);
-
 	void UpdateDetachedBodyRotation(const float cameraAngle);
 	void UpdateDetachedBodyPosition();
 

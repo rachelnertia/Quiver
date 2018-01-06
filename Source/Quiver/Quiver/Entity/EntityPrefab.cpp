@@ -17,13 +17,6 @@ bool EntityPrefabContainer::AddPrefab(
 
 	const nlohmann::json entityJson = entity.ToJson(true);
 
-	if (!entityJson.empty()) {
-		if (Entity::VerifyJson(entityJson, customComponentTypes)) {
-			mEntityPrefabs[prefabName] = entityJson;
-			return true;
-		}
-	}
-
 	log->error("Failed to serialize Entity to JSON.");
 
 	return false;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "json.hpp"
+#include <json.hpp>
 
 struct b2Vec2;
 struct b2Transform;
@@ -30,10 +30,6 @@ public:
 	nlohmann::json ToJson(const bool toPrefab = false) const;
 	
 	static std::unique_ptr<Entity> FromJson(World& world, const nlohmann::json & j);
-
-	static bool VerifyJson(
-		const nlohmann::json & j, 
-		const CustomComponentTypeLibrary& customComponentTypes);
 
 	void AddCustomComponent(std::unique_ptr<CustomComponent> newInput);
 

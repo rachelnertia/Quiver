@@ -43,7 +43,10 @@ std::unique_ptr<b2Shape> DynamicCopy(const b2Shape& shape)
 	return nullptr;
 }
 
-PhysicsComponentDef::PhysicsComponentDef(const b2Shape & shape, const b2Vec2 & position, const float angle)
+PhysicsComponentDef::PhysicsComponentDef(
+	const b2Shape & shape, 
+	const b2Vec2 & position, 
+	const float angle)
 	: m_Shape(DynamicCopy(shape))
 {
 	fixtureDef = b2FixtureDef{};
@@ -148,70 +151,6 @@ PhysicsComponentDef::PhysicsComponentDef(const nlohmann::json & j)
 	{
 		bodyDef.angularDamping = j["AngularDamping"];
 	}
-}
-
-bool PhysicsComponentDef::VerifyJson(const nlohmann::json & j) {
-	auto log = spdlog::get("console");
-	assert(log);
-
-	const char* logCtx = "PhysicsComponentDef::VerifyJson: ";
-
-	if (!j.is_object()) {
-		return false;
-	}
-
-	if (j.find("Position") == j.end()) return false;
-	if (!j["Position"].is_array()) return false;
-	if (j["Position"].size() != 2) return false;
-	if (!j["Position"][0].is_number()) return false;
-	if (!j["Position"][1].is_number()) return false;
-
-	if (j.find("Angle") == j.end()) return false;
-	if (!j["Angle"].is_number()) return false;
-
-	if (j.find("Shape") == j.end()) return false;
-	if (!PhysicsShape::VerifyJson(j["Shape"])) return false;
-
-	// Warn if there's something off about BodyType.
-	if (j.find("BodyType") == j.end()) {
-		log->warn("{} Could not find 'BodyType' field.", logCtx);
-	}
-	else {
-		if (!j["BodyType"].is_string()) {
-			log->warn("{} 'BodyType' is not a string.", logCtx);
-		}
-		else {
-			std::string bodyType = j["BodyType"];
-			std::string validBodyTypes[3] = { "Static", "Dynamic", "Kinematic" };
-			bool bodyTypeIsValid = false;
-			for (auto valid : validBodyTypes) {
-				if (bodyType == valid) {
-					bodyTypeIsValid = true;
-					break; // Success, BodyType is valid.
-				}
-			}
-			if (!bodyTypeIsValid) {
-				log->warn(
-					"{} 'BodyType' is not '{}', '{}' or '{}'",
-					logCtx,
-					validBodyTypes[0],
-					validBodyTypes[1],
-					validBodyTypes[2]);
-			}
-		}
-	}
-
-	// TODO: Add warnings for missing/bogus FixedRotation.
-
-	// TODO: Add warnings for missing/bogus LinearDamping.
-
-	// TODO: Add warnings for missing/bogus AngularDamping.
-
-	// TODO: Add warnings for missing/bogus Friction.
-
-	// TODO: Add warnings for missing/bogus Restitution.
-
-	return true;
 }
 
 }

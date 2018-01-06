@@ -423,11 +423,6 @@ void CreateInstanceOfPrefabTool::OnMouseClick(WorldEditor & editor, const Camera
 		return;
 	}
 
-	if (!Entity::VerifyJson(*prefab, editor.GetWorld()->GetCustomComponentTypes())) {
-		log->error("{} Prefab JSON is not valid.");
-		return;
-	}
-
 	// Create Entity.
 	{
 		const b2Vec2 clickPos = camera.ScreenToWorld(b2Vec2((float)mouseInfo.x, (float)mouseInfo.y));

@@ -13,8 +13,6 @@ struct PhysicsComponentDef
 	b2FixtureDef fixtureDef;
 	b2BodyDef bodyDef;
 
-	static bool VerifyJson(const nlohmann::json & j);
-
 	PhysicsComponentDef(const b2Shape& shape, const b2Vec2& position, const float angle);
 	PhysicsComponentDef(const nlohmann::json& j);
 };

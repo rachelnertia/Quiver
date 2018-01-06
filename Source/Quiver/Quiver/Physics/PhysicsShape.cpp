@@ -79,8 +79,6 @@ nlohmann::json PhysicsShape::ToJson(const b2Shape& shape)
 	return j;
 }
 
-// This function allocates memory!
-// Yes, that's a reference to a pointer.
 std::unique_ptr<b2Shape> PhysicsShape::FromJson(const nlohmann::json & j)
 {
 	std::string typeString = j["Type"];

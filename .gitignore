@@ -30,3 +30,5 @@ Quarrel/ImGui/README.md
 PremakeGenerated/
 .vscode/
 Screenshots
+*.d
+*.o

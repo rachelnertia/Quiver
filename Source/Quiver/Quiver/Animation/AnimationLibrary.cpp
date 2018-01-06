@@ -74,7 +74,7 @@ bool AnimationLibrary::Remove(const AnimationId anim)
 		return false;
 	}
 
-	AnimationInfo animInfo = infosById[anim];
+	AnimationInfo targetAnimInfo = infosById[anim];
 
 	log->debug("{} Animation found.", logCtx);
 
@@ -82,36 +82,38 @@ bool AnimationLibrary::Remove(const AnimationId anim)
 
 	// Erase views.
 	{
-		auto start = allFrameRects.begin() + animInfo.IndexOfFirstRect();
-		auto end = start + animInfo.NumRects();
+		auto start = allFrameRects.begin() + targetAnimInfo.IndexOfFirstRect();
+		auto end = start + targetAnimInfo.NumRects();
 		allFrameRects.erase(start, end);
 	}
 
 	// Erase times.
 	{
-		auto start = allFrameTimes.begin() + animInfo.IndexOfFirstTime();
-		auto end = start + animInfo.NumFrames();
+		auto start = allFrameTimes.begin() + targetAnimInfo.IndexOfFirstTime();
+		auto end = start + targetAnimInfo.NumFrames();
 		allFrameTimes.erase(start, end);
 	}
 
 	// Loop through the remaining AnimationInfos and fix up the indexOfFirstRect members
 	// of those whose indexOfFirstRect was greater than this one's
-	// TODO: This smells!
 	for (auto& kvp : infosById) {
-		if (kvp.second.IndexOfFirstRect() > animInfo.IndexOfFirstRect()) {
+		if (kvp.second.IndexOfFirstRect() > targetAnimInfo.IndexOfFirstRect()) {
 			AnimationInfo newAnimInfo(kvp.second);
 
-			infosById.insert_or_assign(kvp.first, newAnimInfo);
+			newAnimInfo.mIndexOfFirstRect -= targetAnimInfo.NumRects();
+
+			infosById[kvp.first] = newAnimInfo;
 		}
 	}
 
-	// And repeatSetting for times.
-	// TODO: This smells!
+	// And repeat for times.
 	for (auto& kvp : infosById) {
-		if (kvp.second.IndexOfFirstTime() > animInfo.IndexOfFirstTime()) {
+		if (kvp.second.IndexOfFirstTime() > targetAnimInfo.IndexOfFirstTime()) {
 			AnimationInfo newAnimInfo(kvp.second);
 
-			infosById.insert_or_assign(kvp.first, newAnimInfo);
+			newAnimInfo.mIndexOfFirstTime -= targetAnimInfo.NumFrames();
+
+			infosById[kvp.first] = newAnimInfo;
 		}
 	}
 

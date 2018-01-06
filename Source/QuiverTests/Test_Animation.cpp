@@ -407,4 +407,16 @@ TEST_CASE("AnimationLibrary", "[Animation]") {
 		REQUIRE(animationIds.size() == 1);
 		REQUIRE(animationIds[0] == animationId);
 	}
+
+	animationData.AddFrame(Frame{ 10ms, Rect{ 1,0,2,1 },{} });
+
+	const AnimationId animationId2 = animations.Add(animationData);
+
+	REQUIRE(animations.GetCount() == 2);
+
+	REQUIRE(animations.Remove(animationId));
+
+	REQUIRE(animations.GetRect(animationId2, 0) == animationData.GetRect(0).value());
+	REQUIRE(animations.GetRect(animationId2, 1) == animationData.GetRect(1).value());
+	REQUIRE(animations.GetRect(animationId2, 2) == animationData.GetRect(2).value());
 }

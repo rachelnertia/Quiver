@@ -100,7 +100,6 @@ private:
 
 		std::experimental::optional<AnimationSourceInfo> mSourceInfo;
 	
-	private:
 		unsigned mIndexOfFirstRect = 0;
 		unsigned mIndexOfFirstTime = 0;
 		unsigned mNumRects = 0;

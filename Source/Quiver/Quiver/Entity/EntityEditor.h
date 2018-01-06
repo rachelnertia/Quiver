@@ -7,6 +7,7 @@ namespace qvr
 
 class Entity;
 class AudioComponentEditor;
+class CustomComponentEditor;
 class PhysicsComponentEditor;
 class RenderComponentEditor;
 
@@ -31,6 +32,7 @@ private:
 	std::unique_ptr<AudioComponentEditor>   m_AudioComponentEditor;
 	std::unique_ptr<PhysicsComponentEditor> m_PhysicsComponentEditor;
 	std::unique_ptr<RenderComponentEditor>  m_RenderComponentEditor;
+	std::unique_ptr<CustomComponentEditor>  m_CustomComponentEditor;
 };
 
 }

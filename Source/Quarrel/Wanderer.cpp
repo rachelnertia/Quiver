@@ -104,8 +104,3 @@ void Wanderer::OnEndContact(Entity& other)
 		log->debug("Wanderer finishing contact with {}...", other.GetCustomComponent()->GetTypeName());
 	}
 }
-
-void Wanderer::GUIControls()
-{
-	
-}

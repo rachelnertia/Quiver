@@ -246,11 +246,13 @@ public:
 		}
 	}
 
-	void GUIControls() override;
+	std::unique_ptr<CustomComponentEditor> CreateEditor() override;
 
 	nlohmann::json ToJson() const override;
 
 	bool FromJson(const nlohmann::json& j) override;
+
+	friend class EnemyEditor;
 
 private:
 	struct PlayerSighting
@@ -543,34 +545,43 @@ optional<AnimationId> PickAnimationGui(
 	return {};
 }
 
-void Enemy::GUIControls()
+class EnemyEditor : public CustomComponentEditorType<Enemy>
 {
-	AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
+public:
+	EnemyEditor(Enemy& player) : CustomComponentEditorType(player) {}
 
-	if (const auto animationId = PickAnimationGui("Run Animation", m_RunAnim, animSystem))
-	{
-		m_RunAnim = animationId.value();
-	}
+	void GuiControls() override {
+		AnimatorCollection& animSystem = Target().GetEntity().GetWorld().GetAnimators();
 
-	if (const auto animationId = PickAnimationGui("Idle Animation", m_StandAnim, animSystem))
-	{
-		m_StandAnim = animationId.value();
-	}
+		if (const auto animationId = PickAnimationGui("Run Animation", Target().m_RunAnim, animSystem))
+		{
+			Target().m_RunAnim = animationId.value();
+		}
 
-	if (const auto animationId = PickAnimationGui("Shoot Animation", m_ShootAnim, animSystem))
-	{
-		m_ShootAnim = animationId.value();
-	}
+		if (const auto animationId = PickAnimationGui("Idle Animation", Target().m_StandAnim, animSystem))
+		{
+			Target().m_StandAnim = animationId.value();
+		}
 
-	if (const auto animationId = PickAnimationGui("Die Animation", m_DieAnim, animSystem))
-	{
-		m_DieAnim = animationId.value();
-	}
+		if (const auto animationId = PickAnimationGui("Shoot Animation", Target().m_ShootAnim, animSystem))
+		{
+			Target().m_ShootAnim = animationId.value();
+		}
 
-	if (const auto animationId = PickAnimationGui("Awake Animation", m_AwakeAnim, animSystem))
-	{
-		m_AwakeAnim = animationId.value();
+		if (const auto animationId = PickAnimationGui("Die Animation", Target().m_DieAnim, animSystem))
+		{
+			Target().m_DieAnim = animationId.value();
+		}
+
+		if (const auto animationId = PickAnimationGui("Awake Animation", Target().m_AwakeAnim, animSystem))
+		{
+			Target().m_AwakeAnim = animationId.value();
+		}
 	}
+};
+
+std::unique_ptr<CustomComponentEditor> Enemy::CreateEditor() {
+	return std::make_unique<EnemyEditor>(*this);
 }
 
 json AnimationToJson(const AnimatorCollection& animators, const AnimationId animationId)

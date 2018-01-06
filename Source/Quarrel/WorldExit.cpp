@@ -19,6 +19,19 @@ using json = nlohmann::json;
 
 using namespace qvr;
 
+enum class ExitTarget
+{
+	World,           // Transitions the Game to a new World
+	ApplicationState // Transitions the Application to a new ApplicationState
+};
+
+enum class ApplicationStateType
+{
+	Game,
+	Editor,
+	MainMenu
+};
+
 class WorldExit : public CustomComponent
 {
 public:
@@ -29,23 +42,14 @@ public:
 
 	std::string GetTypeName() const override { return "WorldExit"; }
 
-	void GUIControls() override;
-
 	json ToJson  () const override;
 	bool FromJson(const json& j) override;
 
+	std::unique_ptr<CustomComponentEditor> CreateEditor() override;
+
+	friend class WorldExitEditor;
+
 private:
-	enum class ExitTarget
-	{
-		World,           // Transitions the Game to a new World
-		ApplicationState // Transitions the Application to a new ApplicationState
-	};
-	enum class ApplicationStateType
-	{
-		Game,
-		Editor,
-		MainMenu
-	};
 	ExitTarget targetType = ExitTarget::World;
 	ApplicationStateType targetApplicationState = ApplicationStateType::Game;
 	std::string worldFilePath;
@@ -112,9 +116,21 @@ void WorldExit::OnBeginContact(Entity& other)
 
 void WorldExit::OnEndContact(Entity& other) {}
 
-void WorldExit::GUIControls()
+class WorldExitEditor : public CustomComponentEditorType<WorldExit>
 {
-	int exitTargetIndex = (int)targetType;
+public:
+	WorldExitEditor(WorldExit& target) : CustomComponentEditorType(target) {}
+
+	void GuiControls() override;
+};
+
+std::unique_ptr<CustomComponentEditor> WorldExit::CreateEditor() {
+	return std::make_unique<WorldExitEditor>(*this);
+}
+
+void WorldExitEditor::GuiControls()
+{
+	int exitTargetIndex = (int)Target().targetType;
 	
 	{
 		std::array<const char*, 2> ExitTargetStrings = {
@@ -129,11 +145,11 @@ void WorldExit::GUIControls()
 			ExitTargetStrings.size());
 	}
 
-	this->targetType = (ExitTarget)exitTargetIndex;
+	Target().targetType = (ExitTarget)exitTargetIndex;
 
-	if (this->targetType == ExitTarget::ApplicationState)
+	if (Target().targetType == ExitTarget::ApplicationState)
 	{
-		int applicationStateIndex = (int)this->targetApplicationState;
+		int applicationStateIndex = (int)Target().targetApplicationState;
 		
 		{
 			std::array<const char*, 3> ApplicationStateStrings = {
@@ -149,13 +165,13 @@ void WorldExit::GUIControls()
 				ApplicationStateStrings.size());
 		}
 
-		targetApplicationState = (ApplicationStateType)applicationStateIndex;
+		Target().targetApplicationState = (ApplicationStateType)applicationStateIndex;
 	}
 
-	if (this->targetType == ExitTarget::World ||
-		this->targetApplicationState != ApplicationStateType::MainMenu)
+	if (Target().targetType == ExitTarget::World ||
+		Target().targetApplicationState != ApplicationStateType::MainMenu)
 	{
-		ImGui::InputText<64>("World File to Load", this->worldFilePath);
+		ImGui::InputText<64>("World File to Load", Target().worldFilePath);
 	}
 }
 

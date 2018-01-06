@@ -13,6 +13,7 @@ namespace qvr {
 class Entity;
 }
 
+class PlayerEditor;
 class Weapon;
 
 class Player : public qvr::CustomComponent {
@@ -29,12 +30,14 @@ public:
 
 	std::string GetTypeName() const override { return "Player"; }
 
-	void GUIControls() override;
+	std::unique_ptr<qvr::CustomComponentEditor> CreateEditor() override;
 
 	nlohmann::json ToJson() const override;
 	bool FromJson(const nlohmann::json& j) override;
 
 	qvr::Camera3D mCamera;
+
+	friend class PlayerEditor;
 
 private:
 	void RenderCurrentWeapon(sf::RenderTarget& target) const;

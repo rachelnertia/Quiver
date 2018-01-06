@@ -185,11 +185,18 @@ void Player::OnEndContact(Entity& other)
 	}
 }
 
-void Player::GUIControls()
+class PlayerEditor : public CustomComponentEditorType<Player>
 {
-	ImGui::Text("Things will go here...");
+public:
+	PlayerEditor(Player& player) : CustomComponentEditorType(player) {}
+	
+	void GuiControls() override {
+		ImGui::SliderFloat("Move Speed", &Target().mMoveSpeed, 0.0f, 20.0f);
+	}
+};
 
-	ImGui::SliderFloat("Move Speed", &mMoveSpeed, 0.0f, 20.0f);
+std::unique_ptr<CustomComponentEditor> Player::CreateEditor() {
+	return std::make_unique<PlayerEditor>(*this);
 }
 
 nlohmann::json Player::ToJson() const

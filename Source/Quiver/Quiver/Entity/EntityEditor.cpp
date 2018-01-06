@@ -144,10 +144,16 @@ void EntityEditor::GuiControls() {
 				m_Entity.AddCustomComponent(nullptr); // AddCustomComponent handles deletion.
 			}
 			else {
-				// Display controls
-				customComp->GUIControls();
-			}
+				if (!m_CustomComponentEditor ||
+					!m_CustomComponentEditor->IsTargeting(*m_Entity.GetCustomComponent()))
+				{
+					m_CustomComponentEditor = customComp->CreateEditor();
+				}
 
+				if (m_CustomComponentEditor) {
+					m_CustomComponentEditor->GuiControls();
+				}
+			}
 		}
 		else {
 			ImGui::Text("No Custom Component");

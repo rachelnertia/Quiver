@@ -3,10 +3,12 @@
 #include "Quiver/Entity/Component.h"
 
 #include <functional>
-#include <unordered_map>
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
-#include "json.hpp"
+
+#include <json.hpp>
 
 namespace sf {
 class Window;
@@ -14,6 +16,7 @@ class Window;
 
 namespace qvr {
 
+class CustomComponentEditor;
 class CustomComponentType;
 class RawInputDevices;
 
@@ -42,8 +45,7 @@ public:
 	virtual void OnBeginContact(Entity& other) {}
 	virtual void OnEndContact(Entity& other) {}
 
-	// Override this with ImGui calls.
-	virtual void GUIControls() {}
+	virtual std::unique_ptr<CustomComponentEditor> CreateEditor() { return nullptr; }
 
 	// Override this to return the type name string of your subclass.
 	virtual std::string GetTypeName() const = 0;
@@ -56,6 +58,29 @@ protected:
 
 private:
 	bool mRemoveFlag = false;
+};
+
+class CustomComponentEditor
+{
+public:
+	CustomComponentEditor(CustomComponent& target) : m_Target(target) {};
+	virtual ~CustomComponentEditor() {};
+	virtual void GuiControls() = 0;
+	bool IsTargeting(const CustomComponent& customComponent) const {
+		return &customComponent == &m_Target;
+	}
+protected:
+	CustomComponent& m_Target;
+};
+
+// Helpful template
+template <class T>
+class CustomComponentEditorType : public CustomComponentEditor
+{
+protected:
+	T& Target() { return (T&)m_Target; }
+public:
+	CustomComponentEditorType(T& t) : CustomComponentEditor(t) {}
 };
 
 class CustomComponentType final {

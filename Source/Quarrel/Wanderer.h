@@ -17,8 +17,6 @@ public:
 
 	std::string GetTypeName() const override { return "Wanderer"; }
 
-	void GUIControls() override;
-
 private:
 	int playerContacts = 0;
 

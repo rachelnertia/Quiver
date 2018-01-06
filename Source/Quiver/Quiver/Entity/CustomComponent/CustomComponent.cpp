@@ -98,7 +98,7 @@ bool CustomComponentTypeLibrary::IsValid(const nlohmann::json& j) const
 {
 	auto log = spdlog::get("console");
 	assert(log);
-	const char* logCtx = "CustomComponent::VerifyJson";
+	const char* logCtx = "CustomComponentTypeLibrary::IsValid";
 
 	if (j.empty()) {
 		log->error("{}: JSON is empty.");

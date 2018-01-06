@@ -24,11 +24,11 @@ AnimationId AnimationLibrary::Add(const AnimationData& anim)
 	if (id == AnimationId::Invalid) return AnimationId::Invalid;
 
 	// an animation with the given id already exists
-	if (infosById.find(id) != infosById.end()) {
+	if (infos.find(id) != infos.end()) {
 		return id;
 	}
 
-	infosById[id] =
+	infos[id] =
 		AnimationInfo(
 			allFrameRects.size(),
 			allFrameTimes.size(),
@@ -56,7 +56,7 @@ AnimationId AnimationLibrary::Add(const AnimationData& anim, const AnimationSour
 
 	if (newAnim != AnimationId::Invalid)
 	{
-		infosById[newAnim].mSourceInfo = sourceInfo;
+		infos[newAnim].mSourceInfo = sourceInfo;
 	}
 
 	return newAnim;
@@ -74,46 +74,46 @@ bool AnimationLibrary::Remove(const AnimationId anim)
 		return false;
 	}
 
-	AnimationInfo targetAnimInfo = infosById[anim];
+	const AnimationInfo targetAnimInfo = infos[anim];
 
 	log->debug("{} Animation found.", logCtx);
 
-	infosById.erase(anim);
+	infos.erase(anim);
 
 	// Erase views.
 	{
-		auto start = allFrameRects.begin() + targetAnimInfo.IndexOfFirstRect();
-		auto end = start + targetAnimInfo.NumRects();
+		auto start = allFrameRects.begin() + targetAnimInfo.mIndexOfFirstRect;
+		auto end = start + targetAnimInfo.mNumRects;
 		allFrameRects.erase(start, end);
 	}
 
 	// Erase times.
 	{
-		auto start = allFrameTimes.begin() + targetAnimInfo.IndexOfFirstTime();
+		auto start = allFrameTimes.begin() + targetAnimInfo.mIndexOfFirstTime;
 		auto end = start + targetAnimInfo.NumFrames();
 		allFrameTimes.erase(start, end);
 	}
 
 	// Loop through the remaining AnimationInfos and fix up the indexOfFirstRect members
 	// of those whose indexOfFirstRect was greater than this one's
-	for (auto& kvp : infosById) {
-		if (kvp.second.IndexOfFirstRect() > targetAnimInfo.IndexOfFirstRect()) {
+	for (auto& kvp : infos) {
+		if (kvp.second.mIndexOfFirstRect > targetAnimInfo.mIndexOfFirstRect) {
 			AnimationInfo newAnimInfo(kvp.second);
 
-			newAnimInfo.mIndexOfFirstRect -= targetAnimInfo.NumRects();
+			newAnimInfo.mIndexOfFirstRect -= targetAnimInfo.mNumRects;
 
-			infosById[kvp.first] = newAnimInfo;
+			infos[kvp.first] = newAnimInfo;
 		}
 	}
 
 	// And repeat for times.
-	for (auto& kvp : infosById) {
-		if (kvp.second.IndexOfFirstTime() > targetAnimInfo.IndexOfFirstTime()) {
+	for (auto& kvp : infos) {
+		if (kvp.second.mIndexOfFirstTime > targetAnimInfo.mIndexOfFirstTime) {
 			AnimationInfo newAnimInfo(kvp.second);
 
 			newAnimInfo.mIndexOfFirstTime -= targetAnimInfo.NumFrames();
 
-			infosById[kvp.first] = newAnimInfo;
+			infos[kvp.first] = newAnimInfo;
 		}
 	}
 
@@ -124,17 +124,17 @@ bool AnimationLibrary::Remove(const AnimationId anim)
 
 bool AnimationLibrary::Contains(const AnimationId anim) const
 {
-	return this->infosById.count(anim) == 1;
+	return this->infos.count(anim) == 1;
 }
 
 int AnimationLibrary::GetCount() const
 {
-	return this->infosById.size();
+	return this->infos.size();
 }
 
 AnimationId AnimationLibrary::GetAnimation(const AnimationSourceInfo& sourceInfo) const
 {
-	for (const auto& kvp : infosById) 
+	for (const auto& kvp : infos) 
 	{
 		if (kvp.second.mSourceInfo && 
 			kvp.second.mSourceInfo.value() == sourceInfo) 
@@ -149,9 +149,9 @@ AnimationId AnimationLibrary::GetAnimation(const AnimationSourceInfo& sourceInfo
 auto AnimationLibrary::GetSourceInfo(const AnimationId anim) const -> std::experimental::optional<AnimationSourceInfo>
 {
 	if (Contains(anim)) {
-		const auto it = infosById.find(anim);
+		const auto it = infos.find(anim);
 
-		if (it != infosById.end()) {
+		if (it != infos.end()) {
 			return it->second.mSourceInfo;
 		}
 	}
@@ -161,7 +161,7 @@ auto AnimationLibrary::GetSourceInfo(const AnimationId anim) const -> std::exper
 
 int AnimationLibrary::GetFrameCount(const AnimationId anim) const
 {
-	return infosById.at(anim).NumFrames();
+	return infos.at(anim).NumFrames();
 }
 
 bool AnimationLibrary::HasAltViews(const AnimationId anim) const
@@ -171,7 +171,7 @@ bool AnimationLibrary::HasAltViews(const AnimationId anim) const
 
 int AnimationLibrary::GetViewCount(const AnimationId anim) const
 {
-	return infosById.at(anim).NumRectsPerFrame();
+	return infos.at(anim).mNumRectsPerFrame;
 }
 
 auto AnimationLibrary::GetRect(
@@ -180,11 +180,11 @@ auto AnimationLibrary::GetRect(
 	const int viewIndex)
 		const -> Animation::Rect
 {
-	const AnimationInfo info = infosById.at(anim);
+	const AnimationInfo info = infos.at(anim);
 
-	const int rectIndex = (frameIndex * info.NumRectsPerFrame()) + viewIndex;
+	const int rectIndex = (frameIndex * info.mNumRectsPerFrame) + viewIndex;
 
-	return allFrameRects[info.IndexOfFirstRect() + rectIndex];
+	return allFrameRects[info.mIndexOfFirstRect + rectIndex];
 }
 
 auto AnimationLibrary::GetRects(
@@ -192,13 +192,13 @@ auto AnimationLibrary::GetRects(
 	const int frameIndex)
 		const -> gsl::span<const Animation::Rect>
 {
-	const AnimationInfo info = infosById.at(anim);
+	const AnimationInfo info = infos.at(anim);
 
-	const int firstRectIndex = (frameIndex * (info.NumRectsPerFrame()));
+	const int firstRectIndex = (frameIndex * (info.mNumRectsPerFrame));
 
 	return gsl::make_span(
-		&allFrameRects[info.IndexOfFirstRect() + firstRectIndex],
-		info.NumRectsPerFrame());
+		&allFrameRects[info.mIndexOfFirstRect + firstRectIndex],
+		info.mNumRectsPerFrame);
 }
 
 auto AnimationLibrary::GetTime(
@@ -206,9 +206,9 @@ auto AnimationLibrary::GetTime(
 	const int frameIndex)
 		const -> Animation::TimeUnit
 {
-	const AnimationInfo info = infosById.at(anim);
+	const AnimationInfo info = infos.at(anim);
 
-	return allFrameTimes[info.IndexOfFirstTime() + frameIndex];
+	return allFrameTimes[info.mIndexOfFirstTime + frameIndex];
 }
 
 template<typename KeyType, typename ValType>
@@ -230,7 +230,7 @@ auto ExtractKeys(const std::unordered_map<KeyType, ValType> map) -> std::vector<
 }
 
 auto AnimationLibrary::GetIds() const -> std::vector<AnimationId> {
-	return ExtractKeys(infosById);
+	return ExtractKeys(infos);
 }
 
 using json = nlohmann::json;
@@ -251,7 +251,7 @@ void from_json(const json& j, AnimationSourceInfo& animationSource)
 
 void to_json(nlohmann::json& j, const AnimationLibrary& animations)
 {
-	for (auto kvp : animations.infosById)
+	for (auto kvp : animations.infos)
 	{
 		if (kvp.second.mSourceInfo.has_value() == false) continue;
 		

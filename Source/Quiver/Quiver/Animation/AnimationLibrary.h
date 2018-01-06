@@ -82,21 +82,11 @@ private:
 			, mNumRectsPerFrame(numRectsPerFrame)
 		{}
 
-		AnimationInfo(const AnimationInfo& other)
-			: AnimationInfo(
-				other.IndexOfFirstRect(), 
-				other.IndexOfFirstTime(), 
-				other.NumRects(), 
-				other.NumRectsPerFrame())
-		{}
+		AnimationInfo(const AnimationInfo& other) = default;
 
 		AnimationInfo() = default;
 
-		unsigned IndexOfFirstRect() const { return mIndexOfFirstRect; }
-		unsigned IndexOfFirstTime() const { return mIndexOfFirstTime; }
 		unsigned NumFrames() const { return mNumRects / mNumRectsPerFrame; }
-		unsigned NumRects()  const { return mNumRects; }
-		unsigned NumRectsPerFrame() const { return mNumRectsPerFrame; }
 
 		std::experimental::optional<AnimationSourceInfo> mSourceInfo;
 	
@@ -106,7 +96,7 @@ private:
 		unsigned mNumRectsPerFrame = 0;
 	};
 
-	std::unordered_map<AnimationId, AnimationInfo> infosById;
+	std::unordered_map<AnimationId, AnimationInfo> infos;
 	
 	// Time values for each frame in every animation.
 	std::vector<Animation::TimeUnit> allFrameTimes;

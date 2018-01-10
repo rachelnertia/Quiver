@@ -22,7 +22,7 @@ void EntityEditor::GuiControls() {
 	auto log = spdlog::get("console");
 	assert(log);
 
-	ImGui::Text("Entity Address: %p", (unsigned)(&m_Entity));
+	ImGui::Text("Entity Address: %p", (void*)&m_Entity);
 
 	ImGui::Text(
 		"Prefab: %s",

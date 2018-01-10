@@ -1,12 +1,12 @@
 function IncludeSFML()
-	includedirs { _OPTIONS["sfmldir"].."include" }
+	includedirs { _OPTIONS["sfmlinc"] }
 	if not _OPTIONS["sfml-link-dynamic"] then
 		defines { "SFML_STATIC" }
 	end
 end
 
 function LinkSFML()
-	libdirs	{ _OPTIONS["sfmldir"].."lib" }
+	libdirs	{ _OPTIONS["sfmllib"] }
 
 	if _OPTIONS["sfml-link-dynamic"] then
 		filter "configurations:Development"

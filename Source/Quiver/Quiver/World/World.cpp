@@ -617,7 +617,7 @@ bool World::RegisterDetachedRenderComponent(const RenderComponent& renderCompone
 			"{} Trying to register a RenderComponent (index: {}, address: {:x}) a second time.",
 			logCtx,
 			it - mDetachedRenderComponents.begin(),
-			(unsigned)&renderComponent);
+			(uintptr_t)&renderComponent);
 
 		return true;
 	}
@@ -628,7 +628,7 @@ bool World::RegisterDetachedRenderComponent(const RenderComponent& renderCompone
 		"{} Registered a RenderComponent (address: {:x}) with index {}. "
 		"There are now {} registered FlatSprites.",
 		logCtx,
-		(unsigned)&renderComponent,
+		(uintptr_t)&renderComponent,
 		mDetachedRenderComponents.size() - 1,
 		mDetachedRenderComponents.size());
 
@@ -653,7 +653,7 @@ bool World::UnregisterDetachedRenderComponent(const RenderComponent& renderCompo
 			"{} Removed a RenderComponent (address: {:x}, index: {}). "
 			"There are now {} registered FlatSprites.",
 			logCtx,
-			(unsigned)&renderComponent,
+			(uintptr_t)&renderComponent,
 			it - mDetachedRenderComponents.begin(),
 			mDetachedRenderComponents.size());*/
 
@@ -663,7 +663,7 @@ bool World::UnregisterDetachedRenderComponent(const RenderComponent& renderCompo
 	log->warn(
 		"{} The given RenderComponent (address: {:x}) is not registered.",
 		logCtx,
-		(unsigned)&renderComponent);
+		(uintptr_t)&renderComponent);
 
 	return false;
 }

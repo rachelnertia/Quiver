@@ -2,18 +2,29 @@ dofile("premake_help.lua")
 
 workspace "Quiver"
 	newoption {
-		trigger = "sfmldir",
+		trigger = "sfmlinc",
 		value = "path",
-		description = "Specify SFML directory, containing lib, include and bin folders"
+		description = "Specify SFML include directory"
 	}
+
+	newoption {
+		trigger = "sfmllib",
+		value = "path",
+		description = "Specify SFML lib directory"
+	}
+
 
 	newoption {
 		trigger = "sfml-link-dynamic",
 		description = "Choose to dynamically link SFML libraries with the executables"
 	}
 
-	if not _OPTIONS["sfmldir"] then
-		print("Warning: The path to SFML include and lib directories must be specified using --sfmldir=<path>")
+	if not _OPTIONS["sfmlinc"] then
+		print("Warning: The path to SFML include directory must be specified using --sfmlinc=<path>")
+	end
+
+	if not _OPTIONS["sfmllib"] then
+		print("Warning: The path to SFML include directory must be specified using --sfmllib=<path>")
 	end
 
 	configurations { "Debug", "Development" }
@@ -122,6 +133,9 @@ workspace "Quiver"
 		}
 		LinkSFML()
 		LinkGL()
+                filter "system:linux"
+                       links { "pthread" }
+                filter ()
 	end
 
 	project "QuiverTests"
@@ -143,7 +157,7 @@ workspace "Quiver"
 		kind "ConsoleApp"
 		files
 		{
-			"source/QuiverApp/**"
+			"Source/QuiverApp/**"
 		}
 		IncludeQuiver()
 		LinkQuiver()

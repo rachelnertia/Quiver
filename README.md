@@ -15,10 +15,10 @@ You will need:
 
 Clone the Quiver repository. 
 
-Run Premake in the root directory (where you'll find `premake5.lua`), specifying the directory in which you unzipped SFML to using the `--sfmldir` parameter. In this example, Quiver has been cloned to `C:/Dev/Quiver`, SFML 2.4.2 has been unzipped to `C:/SFML-2.4.2`, and I am generating a Visual Studio 2017 workspace:
+Run Premake in the root directory (where you'll find `premake5.lua`), specifying where to find the SFML header and library files using the `--sfmlinc` and `--sfmllib` parameters. In this example, Quiver has been cloned to `C:/Dev/Quiver`, the correct version of SFML 2.4.2 has been unzipped to `C:/SFML-2.4.2`, and I am generating a Visual Studio 2017 workspace:
 
 ```
-PS C:\Dev\Quiver> premake5 --sfmldir=C:\SFML-2.4.2\ vs2017
+PS C:\Dev\Quiver> premake5 vs2017 --sfmlinc=C:/SFML-2.4.2/include/ --sfmllib=C:/SFML-2.4.2/lib/
 ```
 
 Premake generates the Visual Studio 2017 files, sticking them in the PremakeGenerated folder:
@@ -41,9 +41,9 @@ Generated PremakeGenerated/Quarrel.vcxproj...
 Generated PremakeGenerated/Quarrel.vcxproj.user...
 ```
 
-You should now be able to build Quiver using Visual Studio.
+You should now be able to build Quiver using Visual Studio. Hopefully it's possible to adapt these instructions to different build systems and platforms!
 
-## A Quick Tour
+## Overview
 
 The workspace is divided into a few projects:
 

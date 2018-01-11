@@ -146,7 +146,7 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 
 		if (quit) continue;
 
-		ImGui::SFML::Update(deltaClock.restart());
+		ImGui::SFML::Update(window, deltaClock.restart());
 
 		currentState->ProcessFrame();
 

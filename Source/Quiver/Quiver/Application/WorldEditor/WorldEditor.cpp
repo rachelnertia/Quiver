@@ -83,7 +83,10 @@ void WorldEditor::ProcessFrame()
 
 	mAnimationEditor.Update(dt.asSeconds());
 
-	if (GetQuit()) return;
+	if (GetQuit()) {
+		ImGui::EndFrame();
+		return;
+	}
 
 	Render();
 }

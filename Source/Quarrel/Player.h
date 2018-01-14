@@ -41,11 +41,12 @@ public:
 
 private:
 	void RenderCurrentWeapon(sf::RenderTarget& target) const;
+	void RenderHud          (sf::RenderTarget& target) const;
 
 	float mMoveSpeed = 1.0f;
 	float mDamage = 0.0f;
 	
 	std::unique_ptr<Weapon> mCurrentWeapon;
 
-	bool mHideWeaponButtonWasPressed = false;
+	bool mCannotDie = false;
 };

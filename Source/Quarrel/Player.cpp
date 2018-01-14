@@ -44,6 +44,7 @@ Player::Player(Entity& entity)
 
 	mCamera.SetOverlayDrawer([this](sf::RenderTarget& target) {
 		this->RenderCurrentWeapon(target);
+		this->RenderHud(target);
 	});
 }
 
@@ -83,6 +84,14 @@ private:
 	Camera3D mCamera;
 
 };
+
+namespace {
+
+void Toggle(bool& b) {
+	b = !b;
+}
+
+}
 
 void Player::HandleInput(qvr::RawInputDevices& devices, const float deltaSeconds)
 {
@@ -131,9 +140,31 @@ void Player::HandleInput(qvr::RawInputDevices& devices, const float deltaSeconds
 		}
 	}
 
+	const float d = 20.0f;
+
+	if (devices.GetKeyboard().IsDown(qvr::KeyboardKey::U)) {
+		mDamage += d * deltaSeconds;
+	}
+
+	if (devices.GetKeyboard().IsDown(qvr::KeyboardKey::J)) {
+		mDamage -= d * deltaSeconds;
+	}
+
+	if (devices.GetKeyboard().JustDown(qvr::KeyboardKey::K)) {
+		Toggle(mCannotDie);
+	}
+
 	if (mCurrentWeapon != nullptr) {
 		mCurrentWeapon->OnStep(devices, deltaSeconds);
 	}
+}
+
+namespace {
+
+const float PlayerDamageMax = 100.0f;
+
+const float EnemyProjectileDamage = 20.0f;
+
 }
 
 void Player::OnStep(float deltaSeconds)
@@ -142,7 +173,8 @@ void Player::OnStep(float deltaSeconds)
 	assert(log);
 	const char* logCtx = "Player::OnStep:";
 	
-	if (mDamage >= 100.0f) {
+	if (mCannotDie == false &&
+		mDamage >= PlayerDamageMax) {
 		log->debug("{} Oh no! I've taken too much damage!", logCtx);
 		
 		GetEntity().AddCustomComponent(std::make_unique<DeadPlayer>(GetEntity(), *this));
@@ -170,7 +202,7 @@ void Player::OnBeginContact(Entity& other)
 
 		if (other.GetCustomComponent()->GetTypeName() == "EnemyProjectile") {
 			log->debug("{} Player taking damage", logCtx);
-			mDamage += 100.0f;
+			mDamage += EnemyProjectileDamage;
 		}
 	}
 }
@@ -232,5 +264,42 @@ bool Player::FromJson(const nlohmann::json& j)
 void Player::RenderCurrentWeapon(sf::RenderTarget& target) const {
 	if (mCurrentWeapon) {
 		mCurrentWeapon->Render(target);
+	}
+}
+
+void DrawDamage(sf::RenderTarget& target, const float maxDamage, float damage)
+{
+	sf::RectangleShape background;
+	const float scale = 0.8f;
+	background.setSize(
+		scale * sf::Vector2f(
+			target.getSize().x / 5.0f,
+			target.getSize().y / 12.0f));
+	background.setOrigin(background.getSize());
+	const float indent = 10.0f;
+	background.setPosition(
+		target.getSize().x - indent,
+		target.getSize().y - indent);
+	background.setFillColor(sf::Color(0, 0, 0, 128));
+	background.setOutlineColor(sf::Color::Black);
+	background.setOutlineThickness(5.0f);
+	target.draw(background);
+
+	sf::RectangleShape bar;
+	bar.setFillColor(sf::Color(255, 0, 128));
+	bar.setOutlineColor(sf::Color(255, 0, 0));
+	bar.setOutlineThickness(-3.0f);
+	bar.setSize(
+		sf::Vector2f(
+			background.getSize().x * (damage / maxDamage),
+			background.getSize().y));
+	bar.setOrigin(bar.getSize());
+	bar.setPosition(background.getPosition());
+	target.draw(bar);
+}
+
+void Player::RenderHud(sf::RenderTarget& target) const {
+	if (mDamage > 0.0f) {
+		DrawDamage(target, PlayerDamageMax, mDamage);
 	}
 }

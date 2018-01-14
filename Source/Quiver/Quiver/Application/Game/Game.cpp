@@ -125,8 +125,13 @@ void Game::ProcessFrame()
 
 	ProcessGui();
 
-	ImGui::Render();
+	// WorldRaycastRenderer messes up the SFML GL state.
+	// Need this so that we can have both ImGui-SFML and WorldRaycastRenderer.
+	// I don't quite understand it.
+	GetContext().GetWindow().resetGLStates();
 
+	ImGui::Render();
+	
 	GetContext().GetWindow().display();
 
 	if (mWorld->GetNextWorld())

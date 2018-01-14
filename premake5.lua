@@ -94,6 +94,10 @@ workspace "Quiver"
 			"External/ImGui/**.h", 
 			"External/ImGui/**.cpp" 
 		}
+		includedirs
+		{
+			"External/ImGui/ImGui"
+		}
 		IncludeSFML()
 
 	function IncludeQuiver()

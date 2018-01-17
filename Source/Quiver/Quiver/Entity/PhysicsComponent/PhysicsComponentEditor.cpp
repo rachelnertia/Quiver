@@ -12,19 +12,21 @@ namespace qvr
 
 void GuiControls(b2Fixture& fixture)
 {
-	{
-		float friction = fixture.GetFriction();
-		if (ImGui::SliderFloat("Friction", &friction, 0.0f, 1.0f)) {
-			fixture.SetFriction(friction);
-		}
-	}
+	ImGui::SliderFloat(
+		"Friction", 
+		fixture, 
+		&b2Fixture::GetFriction, 
+		&b2Fixture::SetFriction, 
+		0.0f, 
+		1.0f);
 
-	{
-		float restitution = fixture.GetRestitution();
-		if (ImGui::SliderFloat("Restitution", &restitution, 0.0f, 2.0f)) {
-			fixture.SetRestitution(restitution);
-		}
-	}
+	ImGui::SliderFloat(
+		"Restitution",
+		fixture,
+		&b2Fixture::GetRestitution,
+		&b2Fixture::SetRestitution,
+		0.0f,
+		2.0f);
 }
 
 void GuiControls(b2Body& body)

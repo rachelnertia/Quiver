@@ -78,4 +78,32 @@ namespace ImGui
 
 		return ret;
 	}
+
+	/*
+	Example:
+		ImGui::SliderFloat(
+			"Friction",
+			fixture,
+			&b2Fixture::GetFriction,
+			&b2Fixture::SetFriction,
+			0.0f,
+			1.0f);
+	*/
+	template <typename T>
+	bool SliderFloat(
+		const char* label,
+		T& t,
+		float (T::*Getter)() const,
+		void (T::*Setter)(float),
+		const float min, 
+		const float max)
+	{
+		float f = (t.*Getter)();
+		if (ImGui::SliderFloat(label, &f, min, max))
+		{
+			(t.*Setter)(f);
+			return true;
+		}
+		return false;
+	}
 }

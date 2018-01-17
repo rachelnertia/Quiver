@@ -106,4 +106,36 @@ namespace ImGui
 		}
 		return false;
 	}
+
+	template <typename T>
+	bool InputFloat(
+		const char* label,
+		T& t,
+		float (T::*Getter)() const,
+		void (T::*Setter)(float))
+	{
+		float f = (t.*Getter)();
+		if (ImGui::InputFloat(label, &f))
+		{
+			(t.*Setter)(f);
+			return true;
+		}
+		return false;
+	}
+
+	template <typename T>
+	bool Checkbox(
+		const char* label,
+		T& t,
+		bool (T::*Getter)() const,
+		void (T::*Setter)(bool))
+	{
+		bool b = (t.*Getter)();
+		if (ImGui::Checkbox(label, &b))
+		{
+			(t.*Setter)(b);
+			return true;
+		}
+		return false;
+	}
 }

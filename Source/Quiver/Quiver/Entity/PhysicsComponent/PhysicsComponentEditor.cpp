@@ -49,26 +49,25 @@ void GuiControls(b2Body& body)
 		}
 	}
 
-	{
-		bool fixedRotation = body.IsFixedRotation();
-		if (ImGui::Checkbox("Fixed Rotation", &fixedRotation)) {
-			body.SetFixedRotation(fixedRotation);
-		}
-	}
+	ImGui::Checkbox(
+		"Fixed Rotation", 
+		body, 
+		&b2Body::IsFixedRotation, 
+		&b2Body::SetFixedRotation);
+	
+	ImGui::SliderFloat(
+		"Linear Damping",
+		body,
+		&b2Body::GetLinearDamping,
+		&b2Body::SetLinearDamping,
+		0.0f,
+		10.0f);
 
-	{
-		float linearDamping = body.GetLinearDamping();
-		if (ImGui::SliderFloat("Linear Damping", &linearDamping, 0.0f, 10.0f)) {
-			body.SetLinearDamping(linearDamping);
-		}
-	}
-
-	{
-		float angularDamping = body.GetAngularDamping();
-		if (ImGui::InputFloat("Angular Damping", &angularDamping)) {
-			body.SetAngularDamping(angularDamping);
-		}
-	}
+	ImGui::InputFloat(
+		"Angular Damping", 
+		body, 
+		&b2Body::GetAngularDamping, 
+		&b2Body::SetAngularDamping);
 
 	b2Fixture* fixture = body.GetFixtureList();
 

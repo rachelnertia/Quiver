@@ -121,15 +121,19 @@ void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float delt
 	case State::Cocked:
 		if (!mLoadedQuarrel)
 		{
-			if (AnyActive(inputDevices, { qvr::KeyboardKey::Num1, qvr::JoystickButton(xb::Button::B) })) {
+			BinaryInput loadInputs1[] = { qvr::KeyboardKey::Num1, qvr::JoystickButton(xb::Button::B) };
+			BinaryInput loadInputs2[] = { qvr::KeyboardKey::Num2, qvr::JoystickButton(xb::Button::X) };
+			BinaryInput loadInputs3[] = { qvr::KeyboardKey::Num3, qvr::JoystickButton(xb::Button::Y) };
+
+			if (AnyActive(inputDevices, loadInputs1)) {
 				LoadQuarrel(QuarrelType::Black);
 				break;
 			}
-			else if (AnyActive(inputDevices, { qvr::KeyboardKey::Num2, qvr::JoystickButton(xb::Button::X) })) {
+			else if (AnyActive(inputDevices, loadInputs2)) {
 				LoadQuarrel(QuarrelType::Blue);
 				break;
 			}
-			else if (AnyActive(inputDevices, { qvr::KeyboardKey::Num3, qvr::JoystickButton(xb::Button::Y) })) {
+			else if (AnyActive(inputDevices, loadInputs3)) {
 				LoadQuarrel(QuarrelType::Red);
 				break;
 			}

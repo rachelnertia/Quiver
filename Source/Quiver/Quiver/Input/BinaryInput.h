@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include <gsl/span>
+
 #include "Mouse.h"
 #include "Joystick.h"
 #include "JoystickButton.h"
@@ -155,7 +157,7 @@ private:
 	};
 };
 
-inline bool AnyActive(const qvr::RawInputDevices& devices, const std::vector<BinaryInput> inputs) {
+inline bool AnyActive(const qvr::RawInputDevices& devices, const gsl::span<const BinaryInput> inputs) {
 	for (const BinaryInput input : inputs) {
 		if (input.IsActive(devices)) {
 			return true;
@@ -165,7 +167,7 @@ inline bool AnyActive(const qvr::RawInputDevices& devices, const std::vector<Bin
 	return false;
 }
 
-inline bool AnyJustActive(const qvr::RawInputDevices& devices, const std::vector<BinaryInput> inputs) {
+inline bool AnyJustActive(const qvr::RawInputDevices& devices, const gsl::span<const BinaryInput> inputs) {
 	for (const BinaryInput input : inputs) {
 		if (input.JustActive(devices)) {
 			return true;

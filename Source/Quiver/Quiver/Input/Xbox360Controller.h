@@ -12,7 +12,13 @@ enum class Button
 	A = 0,
 	B = 1,
 	X = 2,
-	Y = 3
+	Y = 3,
+	Bumper_Left = 4,
+	Bumper_Right = 5,
+	Back = 6,
+	Start = 7,
+	AnalogStick_Left_Click = 8,
+	AnalogStick_Right_Click = 9
 };
 
 enum class Axis
@@ -22,7 +28,9 @@ enum class Axis
 	AnalogStick_Right_Horizontal,
 	AnalogStick_Right_Vertical,
 	Trigger_Left,
-	Trigger_Right
+	Trigger_Right,
+	DPad_Horizontal,
+	DPad_Vertical
 };
 
 inline qvr::JoystickAxis ToJoystickAxis(const Axis axis)
@@ -38,6 +46,8 @@ inline qvr::JoystickAxis ToJoystickAxis(const Axis axis)
 		// TODO: Figure out a good!
 	case Axis::Trigger_Left:                 return qvr::JoystickAxis::Z;
 	case Axis::Trigger_Right:                return qvr::JoystickAxis::Z;
+	case Axis::DPad_Horizontal:              return qvr::JoystickAxis::PovX;
+	case Axis::DPad_Vertical:                return qvr::JoystickAxis::PovY;
 	}
 	return qvr::JoystickAxis::X;
 }

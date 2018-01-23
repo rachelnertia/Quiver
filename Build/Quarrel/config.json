@@ -1,6 +1,6 @@
 {
-	"initialState":"Editor",
-	"worldFile":"hello-edinburgh-cpp.json",
+	"initialState":"Game",
+	"worldFile":"testbed.json",
 	"ImGuiConfig": {
 		"FontGlobalScale": 2
 	},

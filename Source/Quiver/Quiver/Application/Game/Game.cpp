@@ -11,6 +11,7 @@
 
 #include "Quiver/Application/WorldEditor/WorldEditor.h"
 #include "Quiver/Input/RawInput.h"
+#include "Quiver/Input/InputDebug.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
 #include "Quiver/World/World.h"
 #include "Quiver/World/WorldContext.h"
@@ -247,6 +248,12 @@ void Game::ProcessGui()
 			ImGui::Checkbox("Draw 2D Overlay", &mDrawOverhead);
 			ImGui::Checkbox("Camera 2D Follows Main Camera", &mCamera2DFollowCamera3D);
 		}
+	}
+
+	if (ImGui::CollapsingHeader("Joystick Debug Window")) {
+		ImGui::AutoWindow joystickDebugWindow("Joystick Debug", nullptr, 0);
+
+		SfmlJoystickDebugGui(this->mJoysticks);
 	}
 }
 

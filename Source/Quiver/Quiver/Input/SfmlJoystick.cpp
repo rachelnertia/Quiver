@@ -1,41 +1,28 @@
 #include "SfmlJoystick.h"
 
 #include <SFML/Window/Joystick.hpp>
-#include <spdlog/spdlog.h>
+
+#include "Quiver/Misc/Logging.h"
 
 namespace qvr
 {
 
 void OnJustConnected(const int joystickIndex) {
-	auto log = spdlog::get("console");
-	assert(log);
+	auto log = GetConsoleLogger();
 
-	using Identification = sf::Joystick::Identification;
+	log->info("Joystick {} just connected.", joystickIndex);
 
-	const Identification identification =
-		sf::Joystick::getIdentification(joystickIndex);
-
-	log->info(
-		"Joystick {} just connected, "
-		"Identification: {{ Name: {}, Product Id: {}, Vendor Id: {} }}",
-		joystickIndex,
-		identification.name.toAnsiString(),
-		identification.productId,
-		identification.vendorId);
-
-	// TODO: Log how many buttons it has
-	// TODO: Log which axes it has
+	LogSfmlJoystickInfo(joystickIndex);
 }
 
 void OnJustDisconnected(const int joystickIndex) {
-	auto log = spdlog::get("console");
-	assert(log);
+	auto log = GetConsoleLogger();
 
 	log->info("Joystick {} just disconnected", joystickIndex);
 }
 
 void SfmlJoystick::UpdateButtons() {
-	for (Button& button : m_Buttons) {
+	for (ButtonState& button : m_Buttons) {
 		button.wasDown = button.isDown;
 	}
 
@@ -45,7 +32,7 @@ void SfmlJoystick::UpdateButtons() {
 }
 
 void SfmlJoystick::UpdateAxes() {
-	for (Axis& axis : m_Axes) {
+	for (AxisState& axis : m_Axes) {
 		axis.previousPosition = axis.position;
 	}
 
@@ -59,9 +46,18 @@ void SfmlJoystick::Update() {
 	m_IsConnected = sf::Joystick::isConnected(m_Index);
 	if (JustConnected()) {
 		OnJustConnected(m_Index);
+		m_ButtonCount = sf::Joystick::getButtonCount(m_Index);
+		m_AxisCount = 0;
+		for (int i = 0; i < sf::Joystick::AxisCount; i++) {
+			if (sf::Joystick::hasAxis(m_Index, (sf::Joystick::Axis)i)) {
+				m_AxisCount++;
+			}
+		}
 	}
 	else if (JustDisconnected()) {
 		OnJustDisconnected(m_Index);
+		m_ButtonCount = 0;
+		m_AxisCount = 0;
 	}
 
 	UpdateButtons();
@@ -74,6 +70,24 @@ void SfmlJoystickSet::Update() {
 	for (SfmlJoystick& joystick : m_Joysticks) {
 		joystick.Update();
 	}
+}
+
+void LogSfmlJoystickInfo(const int index) {
+	auto log = GetConsoleLogger();
+
+	using Identification = sf::Joystick::Identification;
+
+	const Identification identification =
+		sf::Joystick::getIdentification(index);
+
+	log->info(
+		"Identification: {{ Name: {}, Product Id: {}, Vendor Id: {} }}",
+		identification.name.toAnsiString(),
+		identification.productId,
+		identification.vendorId);
+
+	// TODO: Log how many buttons it has
+	// TODO: Log which axes it has
 }
 
 }

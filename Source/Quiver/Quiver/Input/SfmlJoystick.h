@@ -2,6 +2,8 @@
 
 #include <array>
 
+#include <gsl/span>
+
 #include "Joystick.h"
 #include "JoystickAxis.h"
 #include "JoystickButton.h"
@@ -12,30 +14,35 @@ namespace qvr
 
 class SfmlJoystick : public Joystick
 {
-	const int m_Index;
-	
-	bool m_IsConnected  = false;
-	bool m_WasConnected = false;
-
-	struct Button {
-		bool isDown  = false;
+public:
+	struct ButtonState {
+		bool isDown = false;
 		bool wasDown = false;
 	};
 
-	struct Axis {
+	struct AxisState {
 		float position = 0.0f;
 		float previousPosition = 0.0f;
 	};
+
+private:
+	const int m_Index;
+	
+	int m_ButtonCount;
+	int m_AxisCount;
+
+	bool m_IsConnected  = false;
+	bool m_WasConnected = false;
 
 	// Copied from sf::Joystick
 	enum
 	{
 		ButtonCount = 32, ///< Maximum number of supported buttons
-		AxisCount = 8   ///< Maximum number of supported axes
+		AxisCount = 8     ///< Maximum number of supported axes
 	};
 
-	std::array<Button, ButtonCount> m_Buttons;
-	std::array<Axis,   AxisCount>   m_Axes;
+	std::array<ButtonState, ButtonCount> m_Buttons;
+	std::array<AxisState,   AxisCount>   m_Axes;
 
 	bool JustConnected() const {
 		return m_IsConnected && !m_WasConnected;
@@ -72,6 +79,22 @@ public:
 	float GetPreviousPosition(const JoystickAxis axis) const override {
 		return m_Axes[(int)axis].previousPosition;
 	}
+
+	const gsl::span<const ButtonState> GetButtons() const {
+		return gsl::make_span(m_Buttons.data(), m_ButtonCount);
+	}
+
+	const gsl::span<const AxisState> GetAxes() const {
+		return gsl::make_span(m_Axes);
+	}
+
+	int GetButtonCount() const {
+		return m_ButtonCount;
+	}
+
+	int GetAxisCount() const {
+		return m_AxisCount;
+	}
 };
 
 class SfmlJoystickSet : public JoystickProvider
@@ -96,5 +119,7 @@ public:
 private:
 	std::array<SfmlJoystick, Count> m_Joysticks;
 };
+
+void LogSfmlJoystickInfo(const int index);
 
 }

@@ -1,5 +1,6 @@
 #include "Player.h"
 
+#include <array>
 #include <fstream>
 #include <iostream>
 
@@ -130,7 +131,12 @@ void Player::HandleInput(qvr::RawInputDevices& devices, const float deltaSeconds
 		}
 	}
 
-	if (devices.GetKeyboard().JustDown(qvr::KeyboardKey::Tab)) 
+	std::vector<BinaryInput> toggleWeaponInputs = {
+		qvr::KeyboardKey::Tab,
+		qvr::JoystickAxisThreshold(xb::ToJoystickAxis(xb::Axis::DPad_Vertical), 90.0f, true)
+	};
+
+	if (AnyJustActive(devices, toggleWeaponInputs))
 	{
 		if (mCurrentWeapon) {
 			mCurrentWeapon.release();
@@ -140,18 +146,21 @@ void Player::HandleInput(qvr::RawInputDevices& devices, const float deltaSeconds
 		}
 	}
 
-	const float d = 20.0f;
+	// Debug stuff!
+	{
+		const float d = 20.0f;
 
-	if (devices.GetKeyboard().IsDown(qvr::KeyboardKey::U)) {
-		mDamage += d * deltaSeconds;
-	}
+		if (devices.GetKeyboard().IsDown(qvr::KeyboardKey::U)) {
+			mDamage += d * deltaSeconds;
+		}
 
-	if (devices.GetKeyboard().IsDown(qvr::KeyboardKey::J)) {
-		mDamage -= d * deltaSeconds;
-	}
+		if (devices.GetKeyboard().IsDown(qvr::KeyboardKey::J)) {
+			mDamage -= d * deltaSeconds;
+		}
 
-	if (devices.GetKeyboard().JustDown(qvr::KeyboardKey::K)) {
-		Toggle(mCannotDie);
+		if (devices.GetKeyboard().JustDown(qvr::KeyboardKey::K)) {
+			Toggle(mCannotDie);
+		}
 	}
 
 	if (mCurrentWeapon != nullptr) {

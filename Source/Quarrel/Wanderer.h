@@ -18,8 +18,6 @@ public:
 	std::string GetTypeName() const override { return "Wanderer"; }
 
 private:
-	int playerContacts = 0;
-
 	enum class State {
 		Turning,
 		Walking

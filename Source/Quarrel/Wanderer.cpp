@@ -50,11 +50,6 @@ bool IsPathClear(const b2World& world, b2Vec2 start, b2Vec2 direction, float dis
 
 void Wanderer::OnStep(float timestep)
 {
-	if (playerContacts > 0) {
-		SetRemoveFlag(true);
-		return;
-	}
-
 	// Walk in direction until a certain distance travelled is exceeded or
 	// an object gets in the way (do a raycast to find out).
 	if (mState == State::Walking) {

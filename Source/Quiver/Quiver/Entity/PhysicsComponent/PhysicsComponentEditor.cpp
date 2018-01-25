@@ -3,12 +3,54 @@
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Dynamics/b2Fixture.h>
 #include <ImGui/imgui.h>
+#include <spdlog/fmt/fmt.h>
 
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
 
 namespace qvr
 {
+
+bool GuiControls(b2Filter& filter)
+{
+	bool modified = false;
+
+	int temp = filter.groupIndex;
+
+	modified |= ImGui::SliderInt(
+		"Group Index",
+		&temp,
+		0, 
+		100);
+
+	if (modified) {
+		filter.groupIndex = (int16)temp;
+	}
+
+	if (ImGui::CollapsingHeader("Category Bits")) {
+		ImGui::AutoIndent indent;
+	
+		for (int i = 0; i < 10; i++) {
+			modified |= ImGui::CheckboxFlags(
+				fmt::format("Bit {} ({})", i, 1 << i).c_str(), 
+				(unsigned*)&filter.categoryBits, 
+				1 << i);
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Mask Bits")) {
+		ImGui::AutoIndent indent;
+
+		for (int i = 0; i < 10; i++) {
+			modified |= ImGui::CheckboxFlags(
+				fmt::format("Bit {} ({})", i, 1 << i).c_str(),
+				(unsigned*)&filter.maskBits,
+				1 << i);
+		}
+	}
+
+	return modified;
+}
 
 void GuiControls(b2Fixture& fixture)
 {
@@ -27,6 +69,17 @@ void GuiControls(b2Fixture& fixture)
 		&b2Fixture::SetRestitution,
 		0.0f,
 		2.0f);
+
+	if (ImGui::CollapsingHeader("Filter Data"))
+	{
+		ImGui::AutoIndent indent;
+
+		b2Filter filter = fixture.GetFilterData();
+
+		if (GuiControls(filter)) {
+			fixture.SetFilterData(filter);
+		}
+	}
 }
 
 void GuiControls(b2Body& body)

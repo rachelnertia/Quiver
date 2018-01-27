@@ -134,17 +134,12 @@ void World::TakeStep(qvr::RawInputDevices& inputDevices)
 	m_CustomComponentUpdater.Update(GetTimestep(), inputDevices);
 
 	// Look for CustomComponents with their remove flags set.
-	// Erase-remove idiom (https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Erase-Remove)
-	mEntities.erase(
-		std::remove_if(
-			mEntities.begin(),
-			mEntities.end(),
-			[](const auto& entity) { 
-				return 
-					entity->GetCustomComponent() && 
-					entity->GetCustomComponent()->GetRemoveFlag(); 
-			}),
-		mEntities.end());
+	{
+		auto removeFlaggers = m_CustomComponentUpdater.GetRemoveFlaggers();
+		for (auto customComponent : removeFlaggers) {
+			RemoveEntityImmediate(customComponent.get().GetEntity());
+		}
+	}
 
 	mStepCount += 1;
 }
@@ -348,9 +343,11 @@ Entity* World::CreateEntity(const b2Shape & shape, const b2Vec2 & position, cons
 {
 	auto newEntity = std::make_unique<Entity>(*this, PhysicsComponentDef(shape, position, angle));
 
-	mEntities.push_back(std::move(newEntity));
+	Entity* ret = newEntity.get();
 
-	return mEntities.back().get();
+	AddEntity(std::move(newEntity));
+
+	return ret;
 }
 
 Entity* World::CreateEntity(const nlohmann::json & j, const b2Transform * transform)
@@ -365,40 +362,35 @@ Entity* World::CreateEntity(const nlohmann::json & j, const b2Transform * transf
 		newEntity->GetPhysics()->GetBody().SetTransform(transform->p, transform->q.GetAngle());
 	}
 
-	mEntities.push_back(std::move(newEntity));
+	Entity* ret = newEntity.get();
 
-	return mEntities.back().get();
+	AddEntity(std::move(newEntity));
+
+	return ret;
 }
 
 bool World::RemoveEntityImmediate(const Entity & entity)
 {
-	using namespace std;
+	const auto it = mEntities.find(entity.GetId());
 
-	const auto sizeBefore = mEntities.size();
+	if (it == mEntities.end()) return false;
 
-	// Erase-remove idiom (https://en.wikibooks.org/wiki/More_C%2B%2B_Idioms/Erase-Remove)
-	mEntities.erase(
-		remove_if(
-			begin(mEntities),
-			end(mEntities),
-			[&](const std::unique_ptr<Entity>& entityUPtr)
-			{
-				return entityUPtr.get() == &entity;
-			}),
-			end(mEntities));
+	mEntities.erase(it);
 
-	return sizeBefore != mEntities.size();
+	return true;
 }
 
 bool World::AddEntity(std::unique_ptr<Entity> entity)
 {
 	assert(entity != nullptr);
 	assert(&entity->GetWorld() == this);
+	assert(mEntities.count(entity->GetId()) == 0);
 
 	if (entity == nullptr) return false;
 	if (&entity->GetWorld() != this) return false;
+	if (mEntities.count(entity->GetId()) != 0) return false;
 
-	mEntities.push_back(std::move(entity));
+	mEntities[entity->GetId()] = std::move(entity);
 
 	return true;
 }
@@ -443,7 +435,7 @@ bool World::ToJson(nlohmann::json & j) const {
 
 	for (const auto& entity : mEntities)
 	{
-		json entityData = entity->ToJson();
+		json entityData = entity.second->ToJson();
 		if (entityData.empty()) {
 			log->error("Entity serialization failed.");
 			continue;
@@ -520,7 +512,7 @@ World::World(
 					log->error("Failed to deserialize an Entity.");
 					continue;
 				}
-				mEntities.push_back(std::move(entity));
+				AddEntity(std::move(entity));
 			}
 		}
 	}
@@ -648,15 +640,6 @@ bool World::UnregisterDetachedRenderComponent(const RenderComponent& renderCompo
 
 	if (it != mDetachedRenderComponents.end()) {
 		mDetachedRenderComponents.erase(it);
-
-		/*log->debug(
-			"{} Removed a RenderComponent (address: {:x}, index: {}). "
-			"There are now {} registered FlatSprites.",
-			logCtx,
-			(uintptr_t)&renderComponent,
-			it - mDetachedRenderComponents.begin(),
-			mDetachedRenderComponents.size());*/
-
 		return true;
 	}
 
@@ -839,13 +822,13 @@ void World::GuiPerformanceInfo()
 		ImGui::PlotLines(
 			"Pre-Render",
 			[](void* data, int idx)->float
-		{
-			auto profiler = (Profiler*)data;
+			{
+				auto profiler = (Profiler*)data;
 
-			Profiler::SampleUnit sample = profiler->GetSample(idx);
+				Profiler::SampleUnit sample = profiler->GetSample(idx);
 
-			return sample.count();
-		},
+				return sample.count();
+			},
 			&sPreRenderProfiler,
 			sPreRenderProfiler.BufferSize(),
 			0,
@@ -862,36 +845,14 @@ void World::GuiPerformanceInfo()
 		ImGui::PlotLines(
 			"Render3D",
 			[](void* data, int idx)->float {
-			auto profiler = (Profiler*)data;
+				auto profiler = (Profiler*)data;
 
-			Profiler::SampleUnit sample = profiler->GetSample(idx);
+				Profiler::SampleUnit sample = profiler->GetSample(idx);
 
-			return sample.count();
-		},
+				return sample.count();
+			},
 			&sRenderProfiler,
 			sRenderProfiler.BufferSize(),
-			0,
-			s.c_str(),
-			FLT_MAX,
-			FLT_MAX,
-			ImVec2(0, 80));
-
-		s = fmt::format(
-			"n: {}, avg: {}ms",
-			sColumnsProfiler.BufferSize(),
-			sColumnsProfiler.GetAverage().count());
-
-		ImGui::PlotHistogram(
-			"Columns",
-			[](void* data, int idx)->float {
-			auto profiler = (Profiler*)data;
-
-			Profiler::SampleUnit sample = profiler->GetSample(idx);
-
-			return sample.count();
-		},
-			&sColumnsProfiler,
-			sColumnsProfiler.BufferSize(),
 			0,
 			s.c_str(),
 			FLT_MAX,
@@ -911,12 +872,12 @@ void World::GuiPerformanceInfo()
 		ImGui::PlotLines(
 			"TakeStep",
 			[](void* data, int idx)->float {
-			auto profiler = (Profiler*)data;
+				auto profiler = (Profiler*)data;
 
-			Profiler::SampleUnit sample = profiler->GetSample(idx);
+				Profiler::SampleUnit sample = profiler->GetSample(idx);
 
-			return sample.count();
-		},
+				return sample.count();
+			},
 			&sStepProfiler,
 			sStepProfiler.BufferSize(),
 			0,

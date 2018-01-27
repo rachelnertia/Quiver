@@ -2,6 +2,8 @@
 
 #include <json.hpp>
 
+#include "EntityId.h"
+
 struct b2Vec2;
 struct b2Transform;
 class b2Shape;
@@ -16,7 +18,7 @@ class RenderComponent;
 class World;
 struct PhysicsComponentDef;
 
-class Entity {
+class Entity final {
 public:
 	Entity(World& world, const PhysicsComponentDef& physicsDef);
 	~Entity();
@@ -51,11 +53,15 @@ public:
 
 	void SetPrefab(std::string prefabName) { mPrefabName = prefabName; };
 
+	EntityId GetId() const { return mId; }
+
 private:
 	friend class EntityEditor;
 
 	World& mWorld;
 	
+	EntityId mId;
+
 	std::unique_ptr<PhysicsComponent> mPhysicsComponent;
 	std::unique_ptr<RenderComponent>  mRenderComponent;	
 	std::unique_ptr<AudioComponent>   mAudioComponent;

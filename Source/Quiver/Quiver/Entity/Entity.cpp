@@ -21,6 +21,7 @@ namespace qvr {
 
 Entity::Entity(World& world, const PhysicsComponentDef& physicsDef)
 	: mWorld(world)
+	, mId(world.GetNextEntityId())
 	, mPhysicsComponent(std::make_unique<PhysicsComponent>(*this, physicsDef))
 {}
 

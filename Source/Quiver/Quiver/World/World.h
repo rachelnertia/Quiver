@@ -12,6 +12,7 @@
 
 #include "Quiver/Animation/Animators.h"
 #include "Quiver/Entity/CustomComponent/CustomComponentUpdater.h"
+#include "Quiver/Entity/EntityId.h"
 #include "Quiver/Entity/EntityPrefab.h"
 #include "Quiver/Graphics/Fog.h"
 #include "Quiver/Graphics/Light.h"
@@ -47,6 +48,7 @@ class RawInputDevices;
 class RenderComponent;
 class TextureLibrary;
 class World;
+class WorldContext;
 
 bool SaveWorld(
 	const World & world, 
@@ -55,8 +57,6 @@ bool SaveWorld(
 std::unique_ptr<World> LoadWorld(
 	const std::string filename, 
 	WorldContext& context);
-
-class WorldContext;
 
 class World {
 public:
@@ -90,6 +90,18 @@ public:
 
 	Entity* CreateEntity(const b2Shape & shape, const b2Vec2 & position, const float angle = 0.0f);
 	Entity* CreateEntity(const nlohmann::json & json, const b2Transform* transform = nullptr);
+
+	bool AddEntity(std::unique_ptr<Entity> entity);
+
+	Entity* GetEntity(const EntityId id) {
+		if (id == EntityId(0)) return nullptr;
+		
+		const auto it = mEntities.find(id);
+
+		if (it == mEntities.end()) return nullptr;
+
+		return it->second.get();
+	}
 
 	bool RemoveEntityImmediate(const Entity& entity);
 
@@ -126,7 +138,11 @@ public:
 	AudioLibrary&    GetAudioLibrary() { return *mAudioLibrary.get(); }
 	TextureLibrary&  GetTextureLibrary() { return *mTextureLibrary.get(); }
 
-	bool AddEntity(std::unique_ptr<Entity> entity);
+	EntityId GetNextEntityId() { 
+		EntityId id = mNextEntityId; 
+		mNextEntityId = EntityId(mNextEntityId.get() + 1);
+		return id;
+	}
 
 	EntityPrefabContainer mEntityPrefabs;
 
@@ -176,6 +192,8 @@ private:
 
 	int mMainCameraIndex = -1;
 
+	EntityId mNextEntityId = EntityId(1);
+
 	AmbientLight mAmbientLight;
 
 	DirectionalLight mDirectionalLight;
@@ -196,7 +214,7 @@ private:
 	std::vector<std::reference_wrapper<RenderComponent>> mDetachedRenderComponents;
 	std::vector<std::reference_wrapper<AudioComponent>>  mAudioComponents;
 
-	std::vector<std::unique_ptr<Entity>> mEntities;
+	std::unordered_map<EntityId, std::unique_ptr<Entity>> mEntities;
 
 	CustomComponentUpdater m_CustomComponentUpdater;
 

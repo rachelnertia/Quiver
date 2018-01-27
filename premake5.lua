@@ -13,7 +13,6 @@ workspace "Quiver"
 		description = "Specify SFML lib directory"
 	}
 
-
 	newoption {
 		trigger = "sfml-link-dynamic",
 		description = "Choose to dynamically link SFML libraries with the executables"
@@ -111,7 +110,8 @@ workspace "Quiver"
 			"External/Optional",
 			"External/gsl",
 			"External/cxxopts",
-			"External/function2"
+			"External/function2",
+			"External/NamedType"
 		}
 		IncludeSFML()
 	end

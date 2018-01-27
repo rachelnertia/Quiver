@@ -1,4 +1,7 @@
 #include "CustomComponentUpdater.h"
+
+#include <algorithm>
+
 #include "CustomComponent.h"
 
 #include "Quiver/Misc/FindByAddress.h"
@@ -46,6 +49,21 @@ bool CustomComponentUpdater::Unregister(CustomComponent& customComponent)
 	}
 
 	return false;
+}
+
+auto CustomComponentUpdater::GetRemoveFlaggers() const -> std::vector<std::reference_wrapper<CustomComponent>>
+{
+	std::vector<std::reference_wrapper<CustomComponent>> flaggers;
+	
+	std::copy_if(
+		std::begin(m_CustomComponents),
+		std::end(m_CustomComponents),
+		std::back_inserter(flaggers),
+		[](auto& c) {
+			return c.get().GetRemoveFlag();
+		});
+
+	return flaggers;
 }
 
 }

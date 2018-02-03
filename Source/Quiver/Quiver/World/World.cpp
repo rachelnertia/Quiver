@@ -120,14 +120,12 @@ void World::TakeStep(qvr::RawInputDevices& inputDevices)
 	{
 		int velocity_iterations = 8;
 		int position_iterations = 2;
-		mPhysicsWorld->Step(mTimestep, velocity_iterations, position_iterations);
+		mPhysicsWorld->Step(GetTimestep().count(), velocity_iterations, position_iterations);
 	}
 
-	const auto timestepDuration = duration<float>((GetTimestep()));
+	mAnimators.Animate(duration_cast<Animation::TimeUnit>(GetTimestep()));
 
-	mAnimators.Animate(duration_cast<Animation::TimeUnit>(timestepDuration));
-
-	mTotalTime += timestepDuration;
+	mTotalTime += GetTimestep();
 
 	UpdateAudioComponents();
 

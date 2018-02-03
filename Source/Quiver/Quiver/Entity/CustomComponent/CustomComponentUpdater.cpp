@@ -8,12 +8,12 @@
 
 namespace qvr {
 
-void CustomComponentUpdater::Update(const float deltaSeconds, qvr::RawInputDevices& inputDevices)
+void CustomComponentUpdater::Update(const std::chrono::duration<float> deltaTime, qvr::RawInputDevices& inputDevices)
 {
 	for (m_Index = 0; m_Index < (int)m_CustomComponents.size(); m_Index++)
 	{
-		m_CustomComponents[m_Index].get().HandleInput(inputDevices, deltaSeconds);
-		m_CustomComponents[m_Index].get().OnStep(deltaSeconds);
+		m_CustomComponents[m_Index].get().HandleInput(inputDevices, deltaTime);
+		m_CustomComponents[m_Index].get().OnStep(deltaTime);
 	}
 
 	m_Index = -1;

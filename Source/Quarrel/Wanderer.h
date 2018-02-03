@@ -13,7 +13,7 @@ public:
 	Wanderer(qvr::Entity& entity);
 	~Wanderer();
 
-	void OnStep(float timestep) override;
+	void OnStep(const std::chrono::duration<float> timestep) override;
 
 	void OnBeginContact(qvr::Entity& other, b2Fixture& myFixture) override;
 	void OnEndContact  (qvr::Entity& other, b2Fixture& myFixture) override;

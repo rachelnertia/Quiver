@@ -128,7 +128,7 @@ public:
 	bool RegisterCustomComponent(const CustomComponent& customComponent);
 	bool UnregisterCustomComponent(const CustomComponent& customComponent);
 
-	inline float GetTimestep() const { return mTimestep; }
+	inline std::chrono::duration<float> GetTimestep() const { return mTimestep; }
 
 	inline const DirectionalLight& GetDirectionalLight() const { return mDirectionalLight; }
 
@@ -182,7 +182,7 @@ private:
 
 	void UpdateAudioComponents();
 
-	float mTimestep = 1.0f / 60.0f;
+	std::chrono::duration<float> mTimestep = std::chrono::duration<float>(1.0f / 60.0f);
 
 	int mStepCount = 0;
 

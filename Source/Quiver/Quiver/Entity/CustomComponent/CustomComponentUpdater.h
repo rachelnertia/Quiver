@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <vector>
 
 namespace qvr {
@@ -10,7 +11,7 @@ class RawInputDevices;
 class CustomComponentUpdater
 {
 public:
-	void Update(const float deltaSeconds, qvr::RawInputDevices& inputDevices);
+	void Update(const std::chrono::duration<float> deltaTime, qvr::RawInputDevices& inputDevices);
 	bool Register(CustomComponent& customComponent);
 	bool Unregister(CustomComponent& customComponent);
 	bool IsCurrentlyUpdating() const { return m_Index >= 0; }

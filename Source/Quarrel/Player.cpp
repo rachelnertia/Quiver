@@ -84,7 +84,7 @@ public:
 
 	std::string GetTypeName() const override { return "DeadPlayer"; }
 
-	void OnStep(float timestep) override {
+	void OnStep(const std::chrono::duration<float> deltaTime) override {
 		b2Body& body = GetEntity().GetPhysics()->GetBody();
 
 		mCamera.SetPosition(body.GetPosition());
@@ -106,7 +106,7 @@ void Toggle(bool& b) {
 
 }
 
-void Player::HandleInput(qvr::RawInputDevices& devices, const float deltaSeconds)
+void Player::HandleInput(qvr::RawInputDevices& devices, const std::chrono::duration<float> deltaTime)
 {
 	using namespace Quarrel;
 	
@@ -137,7 +137,7 @@ void Player::HandleInput(qvr::RawInputDevices& devices, const float deltaSeconds
 			const float rotation = 
 				rotateAngle * 
 				rotateSpeed * 
-				deltaSeconds;
+				deltaTime.count();
 
 			body.SetTransform(body.GetPosition(), body.GetAngle() + rotation);
 		}
@@ -163,11 +163,11 @@ void Player::HandleInput(qvr::RawInputDevices& devices, const float deltaSeconds
 		const float d = 20.0f;
 
 		if (devices.GetKeyboard().IsDown(qvr::KeyboardKey::U)) {
-			mDamage += d * deltaSeconds;
+			mDamage += d * deltaTime.count();
 		}
 
 		if (devices.GetKeyboard().IsDown(qvr::KeyboardKey::J)) {
-			mDamage -= d * deltaSeconds;
+			mDamage -= d * deltaTime.count();
 		}
 
 		if (devices.GetKeyboard().JustDown(qvr::KeyboardKey::K)) {
@@ -176,7 +176,7 @@ void Player::HandleInput(qvr::RawInputDevices& devices, const float deltaSeconds
 	}
 
 	if (mCurrentWeapon != nullptr) {
-		mCurrentWeapon->OnStep(devices, deltaSeconds);
+		mCurrentWeapon->OnStep(devices, deltaTime.count());
 	}
 }
 
@@ -188,7 +188,7 @@ const float EnemyProjectileDamage = 20.0f;
 
 }
 
-void Player::OnStep(float deltaSeconds)
+void Player::OnStep(const std::chrono::duration<float> deltaTime)
 {
 	auto log = spdlog::get("console");
 	assert(log);

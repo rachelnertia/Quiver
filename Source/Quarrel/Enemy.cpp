@@ -113,7 +113,7 @@ public:
 
 	std::string GetTypeName() const override { return "Enemy"; }
 
-	void OnStep(float timestep) override;
+	void OnStep(const std::chrono::duration<float> timestep) override;
 
 	void OnBeginContact(Entity& other, b2Fixture& myFixture) override
 	{
@@ -167,7 +167,7 @@ Enemy::Enemy(Entity& entity)
 	: CustomComponent(entity)
 {}
 
-void Enemy::OnStep(float timestep)
+void Enemy::OnStep(const std::chrono::duration<float> timestep)
 {
 	auto log = spdlog::get("console");
 	assert(log);
@@ -291,7 +291,7 @@ void Enemy::OnStep(float timestep)
 		} 
 		else
 		{
-			m_CurrentAngle += b2_pi * timestep;
+			m_CurrentAngle += b2_pi * timestep.count();
 		}
 	}
 }

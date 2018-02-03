@@ -2,6 +2,7 @@
 
 #include "Quiver/Entity/Component.h"
 
+#include <chrono>
 #include <functional>
 #include <memory>
 #include <string>
@@ -39,10 +40,11 @@ public:
 	virtual bool FromJson(const nlohmann::json& j) { return true; }
 
 	// Override this with per-frame behaviour.
-	// TODO: Make this take a const std::chrono::seconds (should be float seconds not integral tho)
-	virtual void OnStep(float timestep) {}
+	virtual void OnStep(const std::chrono::duration<float> deltaTime) {}
 
-	virtual void HandleInput(qvr::RawInputDevices& inputDevices, const float deltaSeconds) {}
+	virtual void HandleInput(
+		qvr::RawInputDevices& inputDevices, 
+		const std::chrono::duration<float> deltaSeconds) {}
 
 	virtual void OnBeginContact(Entity& other, b2Fixture& myFixture) {}
 	virtual void OnEndContact  (Entity& other, b2Fixture& myFixture) {}

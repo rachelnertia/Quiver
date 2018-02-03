@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 #include "SFML/System/Clock.hpp"
 
 #include "Quiver/Application/ApplicationState.h"
@@ -52,7 +54,7 @@ private:
 
 	sf::Clock mFrameClock;
 
-	float mFrameTime = 0.0f;
+	std::chrono::duration<float> mFrameTime = std::chrono::seconds(0);
 
 	float mFrameTexResolutionModifier = 1.0f;
 

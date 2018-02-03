@@ -65,7 +65,7 @@ bool IsPathClear(const b2World& world, b2Vec2 start, b2Vec2 direction, float dis
 	return !cb.hitSomething;
 }
 
-void Wanderer::OnStep(float timestep)
+void Wanderer::OnStep(const std::chrono::duration<float> timestep)
 {
 	{
 		const Entity* collidingEntity =

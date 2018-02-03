@@ -49,6 +49,8 @@ Game::~Game() {}
 
 void Game::ProcessFrame()
 {
+	using namespace std::chrono_literals;
+
 	if (GetContext().WindowResized()) {
 		const auto newSize = GetContext().GetWindow().getSize();
 		mFrameTex->create(newSize.x, newSize.y);
@@ -57,7 +59,7 @@ void Game::ProcessFrame()
 	// Clamp excessively large delta times.
 	const float delta = std::min(mFrameClock.restart().asSeconds(), 1.0f / 30.0f);
 
-	mFrameTime += delta;
+	mFrameTime += std::chrono::duration<float>(delta);
 
 	// Use free camera controls if the World doesn't have a 'main' camera currently.
 	if ((mWorld->GetMainCamera() == nullptr) && GetContext().GetWindow().hasFocus())
@@ -71,12 +73,12 @@ void Game::ProcessFrame()
 		mCamera2D.SetPosition(currentCamera3D.GetPosition());
 	}
 
-	float timestep = mWorld->GetTimestep();
+	const auto timestep = mWorld->GetTimestep();
 
 	// Take a step if 1/60th of a second has passed.
 	if (mFrameTime >= timestep)
 	{
-		mFrameTime = 0.0f;
+		mFrameTime = 0.0s;
 
 		mMouse.Update();
 		mKeyboard.Update();

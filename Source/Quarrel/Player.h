@@ -21,9 +21,9 @@ public:
 	Player(qvr::Entity& entity);
 	~Player();
 
-	void HandleInput(qvr::RawInputDevices& inputDevices, const float deltaSeconds) override;
+	void HandleInput(qvr::RawInputDevices& inputDevices, const std::chrono::duration<float> deltaTime) override;
 
-	void OnStep(float timestep) override;
+	void OnStep(const std::chrono::duration<float> deltaTime) override;
 
 	void OnBeginContact(qvr::Entity& other, b2Fixture& myFixture) override;
 	void OnEndContact  (qvr::Entity& other, b2Fixture& myFixture) override;

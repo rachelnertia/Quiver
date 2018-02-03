@@ -37,8 +37,7 @@ class WorldExit : public CustomComponent
 public:
 	WorldExit(Entity& entity);
 
-	void OnBeginContact(Entity& other) override;
-	void OnEndContact  (Entity& other)   override;
+	void OnBeginContact(Entity& other, b2Fixture& myFixture) override;
 
 	std::string GetTypeName() const override { return "WorldExit"; }
 
@@ -70,9 +69,13 @@ public:
 	}
 };
 
-void WorldExit::OnBeginContact(Entity& other)
+void WorldExit::OnBeginContact(Entity& other, b2Fixture& myFixture)
 {
 	if (!other.GetCustomComponent()) return;
+
+	// TODO: Set the filter on the fixture so that it only collides with the player
+	// so that we don't have to do this here. 
+	// Also hurry up and add CustomComponentType IDs already!
 	if (other.GetCustomComponent()->GetTypeName() != "Player") return;
 
 	if (this->targetType == ExitTarget::World) {
@@ -113,8 +116,6 @@ void WorldExit::OnBeginContact(Entity& other)
 		}
 	}
 }
-
-void WorldExit::OnEndContact(Entity& other) {}
 
 class WorldExitEditor : public CustomComponentEditorType<WorldExit>
 {

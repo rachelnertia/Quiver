@@ -25,8 +25,8 @@ public:
 
 	void OnStep(float timestep) override;
 
-	void OnBeginContact(qvr::Entity& other) override;
-	void OnEndContact  (qvr::Entity& other) override;
+	void OnBeginContact(qvr::Entity& other, b2Fixture& myFixture) override;
+	void OnEndContact  (qvr::Entity& other, b2Fixture& myFixture) override;
 
 	std::string GetTypeName() const override { return "Player"; }
 

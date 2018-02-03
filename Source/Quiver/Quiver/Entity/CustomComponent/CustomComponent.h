@@ -10,6 +10,8 @@
 
 #include <json.hpp>
 
+class b2Fixture;
+
 namespace sf {
 class Window;
 }
@@ -42,8 +44,8 @@ public:
 
 	virtual void HandleInput(qvr::RawInputDevices& inputDevices, const float deltaSeconds) {}
 
-	virtual void OnBeginContact(Entity& other) {}
-	virtual void OnEndContact(Entity& other) {}
+	virtual void OnBeginContact(Entity& other, b2Fixture& myFixture) {}
+	virtual void OnEndContact  (Entity& other, b2Fixture& myFixture) {}
 
 	virtual std::unique_ptr<CustomComponentEditor> CreateEditor() { return nullptr; }
 

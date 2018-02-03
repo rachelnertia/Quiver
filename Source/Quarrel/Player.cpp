@@ -6,6 +6,7 @@
 
 #include <Box2D/Common/b2Math.h>
 #include <Box2D/Dynamics/b2Body.h>
+#include <Box2D/Dynamics/b2Fixture.h>
 #include <Box2D/Collision/Shapes/b2CircleShape.h>
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
 #include <ImGui/imgui.h>
@@ -30,15 +31,26 @@
 #include "Quiver/World/World.h"
 
 #include "PlayerInput.h"
+#include "Utils.h"
 
 using namespace qvr;
 
 namespace xb = qvr::Xbox360Controller;
 
+void AddFilterCategories(b2Fixture& fixture, const int16 categories) {
+	b2Filter filter = fixture.GetFilterData();
+	filter.categoryBits |= categories;
+	fixture.SetFilterData(filter);
+}
+
 Player::Player(Entity& entity) 
 	: CustomComponent(entity)
 	, mCurrentWeapon(new Crossbow(*this)) 
 {
+	AddFilterCategories(
+		*GetEntity().GetPhysics()->GetBody().GetFixtureList(),
+		FixtureFilterCategories::Player);
+
 	GetEntity().GetWorld().RegisterCamera(mCamera);
 	
 	mCamera.SetPosition(GetEntity().GetPhysics()->GetPosition());
@@ -200,7 +212,7 @@ void Player::OnStep(float deltaSeconds)
 	qvr::UpdateListener(mCamera);
 }
 
-void Player::OnBeginContact(Entity& other)
+void Player::OnBeginContact(Entity& other, b2Fixture& myFixture)
 {
 	if (other.GetCustomComponent()) {
 		auto log = spdlog::get("console");
@@ -216,7 +228,7 @@ void Player::OnBeginContact(Entity& other)
 	}
 }
 
-void Player::OnEndContact(Entity& other)
+void Player::OnEndContact(Entity& other, b2Fixture& myFixture)
 {
 	auto log = spdlog::get("console");
 	assert(log);

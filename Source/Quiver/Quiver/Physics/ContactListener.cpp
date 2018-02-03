@@ -34,11 +34,12 @@ void ContactListener::BeginContact(b2Contact * contact)
 		= GetEntityFromFixture(*contact->GetFixtureB());
 	if (entityA && entityB) {
 		if (entityA->GetCustomComponent()) {
-			entityA->GetCustomComponent()->OnBeginContact(*entityB);
+			entityA->GetCustomComponent()->OnBeginContact(*entityB, *contact->GetFixtureA());
 		}
 		if (entityB->GetCustomComponent()) {
-			entityB->GetCustomComponent()->OnBeginContact(*entityA);
+			entityB->GetCustomComponent()->OnBeginContact(*entityA, *contact->GetFixtureB());
 		}
+
 	}
 }
 
@@ -50,10 +51,10 @@ void ContactListener::EndContact(b2Contact * contact)
 		= GetEntityFromFixture(*contact->GetFixtureB());
 	if (entityA && entityB) {
 		if (entityA->GetCustomComponent()) {
-			entityA->GetCustomComponent()->OnEndContact(*entityB);
+			entityA->GetCustomComponent()->OnEndContact(*entityB, *contact->GetFixtureA());
 		}
 		if (entityB->GetCustomComponent()) {
-			entityB->GetCustomComponent()->OnEndContact(*entityA);
+			entityB->GetCustomComponent()->OnEndContact(*entityA, *contact->GetFixtureB());
 		}
 	}
 }

@@ -29,7 +29,7 @@ class CrossbowBolt : public CustomComponent
 public:
 	CrossbowBolt(Entity& entity) : CustomComponent(entity) {}
 
-	void OnBeginContact(Entity& other) override
+	void OnBeginContact(Entity& other, b2Fixture& fixture) override
 	{
 		this->SetRemoveFlag(true);
 	}

@@ -1,8 +1,11 @@
 #pragma once
 
-#include "Quiver/Entity/CustomComponent/CustomComponent.h"
+#include <Quiver/Entity/EntityId.h>
+#include <Quiver/Entity/CustomComponent/CustomComponent.h>
 
 #include <Box2D/Common/b2Math.h>
+
+class b2Fixture;
 
 // This CustomComponent class exists purely for testing purposes.
 class Wanderer : public qvr::CustomComponent{
@@ -12,30 +15,13 @@ public:
 
 	void OnStep(float timestep) override;
 
-	void OnBeginContact(qvr::Entity& other) override;
-	void OnEndContact  (qvr::Entity& other) override;
+	void OnBeginContact(qvr::Entity& other, b2Fixture& myFixture) override;
+	void OnEndContact  (qvr::Entity& other, b2Fixture& myFixture) override;
 
 	std::string GetTypeName() const override { return "Wanderer"; }
 
 private:
-	enum class State {
-		Turning,
-		Walking
-	};
-
-	State mState = State::Walking;
-
-	struct WalkingState {
-		b2Vec2 startPos;
-		b2Vec2 direction;
-	};
-
-	WalkingState mWalkingState;
-
-	struct TurningState {
-		float startAngle = 0.0f;
-		float currentAngle = 0.0f;
-	};
-
-	TurningState mTurningState;
+	b2Fixture* m_Sensor = nullptr;
+	b2Vec2 m_WalkDirection;
+	qvr::EntityId m_PlayerInSensor = qvr::EntityId(0);
 };

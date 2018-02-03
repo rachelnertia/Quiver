@@ -22,6 +22,7 @@ void EntityEditor::GuiControls() {
 	auto log = spdlog::get("console");
 	assert(log);
 
+	ImGui::Text("Entity ID: %d", m_Entity.GetId().get());
 	ImGui::Text("Entity Address: %p", (void*)&m_Entity);
 
 	ImGui::Text(

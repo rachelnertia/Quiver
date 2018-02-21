@@ -20,19 +20,24 @@ class ApplicationStateContext {
 	
 	WorldContext mWorldContext;
 
-	friend int RunApplication(CustomComponentTypeLibrary&);
+	friend int RunApplication(
+		CustomComponentTypeLibrary&, 
+		FixtureFilterBitNames&);
 
 public:
 	ApplicationStateContext(
 		sf::RenderWindow& window,
-		CustomComponentTypeLibrary& customComponentTypes)
+		CustomComponentTypeLibrary& customComponentTypes,
+		FixtureFilterBitNames& filterBitNames)
 		: mWindow(window)
-		, mWorldContext(customComponentTypes)
+		, mWorldContext(
+			customComponentTypes, 
+			filterBitNames)
 	{}
 
-	sf::RenderWindow&           GetWindow() { return mWindow; }
-	bool                        WindowResized() { return mWindowResized; }
-	WorldContext&               GetWorldContext() { return mWorldContext; }
+	sf::RenderWindow&      GetWindow() { return mWindow; }
+	bool                   WindowResized() { return mWindowResized; }
+	WorldContext&          GetWorldContext() { return mWorldContext; }
 };
 
 class ApplicationState {

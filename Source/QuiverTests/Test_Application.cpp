@@ -5,6 +5,7 @@
 
 #include "Quiver/Application/ApplicationState.h"
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
+#include "Quiver/Physics/PhysicsUtils.h"
 
 class TestApplicationState : public qvr::ApplicationState
 {
@@ -24,8 +25,9 @@ TEST_CASE("ApplicationState", "[Application]")
 {
 	sf::RenderWindow window;
 	qvr::CustomComponentTypeLibrary customComponentTypes;
+	qvr::FixtureFilterBitNames filterBitNames;
 
-	qvr::ApplicationStateContext context(window, customComponentTypes);
+	qvr::ApplicationStateContext context(window, customComponentTypes, filterBitNames);
 
 	std::unique_ptr<qvr::ApplicationState> applicationState =
 		std::make_unique<TestApplicationState>(context);

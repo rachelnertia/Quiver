@@ -96,7 +96,8 @@ void EntityEditor::GuiControls() {
 			m_PhysicsComponentEditor = std::make_unique<PhysicsComponentEditor>(*m_Entity.GetPhysics());
 		}
 
-		m_PhysicsComponentEditor->GuiControls();
+		m_PhysicsComponentEditor->GuiControls(
+			m_Entity.GetWorld().GetContext().GetFixtureFilterBitNames());
 	}
 
 	if (ImGui::CollapsingHeader("Audio Component"))

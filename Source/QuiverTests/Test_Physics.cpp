@@ -14,8 +14,9 @@ using namespace qvr;
 TEST_CASE("PhysicsComponent creation and cleanup", "[Physics]")
 {
 	CustomComponentTypeLibrary types;
+	FixtureFilterBitNames filterBitNames;
 
-	WorldContext worldContext(types);
+	WorldContext worldContext(types, filterBitNames);
 
 	World world(worldContext);
 

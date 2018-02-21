@@ -18,6 +18,7 @@
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 #include "Quiver/Misc/JsonHelpers.h"
 #include "Quiver/Misc/Logging.h"
+#include "Quiver/Physics/PhysicsUtils.h"
 #include "Quiver/World/World.h"
 
 #include "Game/Game.h"
@@ -69,7 +70,47 @@ void CreateSFMLWindow(sf::RenderWindow& window, const WindowConfig& config) {
 	window.setKeyRepeatEnabled(false);
 }
 
-int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
+void TakeScreenshot(const sf::Window& window)
+{
+	auto consoleLog = GetConsoleLogger();
+
+	sf::Texture tex;
+	tex.create(window.getSize().x, window.getSize().y);
+	tex.update(window);
+	sf::Image image = tex.copyToImage();
+
+	// Save to screenshots/latest.png
+	{
+		const std::string latestPath = "screenshots/latest.png";
+
+		// TODO: Detect if a 'screenshots' folder exists and, if it doesn't, create it.
+
+		if (image.saveToFile(latestPath)) {
+			consoleLog->info("Saved screenshot to {}", latestPath);
+		}
+		else {
+			consoleLog->error("Failed to save screenshot to {}", latestPath);
+		}
+	}
+
+	// Save with the date and time, down to the second.
+	// E.g. screenshots/2017-12-10-20-25-3.png
+	{
+		const std::time_t now = std::time(nullptr);
+		const std::string timePath = fmt::format("screenshots/{:%F-%H-%M-%S}.png", *std::localtime(&now));
+
+		if (image.saveToFile(timePath)) {
+			consoleLog->info("Saved screenshot to {}", timePath);
+		}
+		else {
+			consoleLog->error("Failed to save screenshot to {}", timePath);
+		}
+	}
+}
+
+int RunApplication(
+	CustomComponentTypeLibrary& customComponentTypes,
+	FixtureFilterBitNames& filterBitNames)
 {
 	InitLoggers(spdlog::level::debug);
 
@@ -89,7 +130,8 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 
 	ApplicationStateContext applicationStateContext(
 		window,
-		customComponentTypes);
+		customComponentTypes,
+		filterBitNames);
 
 	consoleLog->info("Ready.");
 
@@ -151,38 +193,7 @@ int RunApplication(CustomComponentTypeLibrary& customComponentTypes)
 		currentState->ProcessFrame();
 
 		if (takeScreenshot) {
-			sf::Texture tex;
-			tex.create(window.getSize().x, window.getSize().y);
-			tex.update(window);
-			sf::Image image = tex.copyToImage();
-			
-			// Save to screenshots/latest.png
-			{
-				const std::string latestPath = "screenshots/latest.png";
-
-				// TODO: Detect if a 'screenshots' folder exists and, if it doesn't, create it.
-
-				if (image.saveToFile(latestPath)) {
-					consoleLog->info("Saved screenshot to {}", latestPath);
-				}
-				else {
-					consoleLog->error("Failed to save screenshot to {}", latestPath);
-				}
-			}
-
-			// Save with the date and time, down to the second.
-			// E.g. screenshots/2017-12-10-20-25-3.png
-			{
-				const std::time_t now = std::time(nullptr);
-				const std::string timePath = fmt::format("screenshots/{:%F-%H-%M-%S}.png", *std::localtime(&now));
-
-				if (image.saveToFile(timePath)) {
-					consoleLog->info("Saved screenshot to {}", timePath);
-				}
-				else {
-					consoleLog->error("Failed to save screenshot to {}", timePath);
-				}
-			}
+			TakeScreenshot(window);
 		}
 
 		if (currentState->GetQuit())
@@ -293,6 +304,12 @@ std::unique_ptr<ApplicationState> GetInitialState(
 	consoleLog->info("Launching Main Menu...");
 
 	return std::make_unique<MainMenu>(applicationStateContext);
+}
+
+int RunApplication(CustomComponentTypeLibrary& customComponents)
+{
+	FixtureFilterBitNames bitNames{};
+	return RunApplication(customComponents, bitNames);
 }
 
 int RunApplication() {

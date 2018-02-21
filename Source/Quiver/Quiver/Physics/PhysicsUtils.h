@@ -1,10 +1,13 @@
 #pragma once
 
+#include <array>
 #include <memory>
 
 class b2Body;
 
 namespace qvr {
+
+using FixtureFilterBitNames = std::array<const char*, 16>;
 
 namespace Physics {
 

@@ -11,7 +11,9 @@
 namespace qvr
 {
 
-bool GuiControls(b2Filter& filter)
+using BitNames = FixtureFilterBitNames;
+
+bool GuiControls(b2Filter& filter, const BitNames& bitNames)
 {
 	bool modified = false;
 
@@ -27,12 +29,15 @@ bool GuiControls(b2Filter& filter)
 		filter.groupIndex = (int16)temp;
 	}
 
+	const int NumReservedFlags = 6;
+	const int NumAvailableFlags = 16 - NumReservedFlags;
+
 	if (ImGui::CollapsingHeader("Category Bits")) {
 		ImGui::AutoIndent indent;
 	
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < NumAvailableFlags; i++) {
 			modified |= ImGui::CheckboxFlags(
-				fmt::format("Bit {} ({})", i, 1 << i).c_str(), 
+				fmt::format("{} - {} ({})", i, bitNames[i] ? bitNames[i] : "", 1 << i).c_str(), 
 				(unsigned*)&filter.categoryBits, 
 				1 << i);
 		}
@@ -41,9 +46,9 @@ bool GuiControls(b2Filter& filter)
 	if (ImGui::CollapsingHeader("Mask Bits")) {
 		ImGui::AutoIndent indent;
 
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < NumAvailableFlags; i++) {
 			modified |= ImGui::CheckboxFlags(
-				fmt::format("Bit {} ({})", i, 1 << i).c_str(),
+				fmt::format("{} - {} ({})", i, bitNames[i] ? bitNames[i] : "", 1 << i).c_str(),
 				(unsigned*)&filter.maskBits,
 				1 << i);
 		}
@@ -52,7 +57,7 @@ bool GuiControls(b2Filter& filter)
 	return modified;
 }
 
-void GuiControls(b2Fixture& fixture)
+void GuiControls(b2Fixture& fixture, const BitNames& bitNames)
 {
 	ImGui::SliderFloat(
 		"Friction", 
@@ -76,13 +81,13 @@ void GuiControls(b2Fixture& fixture)
 
 		b2Filter filter = fixture.GetFilterData();
 
-		if (GuiControls(filter)) {
+		if (GuiControls(filter, bitNames)) {
 			fixture.SetFilterData(filter);
 		}
 	}
 }
 
-void GuiControls(b2Body& body)
+void GuiControls(b2Body& body, const BitNames& bitNames)
 {
 	{
 		b2BodyType type = body.GetType();
@@ -127,7 +132,7 @@ void GuiControls(b2Body& body)
 	while (fixture) {
 		if (ImGui::CollapsingHeader("Fixture")) {
 			ImGui::AutoIndent indent;
-			GuiControls(*fixture);
+			GuiControls(*fixture, bitNames);
 		}
 		fixture = fixture->GetNext();
 	}
@@ -139,11 +144,13 @@ PhysicsComponentEditor::PhysicsComponentEditor(PhysicsComponent& physicsComponen
 
 PhysicsComponentEditor::~PhysicsComponentEditor() {}
 
-void PhysicsComponentEditor::GuiControls()
+void PhysicsComponentEditor::GuiControls(const BitNames& bitNames)
 {
 	if (ImGui::CollapsingHeader("Body")) {
 		ImGui::AutoIndent indent;
-		qvr::GuiControls(m_PhysicsComponent.GetBody());
+		qvr::GuiControls(
+			m_PhysicsComponent.GetBody(), 
+			bitNames);
 	}
 }
 

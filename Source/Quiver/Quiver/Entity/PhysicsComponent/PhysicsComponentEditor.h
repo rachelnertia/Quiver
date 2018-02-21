@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Quiver/Physics/PhysicsUtils.h"
+
 namespace qvr
 {
 
@@ -9,8 +11,11 @@ class PhysicsComponentEditor
 {
 public:
 	PhysicsComponentEditor(PhysicsComponent& physicsComponent);
+	
 	~PhysicsComponentEditor();
-	void GuiControls();
+	
+	void GuiControls(const FixtureFilterBitNames& bitNames);
+	
 	bool IsTargeting(const PhysicsComponent& physicsComponent) const
 	{
 		return &physicsComponent == &m_PhysicsComponent;

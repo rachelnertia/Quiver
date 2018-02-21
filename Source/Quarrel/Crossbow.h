@@ -99,7 +99,12 @@ private:
 		qvr::JoystickAxisThreshold(qvr::Xbox360Controller::Axis::Trigger_Right, -50.0f, false)
 	};
 
-	sf::Vector2f mOffset = sf::Vector2f(0.0f, 1.0f);
+	static const sf::Vector2f LoweredOffset;
+	static const sf::Vector2f NoOffset; 
+	static const float SecondsToRaise;
+	static const float SecondsToLower;
+
+	sf::Vector2f mOffset = LoweredOffset;
 	TimeLerper<sf::Vector2f> mOffsetLerper =
-		TimeLerper<sf::Vector2f>(mOffset, sf::Vector2f(0.0f, 0.0f), 0.25f);
+		TimeLerper<sf::Vector2f>(mOffset, NoOffset, SecondsToRaise);
 };

@@ -143,6 +143,11 @@ std::function<float(const float)> GetEasingFunctionForCrossbow(const bool raisin
 
 }
 
+const sf::Vector2f Crossbow::LoweredOffset(0.5f, 1.0f);
+const sf::Vector2f Crossbow::NoOffset(0.0f, 0.0f);
+const float Crossbow::SecondsToRaise = 0.25f;
+const float Crossbow::SecondsToLower = SecondsToRaise;
+
 using namespace std::chrono_literals;
 
 void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float deltaSeconds)
@@ -158,11 +163,11 @@ void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float delt
 	{
 		if (mRaisedState == RaisedState::Lowered) {
 			mRaisedState = RaisedState::Raised;
-			mOffsetLerper.SetTarget(mOffset, sf::Vector2f(0.0f, 0.0f), 0.25f);
+			mOffsetLerper.SetTarget(mOffset, NoOffset, SecondsToRaise);
 		}
 		else if (mRaisedState == RaisedState::Raised) {
 			mRaisedState = RaisedState::Lowered;
-			mOffsetLerper.SetTarget(mOffset, sf::Vector2f(0.0f, 1.0f), 0.25f);
+			mOffsetLerper.SetTarget(mOffset, LoweredOffset, SecondsToLower);
 		}
 	}
 

@@ -1,9 +1,11 @@
-#include "Weapon.h"
+#include "Crossbow.h"
 
 #include <iostream>
+#include <chrono>
 
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
 #include <Box2D/Dynamics/b2Body.h>
+#include <Box2D/Dynamics/b2Fixture.h>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <spdlog/spdlog.h>
@@ -21,15 +23,22 @@
 #include "Quiver/Input/RawInput.h"
 
 #include "Player.h"
+#include "Utils.h"
 
 using namespace qvr;
 
 class CrossbowBolt : public CustomComponent
 {
 public:
-	CrossbowBolt(Entity& entity) : CustomComponent(entity) {}
+	CrossbowBolt(Entity& entity) 
+		: CustomComponent(entity) 
+	{
+		b2Fixture& fixture = *GetEntity().GetPhysics()->GetBody().GetFixtureList();
+		b2Filter filter = fixture.GetFilterData();
+		filter.categoryBits = FixtureFilterCategories::CrossbowBolt;
+	}
 
-	void OnBeginContact(Entity& other, b2Fixture& fixture) override
+	void OnBeginContact(Entity& other, b2Fixture& myFixture) override
 	{
 		this->SetRemoveFlag(true);
 	}
@@ -108,17 +117,69 @@ Crossbow::Crossbow(Player& player)
 	}
 }
 
+namespace {
+
+std::function<float(const float)> GetEasingFunctionForCrossbow(const bool raising)
+{
+	if (raising) {
+		auto easeOutBack = [](const float t) {
+			const float magnitude = 1.70158f;
+			const float scaledTime = (t / 1.0f) - 1.0f;
+			return
+				(scaledTime * scaledTime * ((magnitude + 1) * scaledTime + magnitude))
+				+ 1;
+		};
+		return easeOutBack;
+	}
+
+	auto easeInBack = [](const float t) {
+		const float magnitude = 1.70158f;
+		const float scaledTime = (t / 1.0f);
+		return scaledTime * scaledTime* ((magnitude + 1) * scaledTime - magnitude);
+	};
+
+	return easeInBack;
+}
+
+}
+
+using namespace std::chrono_literals;
+
 void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float deltaSeconds)
 {
 	namespace xb = qvr::Xbox360Controller;
 
-	switch (mState) {
-	case State::Uncocked:
+	std::array<BinaryInput, 2> toggleWeaponInputs = {
+		qvr::KeyboardKey::Tab,
+		qvr::JoystickAxisThreshold(xb::ToJoystickAxis(xb::Axis::DPad_Vertical), 90.0f, true)
+	};
+
+	if (AnyJustActive(inputDevices, toggleWeaponInputs))
+	{
+		if (mRaisedState == RaisedState::Lowered) {
+			mRaisedState = RaisedState::Raised;
+			mOffsetLerper.SetTarget(mOffset, sf::Vector2f(0.0f, 0.0f), 0.25f);
+		}
+		else if (mRaisedState == RaisedState::Raised) {
+			mRaisedState = RaisedState::Lowered;
+			mOffsetLerper.SetTarget(mOffset, sf::Vector2f(0.0f, 1.0f), 0.25f);
+		}
+	}
+
+	mOffset =
+		mOffsetLerper.Update(
+			deltaSeconds,
+			GetEasingFunctionForCrossbow(mRaisedState == RaisedState::Raised));
+
+	if (mRaisedState == RaisedState::Lowered) return;
+
+	switch (mCockedState) {
+	case CockedState::Uncocked:
 		if (AnyJustActive(inputDevices, mCockInputs)) {
-			mState = State::Cocked;
+			mCockedState = CockedState::Cocked;
 		}
 		break;
-	case State::Cocked:
+	case CockedState::Cocked:
 		if (!mLoadedQuarrel)
 		{
 			BinaryInput loadInputs1[] = { qvr::KeyboardKey::Num1, qvr::JoystickButton(xb::Button::B) };
@@ -147,7 +208,7 @@ void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float delt
 				break;
 			}
 
-			mState = State::Uncocked;
+			mCockedState = CockedState::Uncocked;
 		}
 
 		break;
@@ -158,18 +219,17 @@ void Crossbow::Render(sf::RenderTarget& target)
 {
 	sf::Vector2f targetSize((float)target.getSize().x, (float)target.getSize().y);
 
-	// TODO: Rename to crossbowSprite.
-	sf::Sprite sprite;
+	sf::Sprite crossbowSprite;
 
-	sprite.setTexture(mTexture);
+	crossbowSprite.setTexture(mTexture);
 
-	auto GetTextureRectFromState = [](const State state, const sf::Vector2u& textureSize)
+	auto GetTextureRectFromState = [](const CockedState state, const sf::Vector2u& textureSize)
 	{
 		const int frameIndex = [state]()
 		{
 			switch (state)
 			{
-			case State::Cocked:
+			case CockedState::Cocked:
 				return 1;
 			}
 			return 0;
@@ -179,26 +239,36 @@ void Crossbow::Render(sf::RenderTarget& target)
 			sf::Vector2i(textureSize.x, textureSize.y / 2));
 	};
 
-	sprite.setTextureRect(GetTextureRectFromState(mState, mTexture.getSize()));
+	crossbowSprite.setTextureRect(GetTextureRectFromState(mCockedState, mTexture.getSize()));
 
-	sprite.setOrigin(
-		sprite.getTextureRect().width / 2.0f,
-		(float)sprite.getTextureRect().height);
+	// 25% of the crossbow is below the bottom of the screen.
+	const float hidden = 0.25f;
+	const float crossbowHeight = (float)crossbowSprite.getTextureRect().height;
 
-	sprite.setPosition(targetSize.x / 2.0f, (float)targetSize.y);
+	crossbowSprite.setOrigin(
+		crossbowSprite.getTextureRect().width / 2.0f,
+		crossbowHeight - (crossbowHeight * hidden));
 
-	const float scale = ((float)targetSize.x / (float)sprite.getTextureRect().width / 2);
+	const sf::Vector2f centre(targetSize.x / 2.0f, (float)targetSize.y);
+	const sf::Vector2f offset(
+		(targetSize.x * 0.5f) * mOffset.x,
+		(targetSize.y * 0.5f) * mOffset.y);
+	const sf::Vector2f position = centre + offset;
 
-	sprite.setScale(scale, scale);
+	crossbowSprite.setPosition(position);
+
+	const float scale = ((float)targetSize.x / (float)crossbowSprite.getTextureRect().width / 2);
+
+	crossbowSprite.setScale(scale, scale);
 
 	const sf::Color darkColor = mPlayer.GetEntity().GetWorld().GetAmbientLight().mColor;
 
-	sprite.setColor(darkColor);
+	crossbowSprite.setColor(darkColor);
 
-	target.draw(sprite);
+	target.draw(crossbowSprite);
 
 	// Now draw the crossbow bolt
-	if (mState == State::Cocked && mLoadedQuarrel)
+	if (mCockedState == CockedState::Cocked && mLoadedQuarrel)
 	{
 		sf::Sprite boltSprite;
 
@@ -206,11 +276,11 @@ void Crossbow::Render(sf::RenderTarget& target)
 
 		boltSprite.setOrigin(
 			boltSprite.getTextureRect().width / 2.0f,
-			(float)boltSprite.getTextureRect().height);
+			crossbowHeight - (crossbowHeight * hidden));
 
 		boltSprite.setScale(scale, scale);
 
-		boltSprite.setPosition(targetSize.x / 2.0f, (float)targetSize.y);
+		boltSprite.setPosition(position);
 
 		boltSprite.setColor(
 			mLoadedQuarrel.value().mTypeInfo.colour * darkColor);
@@ -221,10 +291,9 @@ void Crossbow::Render(sf::RenderTarget& target)
 
 void Crossbow::LoadQuarrel(const QuarrelType type)
 {
-	// TODO: We can do away with the Loaded State, actually.
-	assert(mState == State::Cocked);
+	assert(mCockedState == CockedState::Cocked);
 	assert(!mLoadedQuarrel);
-	if (mState != State::Cocked || mLoadedQuarrel)
+	if (mCockedState != CockedState::Cocked || mLoadedQuarrel)
 	{
 		return;
 	}
@@ -258,7 +327,7 @@ void Crossbow::Shoot()
 
 	mLoadedQuarrel.reset();
 
-	mState = State::Uncocked;
+	mCockedState = CockedState::Uncocked;
 }
 
 Entity* Crossbow::MakeProjectile(
@@ -275,7 +344,8 @@ Entity* Crossbow::MakeProjectile(
 		shape.Set(points, 3);
 	}
 
-	Entity* projectile = world.CreateEntity(shape,
+	Entity* projectile = world.CreateEntity(
+		shape,
 		position + aimDir,
 		b2Atan2(aimDir.y, aimDir.x) - (b2_pi * 0.5f));
 

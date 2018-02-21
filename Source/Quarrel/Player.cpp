@@ -30,6 +30,7 @@
 #include "Quiver/Misc/JsonHelpers.h"
 #include "Quiver/World/World.h"
 
+#include "Crossbow.h"
 #include "PlayerInput.h"
 #include "Utils.h"
 
@@ -45,7 +46,7 @@ void AddFilterCategories(b2Fixture& fixture, const int16 categories) {
 
 Player::Player(Entity& entity) 
 	: CustomComponent(entity)
-	, mCurrentWeapon(new Crossbow(*this)) 
+	, mCurrentWeapon(std::make_unique<Crossbow>(*this)) 
 {
 	AddFilterCategories(
 		*GetEntity().GetPhysics()->GetBody().GetFixtureList(),
@@ -140,21 +141,6 @@ void Player::HandleInput(qvr::RawInputDevices& devices, const std::chrono::durat
 				deltaTime.count();
 
 			body.SetTransform(body.GetPosition(), body.GetAngle() + rotation);
-		}
-	}
-
-	std::vector<BinaryInput> toggleWeaponInputs = {
-		qvr::KeyboardKey::Tab,
-		qvr::JoystickAxisThreshold(xb::ToJoystickAxis(xb::Axis::DPad_Vertical), 90.0f, true)
-	};
-
-	if (AnyJustActive(devices, toggleWeaponInputs))
-	{
-		if (mCurrentWeapon) {
-			mCurrentWeapon.release();
-		}
-		else {
-			mCurrentWeapon = std::make_unique<Crossbow>(*this);
 		}
 	}
 

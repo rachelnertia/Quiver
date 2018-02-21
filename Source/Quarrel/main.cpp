@@ -5,6 +5,7 @@
 #include "Player.h"
 #include "Wanderer.h"
 #include "WorldExit.h"
+#include "Utils.h"
 
 qvr::CustomComponentTypeLibrary CreateQuarrelTypes()
 {
@@ -40,6 +41,7 @@ qvr::CustomComponentTypeLibrary CreateQuarrelTypes()
 int main()
 {
 	qvr::CustomComponentTypeLibrary quarrelTypes = CreateQuarrelTypes();
+	qvr::FixtureFilterBitNames quarrelFilterBitNames = CreateFilterBitNames();
 
-	return qvr::RunApplication(quarrelTypes);
+	return qvr::RunApplication(quarrelTypes, quarrelFilterBitNames);
 }

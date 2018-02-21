@@ -22,6 +22,7 @@
 #include "Quiver/Entity/RenderComponent/RenderComponent.h"
 #include "Quiver/Entity/Entity.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
+#include "Quiver/Misc/Logging.h"
 #include "Quiver/World/World.h"
 
 #include "Utils.h"
@@ -115,14 +116,8 @@ public:
 
 	void OnStep(const std::chrono::duration<float> timestep) override;
 
-	void OnBeginContact(Entity& other, b2Fixture& myFixture) override
-	{
-		if (other.GetCustomComponent() && 
-			(other.GetCustomComponent()->GetTypeName() == "CrossbowBolt"))
-		{
-			m_Damage += 10;
-		}
-	}
+	void OnBeginContact(Entity& other, b2Fixture& myFixture) override;
+	void OnEndContact  (Entity& other, b2Fixture& myFixture) override;
 
 	std::unique_ptr<CustomComponentEditor> CreateEditor() override;
 
@@ -141,16 +136,13 @@ private:
 
 	bool CanShoot() const;
 
-	void Shoot();
+	void Shoot(const b2Vec2& target);
 
 	void SetAnimation(const AnimationId animationId, AnimatorRepeatSetting repeatSetting = AnimatorRepeatSetting::Forever);
 	void SetAnimation(std::initializer_list<AnimatorStartSetting> animChain);
 
-	b2Vec2 GetDirection() const;
-
 	std::experimental::optional<PlayerSighting> m_LastPlayerSighting;
 
-	float m_CurrentAngle = 0.0f;
 	int m_Damage = 0;
 	bool m_Awake = false;
 
@@ -161,11 +153,64 @@ private:
 	AnimationId m_ShootAnim = AnimationId::Invalid;
 	AnimationId m_StandAnim = AnimationId::Invalid;
 	AnimationId m_DieAnim = AnimationId::Invalid;
+
+	b2Fixture* m_Sensor;
+
+	EntityId m_PlayerInSensor = EntityId(0);
 };
+
+static b2CircleShape CreateCircleShape(const float radius)
+{
+	b2CircleShape circle;
+	circle.m_radius = radius;
+	return circle;
+}
 
 Enemy::Enemy(Entity& entity)
 	: CustomComponent(entity)
-{}
+{
+	// Create sensor fixture.
+	b2FixtureDef fixtureDef;
+	b2CircleShape circleShape = CreateCircleShape(5.0f);
+	fixtureDef.shape = &circleShape;
+	fixtureDef.isSensor = true;
+	fixtureDef.filter.categoryBits = FixtureFilterCategories::Sensor;
+	// Only collide with Players.
+	fixtureDef.filter.maskBits = FixtureFilterCategories::Player;
+	m_Sensor = GetEntity().GetPhysics()->GetBody().CreateFixture(&fixtureDef);
+}
+
+void Enemy::OnBeginContact(Entity& other, b2Fixture& myFixture)
+{
+	auto log = qvr::GetConsoleLogger();
+	const char* logCtx = "Enemy::OnBeginContact:";
+
+	if (&myFixture == m_Sensor)
+	{
+		log->debug("{} Player entered sensor.", logCtx);
+
+		m_PlayerInSensor = other.GetId();
+	}
+	else if (
+		other.GetCustomComponent() &&
+		other.GetCustomComponent()->GetTypeName() == "CrossbowBolt")
+	{
+		m_Damage += 10;
+	}
+}
+
+void Enemy::OnEndContact(Entity& other, b2Fixture& myFixture)
+{
+	auto log = qvr::GetConsoleLogger();
+	const char* logCtx = "Enemy::OnEndContact:";
+
+	if (&myFixture == m_Sensor)
+	{
+		log->debug("{} Player left sensor.", logCtx);
+
+		m_PlayerInSensor = EntityId(0);
+	}
+}
 
 void Enemy::OnStep(const std::chrono::duration<float> timestep)
 {
@@ -179,6 +224,7 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 	{
 		log->debug("{} Dying - received {}/{} damage", logCtx, m_Damage, MaxDamage);
 		SetAnimation(m_DieAnim, AnimatorRepeatSetting::Never);
+		GetEntity().GetPhysics()->GetBody().DestroyFixture(m_Sensor);
 		// Remove the CustomComponent, but not the Entity.
 		GetEntity().AddCustomComponent(nullptr);
 		// It's super important that this method immediately return after AddCustomComponent!
@@ -194,52 +240,29 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 
 	if (m_LastPlayerSighting)
 	{
-		const PlayerSighting& lastPlayerSighting = m_LastPlayerSighting.value();
+		PlayerSighting& lastPlayerSighting = m_LastPlayerSighting.value();
 
+		// Check that we can see the Player directly.
+		if (RayCastToFindPlayer(
+				physicsWorld, 
+				currentPos, 
+				lastPlayerSighting.position))
 		{
-			const b2Vec2 dir = lastPlayerSighting.position - currentPos;
-			m_CurrentAngle = b2Atan2(dir.y, dir.x);
-		}
+			lastPlayerSighting.worldTime = currentTime;
 
-		// Find the player again because it's unsafe to hold a pointer to the Player Entity/CustomComponent.
-		{
-			const float halfWidth = 0.5f;
-			const b2Vec2 halfDimensions = b2Vec2{ halfWidth, halfWidth };
-			const b2AABB aabb
+			// Shoot at player.
+			if (CanShoot())
 			{
-				lastPlayerSighting.position - halfDimensions,
-				lastPlayerSighting.position + halfDimensions
-			};
+				log->debug("{} Firing at position ({}, {})!",
+					logCtx,
+					lastPlayerSighting.position.x,
+					lastPlayerSighting.position.y);
 
-			if (const auto playerPosition = QueryAABBToFindPlayer(physicsWorld, aabb))
-			{
-				// Check that we can see the Player directly.
-				if (RayCastToFindPlayer(physicsWorld, currentPos, playerPosition.value()))
-				{
-					// Update the LastPlayerSighting struct.
-					m_LastPlayerSighting =
-						PlayerSighting
-						{
-							playerPosition.value(),
-							currentTime
-						};
-
-					// Shoot at player.
-					if (CanShoot())
-					{
-						log->debug("{} Firing at position ({}, {})!",
-							logCtx,
-							lastPlayerSighting.position.x,
-							lastPlayerSighting.position.y);
-
-						Shoot();
-					}
-				}
+				Shoot(lastPlayerSighting.position);
 			}
 		}
-
 		// If it's been a while since we saw the Player, forget it.
-		if (GetEntity().GetWorld().GetTime() - lastPlayerSighting.worldTime > 5s)
+		else if (GetEntity().GetWorld().GetTime() - lastPlayerSighting.worldTime > 5s)
 		{
 			log->debug("{} Last player sighting (position: ({}, {}), time: {}s) timed out. Forgetting...",
 				logCtx,
@@ -250,17 +273,31 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 			// Forget it.
 			m_LastPlayerSighting = {};
 		}
-	} 
-	else
+	}
+	else if (m_PlayerInSensor != EntityId(0))
 	{
-		if (const auto playerPosition = RayCastToFindPlayer(physicsWorld, currentPos, m_CurrentAngle, 5.0f))
+		const Entity* player = GetEntity().GetWorld().GetEntity(m_PlayerInSensor);
+
+		if (player == nullptr) {
+			m_PlayerInSensor = EntityId(0);
+		}
+
+		const b2Vec2 playerPosition =
+			player->GetPhysics()->GetPosition();
+
+		// Check that we have LOS.
+		if (const auto playerSightingPosition =
+			RayCastToFindPlayer(
+				*GetEntity().GetWorld().GetPhysicsWorld(),
+				GetEntity().GetPhysics()->GetPosition(),
+				playerPosition))
 		{
 			m_LastPlayerSighting =
 				PlayerSighting
-				{
-					playerPosition.value(),
-					currentTime
-				};
+			{
+				playerSightingPosition.value(),
+				currentTime
+			};
 
 			log->debug("{} New player sighting at (position: ({}, {}), time: {}s).",
 				logCtx,
@@ -271,27 +308,23 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 			if (!m_Awake)
 			{
 				m_Awake = true;
-				
+
 				const AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
 				const AnimatorId animator = GetEntity().GetGraphics()->GetAnimatorId();
 				if ((!animSystem.Exists(animator)) ||
 					(animSystem.GetAnimation(animator) != m_AwakeAnim))
 				{
 					SetAnimation(
-					{
-						{ m_AwakeAnim, AnimatorRepeatSetting::Never },
-						{ m_StandAnim, AnimatorRepeatSetting::Forever }
-					});
+						{
+							{ m_AwakeAnim, AnimatorRepeatSetting::Never },
+							{ m_StandAnim, AnimatorRepeatSetting::Forever }
+						});
 				}
 			}
 			else
 			{
 				SetAnimation(m_StandAnim);
 			}
-		} 
-		else
-		{
-			m_CurrentAngle += b2_pi * timestep.count();
 		}
 	}
 }
@@ -312,7 +345,7 @@ bool Enemy::CanShoot() const
 	return GetEntity().GetWorld().GetTime() - m_LastShootTime > 1.0s;
 }
 
-void Enemy::Shoot()
+void Enemy::Shoot(const b2Vec2& target)
 {
 	m_LastShootTime = GetEntity().GetWorld().GetTime();
 	
@@ -330,7 +363,8 @@ void Enemy::Shoot()
 	GetEntity().GetAudio()->SetSound("audio/crossbow_shoot.wav");
 
 	const auto position = GetEntity().GetPhysics()->GetPosition();
-	const auto direction = GetDirection();
+	auto direction = target - position;
+	direction.Normalize();
 
 	MakeProjectile(
 		GetEntity().GetWorld(),
@@ -382,11 +416,6 @@ void Enemy::SetAnimation(const AnimationId animationId, const AnimatorRepeatSett
 			log->warn("{} Couldn't set the RenderComponent's Animation to {}", logCtx, animationId);
 		}
 	}
-}
-
-b2Vec2 Enemy::GetDirection() const
-{
-	return b2Mul(b2Rot(m_CurrentAngle), b2Vec2(1.0f, 0.0f));
 }
 
 optional<AnimationId> PickAnimationGui(

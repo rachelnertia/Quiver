@@ -75,6 +75,12 @@ void GuiControls(b2Fixture& fixture, const BitNames& bitNames)
 		0.0f,
 		2.0f);
 
+	ImGui::Checkbox(
+		"Is Sensor",
+		fixture,
+		&b2Fixture::IsSensor,
+		&b2Fixture::SetSensor);
+
 	if (ImGui::CollapsingHeader("Filter Data"))
 	{
 		ImGui::AutoIndent indent;
@@ -147,12 +153,9 @@ PhysicsComponentEditor::~PhysicsComponentEditor() {}
 
 void PhysicsComponentEditor::GuiControls(const BitNames& bitNames)
 {
-	if (ImGui::CollapsingHeader("Body")) {
-		ImGui::AutoIndent indent;
-		qvr::GuiControls(
-			m_PhysicsComponent.GetBody(), 
-			bitNames);
-	}
+	qvr::GuiControls(
+		m_PhysicsComponent.GetBody(), 
+		bitNames);
 }
 
 }

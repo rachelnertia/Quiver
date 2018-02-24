@@ -62,15 +62,21 @@ std::experimental::optional<b2Vec2> RayCastToFindPlayer(
 	const float angle,
 	const float range);
 
+inline float Lerp(const float a, const float b, const float t) {
+	return a + t * (b - a);
+}
+
 inline float NoEase(const float t) { return t; }
 
 template <class T>
 class TimeLerper {
 	float t = 0.0f;
-	float secondsToReachTarget;
+	float secondsToReachTarget = 0.0f;
 	T startVal;
 	T targetVal;
 public:
+	TimeLerper() = default;
+
 	TimeLerper(const T& start, const T& target, const float seconds)
 	{
 		SetTarget(start, target, seconds);

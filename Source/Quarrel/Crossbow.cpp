@@ -143,7 +143,7 @@ std::function<float(const float)> GetEasingFunctionForCrossbow(const bool raisin
 
 }
 
-const sf::Vector2f Crossbow::LoweredOffset(0.5f, 1.0f);
+const float Crossbow::LoweredOffsetY = 1.0f;
 const sf::Vector2f Crossbow::NoOffset(0.0f, 0.0f);
 const float Crossbow::SecondsToRaise = 0.25f;
 const float Crossbow::SecondsToLower = SecondsToRaise;
@@ -152,6 +152,19 @@ using namespace std::chrono_literals;
 
 void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float deltaSeconds)
 {
+	const float currentRadians = mPlayer.mCamera.GetRotation();
+	const float deltaRadians = [=]() {
+		const float pi = b2_pi;
+		const float tau = 2.0f * pi;
+		float val = currentRadians - lastRadians;
+		// Account for when the current and last are on different sides of the pole.
+		val += (val > pi) ? -tau : (val < -pi) ? tau : 0.0f;
+		// Limit the angle.
+		const float max = pi * 0.25f;
+		return std::max(-max, std::min(val, max));
+	}();
+	lastRadians = currentRadians;
+
 	namespace xb = qvr::Xbox360Controller;
 
 	std::array<BinaryInput, 2> toggleWeaponInputs = {
@@ -163,18 +176,26 @@ void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float delt
 	{
 		if (mRaisedState == RaisedState::Lowered) {
 			mRaisedState = RaisedState::Raised;
-			mOffsetLerper.SetTarget(mOffset, NoOffset, SecondsToRaise);
+			mOffsetYLerper.SetTarget(mOffset.y, NoOffset.y, SecondsToRaise);
 		}
 		else if (mRaisedState == RaisedState::Raised) {
 			mRaisedState = RaisedState::Lowered;
-			mOffsetLerper.SetTarget(mOffset, LoweredOffset, SecondsToLower);
+			mOffsetYLerper.SetTarget(mOffset.y, LoweredOffsetY, SecondsToLower);
 		}
 	}
 
-	mOffset =
-		mOffsetLerper.Update(
+	mOffset.y =
+		mOffsetYLerper.Update(
 			deltaSeconds,
 			GetEasingFunctionForCrossbow(mRaisedState == RaisedState::Raised));
+
+	auto radiansToOffset = [](const float radians) {
+		return radians / (b2_pi * 0.5f);
+	};
+
+	mOffsetXTarget = -radiansToOffset(deltaRadians);
+
+	mOffset.x = Lerp(mOffset.x, mOffsetXTarget, 0.25f);
 
 	if (mRaisedState == RaisedState::Lowered) return;
 

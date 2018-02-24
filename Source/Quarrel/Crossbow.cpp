@@ -150,20 +150,46 @@ const float Crossbow::SecondsToLower = SecondsToRaise;
 
 using namespace std::chrono_literals;
 
+void Crossbow::UpdateOffset(const float deltaSeconds)
+{
+	// Y offset
+	// Account for raising and lowering when drawing the weapon or putting it away.
+	mOffset.y =
+		mOffsetYLerper.Update(
+			deltaSeconds,
+			GetEasingFunctionForCrossbow(mRaisedState == RaisedState::Raised));
+
+	// Account for forwards/backwards movement.
+	const float forwardsVelocity = b2Dot(
+		mPlayer.GetEntity().GetPhysics()->GetBody().GetLinearVelocity(),
+		mPlayer.mCamera.GetForwards());
+
+	const float extraYOffset = 0.1f * std::max(-1.0f, std::min(1.0f, forwardsVelocity));
+	
+	mOffset.y = Lerp(mOffset.y, mOffset.y + extraYOffset, 0.4f);
+
+	// X offset
+	// Account for rotation.
+
+	auto radiansToOffset = [](const float radians) {
+		return radians / (b2_pi * 0.5f);
+	};
+
+	float offsetXTarget = -radiansToOffset(deltaRadians.Get());
+
+	// Account for sideways movement.
+	const float lateralVelocity = b2Dot(
+		mPlayer.GetEntity().GetPhysics()->GetBody().GetLinearVelocity(),
+		mPlayer.mCamera.GetRightwards());
+
+	offsetXTarget += 0.05f * std::max(-1.0f, std::min(1.0f, lateralVelocity));
+
+	mOffset.x = Lerp(mOffset.x, offsetXTarget, 0.25f);
+}
+
 void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float deltaSeconds)
 {
-	const float currentRadians = mPlayer.mCamera.GetRotation();
-	const float deltaRadians = [=]() {
-		const float pi = b2_pi;
-		const float tau = 2.0f * pi;
-		float val = currentRadians - lastRadians;
-		// Account for when the current and last are on different sides of the pole.
-		val += (val > pi) ? -tau : (val < -pi) ? tau : 0.0f;
-		// Limit the angle.
-		const float max = pi * 0.25f;
-		return std::max(-max, std::min(val, max));
-	}();
-	lastRadians = currentRadians;
+	deltaRadians.Update(mPlayer.mCamera.GetRotation());
 
 	namespace xb = qvr::Xbox360Controller;
 
@@ -184,25 +210,7 @@ void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float delt
 		}
 	}
 
-	mOffset.y =
-		mOffsetYLerper.Update(
-			deltaSeconds,
-			GetEasingFunctionForCrossbow(mRaisedState == RaisedState::Raised));
-
-	auto radiansToOffset = [](const float radians) {
-		return radians / (b2_pi * 0.5f);
-	};
-
-	mOffsetXTarget = -radiansToOffset(deltaRadians);
-	
-	// Calculate amount of x-offset for left-right movement.
-	const float lateralVelocity = b2Dot(
-		mPlayer.GetEntity().GetPhysics()->GetBody().GetLinearVelocity(),
-		mPlayer.mCamera.GetRightwards());
-
-	mOffsetXTarget += 0.05f * std::max(-1.0f, std::min(1.0f, lateralVelocity));
-
-	mOffset.x = Lerp(mOffset.x, mOffsetXTarget, 0.25f);
+	UpdateOffset(deltaSeconds);
 
 	if (mRaisedState == RaisedState::Lowered) return;
 

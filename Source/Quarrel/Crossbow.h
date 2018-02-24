@@ -26,6 +26,8 @@ public:
 	void Render(sf::RenderTarget& target) override;
 
 private:
+	void UpdateOffset(const float deltaSeconds);
+
 	qvr::Entity* MakeProjectile(
 		qvr::World& world,
 		const b2Vec2& position,
@@ -105,10 +107,35 @@ private:
 	static const float SecondsToLower;
 
 	sf::Vector2f mOffset = sf::Vector2f(0.0f, LoweredOffsetY);
+	
 	TimeLerper<float> mOffsetYLerper =
 		TimeLerper<float>(mOffset.y, NoOffset.y, SecondsToRaise);
 
-	float mOffsetXTarget = 0.0f;
+	class DeltaRadians
+	{
+		float last = 0.0f;
+		float delta = 0.0f;
+	public:
+		void Update(const float currentRadians) {
+			const float pi = b2_pi;
+			const float tau = 2.0f * pi;
+			
+			float val = currentRadians - last;
+			last = currentRadians;
+			
+			// Account for when the current and last are on different sides of the pole.
+			val += (val > pi) ? -tau : (val < -pi) ? tau : 0.0f;
+			
 
-	float lastRadians = 0.0f;
+			// Limit the angle.
+			const float max = pi * 0.25f;
+			delta = std::max(-max, std::min(val, max));
+		}
+
+		float Get() const {
+			return delta;
+		}
+	};
+
+	DeltaRadians deltaRadians;
 };

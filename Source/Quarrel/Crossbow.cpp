@@ -194,6 +194,13 @@ void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float delt
 	};
 
 	mOffsetXTarget = -radiansToOffset(deltaRadians);
+	
+	// Calculate amount of x-offset for left-right movement.
+	const float lateralVelocity = b2Dot(
+		mPlayer.GetEntity().GetPhysics()->GetBody().GetLinearVelocity(),
+		mPlayer.mCamera.GetRightwards());
+
+	mOffsetXTarget += 0.05f * std::max(-1.0f, std::min(1.0f, lateralVelocity));
 
 	mOffset.x = Lerp(mOffset.x, mOffsetXTarget, 0.25f);
 

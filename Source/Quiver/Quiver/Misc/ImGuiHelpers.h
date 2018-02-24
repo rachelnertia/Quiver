@@ -50,6 +50,20 @@ namespace ImGui
 		}
 	};
 
+	struct AutoID
+	{
+		template<typename T>
+		AutoID(T t)
+		{
+			ImGui::PushID(t);
+		}
+
+		~AutoID()
+		{
+			ImGui::PopID();
+		}
+	};
+
 	bool ListBox(const char* label, int* current_item, const std::string* items, const int items_count);
 
 	template<int bufferSize>

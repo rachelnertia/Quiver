@@ -40,6 +40,7 @@ public:
 
 	const b2Vec2& GetPosition() const { return mTransform.p; }
 	const b2Vec2 GetForwards() const { return mTransform.q.GetYAxis(); }
+	const b2Vec2 GetRightwards() const { return mTransform.q.GetXAxis(); }
 
 	float GetRotation() const { return mTransform.q.GetAngle(); }
 	float GetHeight() const { return mHeight; }

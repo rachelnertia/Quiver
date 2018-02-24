@@ -130,6 +130,7 @@ void GuiControls(b2Body& body, const BitNames& bitNames)
 	b2Fixture* fixture = body.GetFixtureList();
 
 	while (fixture) {
+		ImGui::AutoID id(fixture);
 		if (ImGui::CollapsingHeader("Fixture")) {
 			ImGui::AutoIndent indent;
 			GuiControls(*fixture, bitNames);

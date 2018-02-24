@@ -62,6 +62,12 @@ std::experimental::optional<b2Vec2> RayCastToFindPlayer(
 	const float angle,
 	const float range);
 
+inline b2Vec2 Normalize(const b2Vec2& v) {
+	b2Vec2 n = v;
+	n.Normalize();
+	return n;
+}
+
 inline float Lerp(const float a, const float b, const float t) {
 	return a + t * (b - a);
 }

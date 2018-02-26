@@ -17,6 +17,10 @@ public:
 
 	Camera3D() = default;
 
+	Camera3D(const b2Transform transform)
+		: mTransform(transform)
+	{}
+
 	Camera3D(const Camera3D&);
 	Camera3D(const Camera3D&&) = delete;
 

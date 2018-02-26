@@ -44,7 +44,7 @@ public:
 
 	virtual void HandleInput(
 		qvr::RawInputDevices& inputDevices, 
-		const std::chrono::duration<float> deltaSeconds) {}
+		const std::chrono::duration<float> deltaTime) {}
 
 	virtual void OnBeginContact(Entity& other, b2Fixture& myFixture) {}
 	virtual void OnEndContact  (Entity& other, b2Fixture& myFixture) {}

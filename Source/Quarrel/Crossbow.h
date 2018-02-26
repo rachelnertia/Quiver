@@ -28,14 +28,6 @@ public:
 private:
 	void UpdateOffset(const float deltaSeconds);
 
-	qvr::Entity* MakeProjectile(
-		qvr::World& world,
-		const b2Vec2& position,
-		const b2Vec2& aimDir,
-		const float speed,
-		const b2Vec2& inheritedVelocity,
-		const sf::Color& color);
-
 	enum class RaisedState {
 		Lowered,
 		Raised

@@ -339,41 +339,18 @@ void Crossbow::LoadQuarrel(const QuarrelType type)
 	mLoadedQuarrel = Quarrel{ type, quarrelTypes[(int)type] };
 }
 
-void Crossbow::Shoot()
-{
-	if (!qvrVerify(mLoadedQuarrel))
-	{
-		return;
-	}
+using json = nlohmann::json;
 
-	mShootSound.setBuffer(mShootSoundBuffer);
-	mShootSound.setRelativeToListener(true);
-	mShootSound.play();
-
-	const auto position = mPlayer.GetEntity().GetPhysics()->GetPosition();
-	const auto direction = mPlayer.mCamera.GetForwards();
-	const auto velocity = mPlayer.GetEntity().GetPhysics()->GetBody().GetLinearVelocity();
-
-	MakeProjectile(
-		mPlayer.GetEntity().GetWorld(),
-		position,
-		direction,
-		10.0f,
-		0.5f * velocity,
-		mLoadedQuarrel.value().mTypeInfo.colour);
-
-	mLoadedQuarrel.reset();
-
-	mCockedState = CockedState::Uncocked;
-}
-
-Entity* Crossbow::MakeProjectile(
+Entity* MakeProjectile(
 	World& world,
 	const b2Vec2& position,
 	const b2Vec2& aimDir,
 	const float speed,
 	const b2Vec2& inheritedVelocity,
-	const sf::Color& color)
+	const json& renderCompJson,
+	const sf::Color& color,
+	const qvr::AnimationId animation,
+	const qvr::AnimationData& animationData)
 {
 	b2PolygonShape shape;
 	{
@@ -403,17 +380,17 @@ Entity* Crossbow::MakeProjectile(
 		projectile->AddGraphics();
 		RenderComponent* projRenderComp = projectile->GetGraphics();
 
-		projRenderComp->FromJson(mProjectileRenderCompJson);
+		projRenderComp->FromJson(renderCompJson);
 
 		projRenderComp->SetColor(color);
 
 		// Load the animation into the AnimatorCollection if it hasn't already been done.
-		if (!world.GetAnimators().GetAnimations().Contains(mProjectileAnimId))
+		if (!world.GetAnimators().GetAnimations().Contains(animation))
 		{
-			world.GetAnimators().AddAnimation(mProjectileAnimData);
+			world.GetAnimators().AddAnimation(animationData);
 		}
 
-		projRenderComp->SetAnimation(mProjectileAnimId);
+		projRenderComp->SetAnimation(animation);
 	}
 
 	// Set up CustomComponent
@@ -422,4 +399,35 @@ Entity* Crossbow::MakeProjectile(
 	}
 
 	return projectile;
+}
+
+void Crossbow::Shoot()
+{
+	if (!qvrVerify(mLoadedQuarrel))
+	{
+		return;
+	}
+
+	mShootSound.setBuffer(mShootSoundBuffer);
+	mShootSound.setRelativeToListener(true);
+	mShootSound.play();
+
+	const auto position = mPlayer.GetEntity().GetPhysics()->GetPosition();
+	const auto direction = mPlayer.mCamera.GetForwards();
+	const auto velocity = mPlayer.GetEntity().GetPhysics()->GetBody().GetLinearVelocity();
+
+	MakeProjectile(
+		mPlayer.GetEntity().GetWorld(),
+		position,
+		direction,
+		10.0f,
+		0.5f * velocity,
+		mProjectileRenderCompJson,
+		mLoadedQuarrel.value().mTypeInfo.colour,
+		mProjectileAnimId,
+		mProjectileAnimData);
+
+	mLoadedQuarrel.reset();
+
+	mCockedState = CockedState::Uncocked;
 }

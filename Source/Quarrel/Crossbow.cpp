@@ -154,7 +154,7 @@ void Crossbow::UpdateOffset(const float deltaSeconds)
 {
 	// Y offset
 	// Account for raising and lowering when drawing the weapon or putting it away.
-	mOffset.y =
+	float offsetYTarget =
 		mOffsetYLerper.Update(
 			deltaSeconds,
 			GetEasingFunctionForCrossbow(mRaisedState == RaisedState::Raised));
@@ -164,9 +164,9 @@ void Crossbow::UpdateOffset(const float deltaSeconds)
 		mPlayer.GetEntity().GetPhysics()->GetBody().GetLinearVelocity(),
 		mPlayer.mCamera.GetForwards());
 
-	const float extraYOffset = 0.1f * std::max(-1.0f, std::min(1.0f, forwardsVelocity));
+	offsetYTarget += 0.025f * std::max(-1.0f, std::min(1.0f, forwardsVelocity));
 	
-	mOffset.y = Lerp(mOffset.y, mOffset.y + extraYOffset, 0.4f);
+	mOffset.y = Lerp(mOffset.y, offsetYTarget, 0.4f);
 
 	// X offset
 	// Account for rotation.

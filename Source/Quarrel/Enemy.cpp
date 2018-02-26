@@ -12,7 +12,6 @@
 #include <json.hpp>
 #include <optional.hpp>
 #include <spdlog/fmt/ostr.h>
-#include <spdlog/spdlog.h>
 
 #include "Quiver/Animation/AnimationLibrary.h"
 #include "Quiver/Animation/AnimationLibraryGui.h"
@@ -229,8 +228,7 @@ void Enemy::OnEndContact(Entity& other, b2Fixture& myFixture)
 
 void Enemy::OnStep(const std::chrono::duration<float> timestep)
 {
-	auto log = spdlog::get("console");
-	assert(log);
+	auto log = GetConsoleLogger();
 
 	const auto logCtx = "Enemy::OnStep:";
 
@@ -337,8 +335,7 @@ void Enemy::Shoot(const b2Vec2& target)
 
 void Enemy::SetAnimation(std::initializer_list<AnimatorStartSetting> animChain)
 {
-	auto log = spdlog::get("console");
-	assert(log);
+	auto log = GetConsoleLogger();
 	const char* logCtx = "Enemy::SetAnimation:";
 
 	assert(animChain.size() > 0);
@@ -365,8 +362,7 @@ void Enemy::SetAnimation(std::initializer_list<AnimatorStartSetting> animChain)
 
 void Enemy::SetAnimation(const AnimationId animationId, const AnimatorRepeatSetting repeatSetting)
 {
-	auto log = spdlog::get("console");
-	assert(log);
+	auto log = GetConsoleLogger();
 	const char* logCtx = "Enemy::SetAnimation:";
 
 	if (animationId != AnimationId::Invalid)
@@ -455,8 +451,7 @@ json AnimationToJson(const AnimatorCollection& animators, const AnimationId anim
 {
 	if (animationId == AnimationId::Invalid) return {};
 	
-	auto log = spdlog::get("console");
-	assert(log);
+	auto log = GetConsoleLogger();
 
 	const std::string logCtx = fmt::format("AnimationToJson({}):", animationId);
 

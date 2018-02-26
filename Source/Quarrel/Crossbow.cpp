@@ -48,6 +48,7 @@ public:
 
 Crossbow::Crossbow(Player& player) 
 	: Weapon(player) 
+	, deltaRadians(player.mCamera.GetRotation())
 {
 	auto log = spdlog::get("console");
 	assert(log);

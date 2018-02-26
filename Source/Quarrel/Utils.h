@@ -106,3 +106,19 @@ public:
 		return targetVal;
 	}
 };
+
+class DeltaRadians
+{
+	float last = 0.0f;
+	float delta = 0.0f;
+public:
+	DeltaRadians(const float startRadians)
+		: last(startRadians)
+	{}
+
+	void Update(const float currentRadians);
+
+	float Get() const {
+		return delta;
+	}
+};

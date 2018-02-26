@@ -63,7 +63,7 @@ private:
 
 	enum class QuarrelType
 	{
-		Black = 0, Red, Blue, Count
+		Black, Red, Blue, Count
 	};
 
 	struct QuarrelTypeInfo

@@ -8,7 +8,6 @@
 #include <Box2D/Dynamics/b2Fixture.h>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Sprite.hpp>
-#include <spdlog/spdlog.h>
 
 #include "Quiver/World/World.h"
 #include "Quiver/Entity/Entity.h"
@@ -17,6 +16,8 @@
 #include "Quiver/Entity/RenderComponent/RenderComponent.h"
 #include "Quiver/Animation/AnimationData.h"
 #include "Quiver/Misc/JsonHelpers.h"
+#include "Quiver/Misc/Logging.h"
+#include "Quiver/Misc/Verify.h"
 #include "Quiver/Input/BinaryInput.h"
 #include "Quiver/Input/Mouse.h"
 #include "Quiver/Input/Keyboard.h"
@@ -50,8 +51,7 @@ Crossbow::Crossbow(Player& player)
 	: Weapon(player) 
 	, deltaRadians(player.mCamera.GetRotation())
 {
-	auto log = spdlog::get("console");
-	assert(log);
+	auto log = GetConsoleLogger();
 
 	auto LogLoadFail = [&log](const char* filename)
 	{
@@ -333,20 +333,15 @@ void Crossbow::Render(sf::RenderTarget& target)
 
 void Crossbow::LoadQuarrel(const QuarrelType type)
 {
-	assert(mCockedState == CockedState::Cocked);
-	assert(!mLoadedQuarrel);
-	if (mCockedState != CockedState::Cocked || mLoadedQuarrel)
-	{
-		return;
-	}
+	if (!qvrVerify(mCockedState == CockedState::Cocked)) return;
+	if (!qvrVerify(!mLoadedQuarrel)) return;
 
 	mLoadedQuarrel = Quarrel{ type, quarrelTypes[(int)type] };
 }
 
 void Crossbow::Shoot()
 {
-	assert(mLoadedQuarrel);
-	if (!mLoadedQuarrel)
+	if (!qvrVerify(mLoadedQuarrel))
 	{
 		return;
 	}

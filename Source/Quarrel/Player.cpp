@@ -15,7 +15,6 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
-#include <spdlog/spdlog.h>
 
 #include "Quiver/Audio/Listener.h"
 #include "Quiver/Animation/Animators.h"
@@ -28,6 +27,7 @@
 #include "Quiver/Input/Keyboard.h"
 #include "Quiver/Input/RawInput.h"
 #include "Quiver/Misc/JsonHelpers.h"
+#include "Quiver/Misc/Logging.h"
 #include "Quiver/World/World.h"
 
 #include "Crossbow.h"
@@ -175,8 +175,7 @@ const float EnemyProjectileDamage = 20.0f;
 
 void Player::OnStep(const std::chrono::duration<float> deltaTime)
 {
-	auto log = spdlog::get("console");
-	assert(log);
+	auto log = GetConsoleLogger();
 	const char* logCtx = "Player::OnStep:";
 	
 	if (mCannotDie == false &&
@@ -200,8 +199,7 @@ void Player::OnStep(const std::chrono::duration<float> deltaTime)
 void Player::OnBeginContact(Entity& other, b2Fixture& myFixture)
 {
 	if (other.GetCustomComponent()) {
-		auto log = spdlog::get("console");
-		assert(log);
+		auto log = GetConsoleLogger();
 		const char* logCtx = "Player::OnBeginContact";
 
 		log->debug("{} Player beginning contact with {}...", logCtx, other.GetCustomComponent()->GetTypeName());
@@ -215,8 +213,7 @@ void Player::OnBeginContact(Entity& other, b2Fixture& myFixture)
 
 void Player::OnEndContact(Entity& other, b2Fixture& myFixture)
 {
-	auto log = spdlog::get("console");
-	assert(log);
+	auto log = GetConsoleLogger();
 
 	if (other.GetCustomComponent()) {
 		log->debug("Player finishing contact with {}...", other.GetCustomComponent()->GetTypeName());

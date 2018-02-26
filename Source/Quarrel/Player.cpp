@@ -47,6 +47,7 @@ void AddFilterCategories(b2Fixture& fixture, const int16 categories) {
 Player::Player(Entity& entity) 
 	: CustomComponent(entity)
 	, mCurrentWeapon(std::make_unique<Crossbow>(*this)) 
+	, mCamera(entity.GetPhysics()->GetBody().GetTransform())
 {
 	AddFilterCategories(
 		*GetEntity().GetPhysics()->GetBody().GetFixtureList(),
@@ -54,8 +55,6 @@ Player::Player(Entity& entity)
 
 	GetEntity().GetWorld().RegisterCamera(mCamera);
 	
-	mCamera.SetPosition(GetEntity().GetPhysics()->GetPosition());
-
 	mCamera.SetOverlayDrawer([this](sf::RenderTarget& target) {
 		this->RenderCurrentWeapon(target);
 		this->RenderHud(target);

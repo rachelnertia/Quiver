@@ -107,6 +107,29 @@ Entity* MakeProjectile(
 	return projectile;
 }
 
+class EntityRef
+{
+	World * world = nullptr;
+public:
+	EntityId id = EntityId(0);
+
+	EntityRef() = default;
+
+	EntityRef(World& world, const EntityId id) : world(&world), id(id) {}
+
+	EntityRef(const Entity& entity) : EntityRef(entity.GetWorld(), entity.GetId()) {}
+
+	Entity* Get() {
+		if (!world) return nullptr;
+		if (id == EntityId(0)) return nullptr;
+		if (Entity* entity = world->GetEntity(id)) {
+			return entity;
+		}
+		id = EntityId(0);
+		return nullptr;
+	}
+};
+
 class Enemy : public CustomComponent
 {
 public:
@@ -128,20 +151,12 @@ public:
 	friend class EnemyEditor;
 
 private:
-	struct PlayerSighting
-	{
-		b2Vec2 position;
-		World::TimePoint worldTime;
-	};
-
 	bool CanShoot() const;
 
 	void Shoot(const b2Vec2& target);
 
 	void SetAnimation(const AnimationId animationId, AnimatorRepeatSetting repeatSetting = AnimatorRepeatSetting::Forever);
 	void SetAnimation(std::initializer_list<AnimatorStartSetting> animChain);
-
-	std::experimental::optional<PlayerSighting> m_LastPlayerSighting;
 
 	int m_Damage = 0;
 	bool m_Awake = false;
@@ -156,7 +171,7 @@ private:
 
 	b2Fixture* m_Sensor;
 
-	EntityId m_PlayerInSensor = EntityId(0);
+	EntityRef m_PlayerInSensor;
 };
 
 static b2CircleShape CreateCircleShape(const float radius)
@@ -189,7 +204,7 @@ void Enemy::OnBeginContact(Entity& other, b2Fixture& myFixture)
 	{
 		log->debug("{} Player entered sensor.", logCtx);
 
-		m_PlayerInSensor = other.GetId();
+		m_PlayerInSensor = EntityRef(other);
 	}
 	else if (
 		other.GetCustomComponent() &&
@@ -208,7 +223,7 @@ void Enemy::OnEndContact(Entity& other, b2Fixture& myFixture)
 	{
 		log->debug("{} Player left sensor.", logCtx);
 
-		m_PlayerInSensor = EntityId(0);
+		m_PlayerInSensor = EntityRef();
 	}
 }
 
@@ -231,80 +246,15 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 		return;
 	}
 
-	const b2Body&  body = GetEntity().GetPhysics()->GetBody();
-	const b2World& physicsWorld = *body.GetWorld();
-
-	const b2Vec2 currentPos = body.GetPosition();
-
-	const auto currentTime = GetEntity().GetWorld().GetTime();
-
-	if (m_LastPlayerSighting)
+	if (const Entity* player = m_PlayerInSensor.Get())
 	{
-		PlayerSighting& lastPlayerSighting = m_LastPlayerSighting.value();
-
-		// Check that we can see the Player directly.
-		if (RayCastToFindPlayer(
-				physicsWorld, 
-				currentPos, 
-				lastPlayerSighting.position))
-		{
-			lastPlayerSighting.worldTime = currentTime;
-
-			// Shoot at player.
-			if (CanShoot())
-			{
-				log->debug("{} Firing at position ({}, {})!",
-					logCtx,
-					lastPlayerSighting.position.x,
-					lastPlayerSighting.position.y);
-
-				Shoot(lastPlayerSighting.position);
-			}
-		}
-		// If it's been a while since we saw the Player, forget it.
-		else if (GetEntity().GetWorld().GetTime() - lastPlayerSighting.worldTime > 5s)
-		{
-			log->debug("{} Last player sighting (position: ({}, {}), time: {}s) timed out. Forgetting...",
-				logCtx,
-				lastPlayerSighting.position.x,
-				lastPlayerSighting.position.y,
-				lastPlayerSighting.worldTime.count());
-
-			// Forget it.
-			m_LastPlayerSighting = {};
-		}
-	}
-	else if (m_PlayerInSensor != EntityId(0))
-	{
-		const Entity* player = GetEntity().GetWorld().GetEntity(m_PlayerInSensor);
-
-		if (player == nullptr) {
-			m_PlayerInSensor = EntityId(0);
-		}
-
-		const b2Vec2 playerPosition =
-			player->GetPhysics()->GetPosition();
-
 		// Check that we have LOS.
-		if (const auto playerSightingPosition =
+		if (const auto visiblePlayerPosition =
 			RayCastToFindPlayer(
 				*GetEntity().GetWorld().GetPhysicsWorld(),
 				GetEntity().GetPhysics()->GetPosition(),
-				playerPosition))
+				player->GetPhysics()->GetPosition()))
 		{
-			m_LastPlayerSighting =
-				PlayerSighting
-			{
-				playerSightingPosition.value(),
-				currentTime
-			};
-
-			log->debug("{} New player sighting at (position: ({}, {}), time: {}s).",
-				logCtx,
-				m_LastPlayerSighting.value().position.x,
-				m_LastPlayerSighting.value().position.y,
-				m_LastPlayerSighting.value().worldTime.count());
-
 			if (!m_Awake)
 			{
 				m_Awake = true;
@@ -321,9 +271,14 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 						});
 				}
 			}
-			else
+			else if (CanShoot())
 			{
-				SetAnimation(m_StandAnim);
+				log->debug("{} Firing at position ({}, {})!",
+					logCtx,
+					visiblePlayerPosition->x,
+					visiblePlayerPosition->y);
+
+				Shoot(*visiblePlayerPosition);
 			}
 		}
 	}
@@ -332,13 +287,18 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 bool Enemy::CanShoot() const
 {
 	{
-		// Prevent shooting while playing the awakening anim.
+		// Prevent shooting while playing certain anims.
 		const AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
 		const AnimatorId animator = GetEntity().GetGraphics()->GetAnimatorId();
-		if (animSystem.Exists(animator) &&
-			animSystem.GetAnimation(animator) == m_AwakeAnim)
+		if (animSystem.Exists(animator))
 		{
-			return false;
+			const AnimationId anim = animSystem.GetAnimation(animator);
+
+			if (anim == m_AwakeAnim ||
+				anim == m_ShootAnim)
+			{
+				return false;
+			}
 		}
 	}
 

@@ -155,11 +155,24 @@ private:
 
 	void Shoot(const b2Vec2& target);
 
-	void SetAnimation(const AnimationId animationId, AnimatorRepeatSetting repeatSetting = AnimatorRepeatSetting::Forever);
+	void SetAnimation(
+		const AnimationId animationId, 
+		AnimatorRepeatSetting repeatSetting = AnimatorRepeatSetting::Forever);
 	void SetAnimation(std::initializer_list<AnimatorStartSetting> animChain);
 
 	int m_Damage = 0;
-	bool m_Awake = false;
+
+	enum class Awakeness {
+		None,
+		Awakening,
+		Awake
+	};
+
+	Awakeness m_Awakeness = Awakeness::None;
+
+	bool IsAwake() const {
+		return m_Awakeness == Awakeness::Awake;
+	}
 
 	World::TimePoint m_LastShootTime = 0s;
 
@@ -171,7 +184,7 @@ private:
 
 	b2Fixture* m_Sensor;
 
-	EntityRef m_PlayerInSensor;
+	EntityRef m_Target;
 };
 
 static b2CircleShape CreateCircleShape(const float radius)
@@ -200,18 +213,31 @@ void Enemy::OnBeginContact(Entity& other, b2Fixture& myFixture)
 	auto log = qvr::GetConsoleLogger();
 	const char* logCtx = "Enemy::OnBeginContact:";
 
+	bool wakeUp = false;
+
 	if (&myFixture == m_Sensor)
 	{
 		log->debug("{} Player entered sensor.", logCtx);
 
-		m_PlayerInSensor = EntityRef(other);
+		m_Target = EntityRef(other);
+
+		wakeUp = true;
 	}
 	else if (
 		other.GetCustomComponent() &&
 		other.GetCustomComponent()->GetTypeName() == "CrossbowBolt")
 	{
 		auto& bolt = *static_cast<CrossbowBolt*>(other.GetCustomComponent());
+		
 		this->m_Damage += (int)bolt.effect.immediateDamage;
+		
+		wakeUp = true;
+	}
+
+	if (wakeUp) {
+		if (m_Awakeness == Awakeness::None) {
+			m_Awakeness = Awakeness::Awakening;
+		}
 	}
 }
 
@@ -224,7 +250,7 @@ void Enemy::OnEndContact(Entity& other, b2Fixture& myFixture)
 	{
 		log->debug("{} Player left sensor.", logCtx);
 
-		m_PlayerInSensor = EntityRef();
+		m_Target = EntityRef();
 	}
 }
 
@@ -246,7 +272,23 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 		return;
 	}
 
-	if (const Entity* player = m_PlayerInSensor.Get())
+	if (m_Awakeness == Awakeness::Awakening) {
+		const AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
+		const AnimatorId animator = GetEntity().GetGraphics()->GetAnimatorId();
+		if ((!animSystem.Exists(animator)) ||
+			(animSystem.GetAnimation(animator) != m_AwakeAnim))
+		{
+			SetAnimation(
+				{
+					{ m_AwakeAnim, AnimatorRepeatSetting::Never },
+					{ m_StandAnim, AnimatorRepeatSetting::Forever }
+				});
+		}
+
+		m_Awakeness = Awakeness::Awake;
+	}
+
+	if (const Entity* player = m_Target.Get())
 	{
 		// Check that we have LOS.
 		if (const auto visiblePlayerPosition =
@@ -255,23 +297,7 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 				GetEntity().GetPhysics()->GetPosition(),
 				player->GetPhysics()->GetPosition()))
 		{
-			if (!m_Awake)
-			{
-				m_Awake = true;
-
-				const AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
-				const AnimatorId animator = GetEntity().GetGraphics()->GetAnimatorId();
-				if ((!animSystem.Exists(animator)) ||
-					(animSystem.GetAnimation(animator) != m_AwakeAnim))
-				{
-					SetAnimation(
-						{
-							{ m_AwakeAnim, AnimatorRepeatSetting::Never },
-							{ m_StandAnim, AnimatorRepeatSetting::Forever }
-						});
-				}
-			}
-			else if (CanShoot())
+			if (CanShoot())
 			{
 				log->debug("{} Firing at position ({}, {})!",
 					logCtx,

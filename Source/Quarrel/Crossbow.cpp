@@ -9,43 +9,25 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 
-#include "Quiver/World/World.h"
-#include "Quiver/Entity/Entity.h"
-#include "Quiver/Entity/CustomComponent/CustomComponent.h"
-#include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
-#include "Quiver/Entity/RenderComponent/RenderComponent.h"
-#include "Quiver/Animation/AnimationData.h"
-#include "Quiver/Misc/JsonHelpers.h"
-#include "Quiver/Misc/Logging.h"
-#include "Quiver/Misc/Verify.h"
-#include "Quiver/Input/BinaryInput.h"
-#include "Quiver/Input/Mouse.h"
-#include "Quiver/Input/Keyboard.h"
-#include "Quiver/Input/RawInput.h"
+#include <Quiver/World/World.h>
+#include <Quiver/Entity/Entity.h>
+#include <Quiver/Entity/CustomComponent/CustomComponent.h>
+#include <Quiver/Entity/PhysicsComponent/PhysicsComponent.h>
+#include <Quiver/Entity/RenderComponent/RenderComponent.h>
+#include <Quiver/Animation/AnimationData.h>
+#include <Quiver/Misc/JsonHelpers.h>
+#include <Quiver/Misc/Logging.h>
+#include <Quiver/Misc/Verify.h>
+#include <Quiver/Input/BinaryInput.h>
+#include <Quiver/Input/Mouse.h>
+#include <Quiver/Input/Keyboard.h>
+#include <Quiver/Input/RawInput.h>
 
+#include "CrossbowBolt.h"
 #include "Player.h"
 #include "Utils.h"
 
 using namespace qvr;
-
-class CrossbowBolt : public CustomComponent
-{
-public:
-	CrossbowBolt(Entity& entity) 
-		: CustomComponent(entity) 
-	{
-		b2Fixture& fixture = *GetEntity().GetPhysics()->GetBody().GetFixtureList();
-		b2Filter filter = fixture.GetFilterData();
-		filter.categoryBits = FixtureFilterCategories::CrossbowBolt;
-	}
-
-	void OnBeginContact(Entity& other, b2Fixture& myFixture) override
-	{
-		this->SetRemoveFlag(true);
-	}
-
-	std::string GetTypeName() const override { return "CrossbowBolt"; }
-};
 
 Crossbow::Crossbow(Player& player) 
 	: Weapon(player) 

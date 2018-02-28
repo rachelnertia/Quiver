@@ -215,11 +215,11 @@ void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float delt
 				break;
 			}
 			else if (AnyActive(inputDevices, loadInputs2)) {
-				LoadQuarrel(QuarrelType::Blue);
+				LoadQuarrel(QuarrelType::Red);
 				break;
 			}
 			else if (AnyActive(inputDevices, loadInputs3)) {
-				LoadQuarrel(QuarrelType::Red);
+				LoadQuarrel(QuarrelType::Blue);
 				break;
 			}
 		}
@@ -323,7 +323,7 @@ void Crossbow::LoadQuarrel(const QuarrelType type)
 
 using json = nlohmann::json;
 
-Entity* MakeProjectile(
+Entity* MakeCrossbowBolt(
 	World& world,
 	const b2Vec2& position,
 	const b2Vec2& aimDir,
@@ -331,6 +331,7 @@ Entity* MakeProjectile(
 	const b2Vec2& inheritedVelocity,
 	const json& renderCompJson,
 	const sf::Color& color,
+	const CrossbowBoltEffect& effect,
 	const qvr::AnimationId animation,
 	const qvr::AnimationData& animationData)
 {
@@ -377,7 +378,9 @@ Entity* MakeProjectile(
 
 	// Set up CustomComponent
 	{
-		projectile->AddCustomComponent(std::make_unique<CrossbowBolt>(*projectile));
+		auto bolt = std::make_unique<CrossbowBolt>(*projectile);
+		bolt->effect = effect;
+		projectile->AddCustomComponent(std::move(bolt));
 	}
 
 	return projectile;
@@ -398,14 +401,15 @@ void Crossbow::Shoot()
 	const auto direction = mPlayer.mCamera.GetForwards();
 	const auto velocity = mPlayer.GetEntity().GetPhysics()->GetBody().GetLinearVelocity();
 
-	MakeProjectile(
+	MakeCrossbowBolt(
 		mPlayer.GetEntity().GetWorld(),
 		position,
 		direction,
 		10.0f,
 		0.5f * velocity,
 		mProjectileRenderCompJson,
-		mLoadedQuarrel.value().mTypeInfo.colour,
+		mLoadedQuarrel->mTypeInfo.colour,
+		mLoadedQuarrel->mTypeInfo.effect,
 		mProjectileAnimId,
 		mProjectileAnimData);
 

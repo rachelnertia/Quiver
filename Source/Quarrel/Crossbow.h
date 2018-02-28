@@ -16,6 +16,7 @@
 #include "Quiver/Input/Keyboard.h"
 #include "Quiver/Input/RawInput.h"
 
+#include "CrossbowBolt.h"
 #include "Utils.h"
 
 class Crossbow : public Weapon {
@@ -61,11 +62,12 @@ private:
 	struct QuarrelTypeInfo
 	{
 		sf::Color colour;
+		CrossbowBoltEffect effect;
 	};
 
 	const std::array<QuarrelTypeInfo, (size_t)QuarrelType::Count> quarrelTypes =
 	{
-		sf::Color::Black, sf::Color::Red, sf::Color::Blue
+		sf::Color::Black, 10.0f, sf::Color::Red, 1.0f, sf::Color::Blue, -10.0f
 	};
 
 	struct Quarrel

@@ -24,6 +24,7 @@
 #include "Quiver/Misc/Logging.h"
 #include "Quiver/World/World.h"
 
+#include "CrossbowBolt.h"
 #include "Utils.h"
 
 using namespace qvr;
@@ -209,7 +210,8 @@ void Enemy::OnBeginContact(Entity& other, b2Fixture& myFixture)
 		other.GetCustomComponent() &&
 		other.GetCustomComponent()->GetTypeName() == "CrossbowBolt")
 	{
-		m_Damage += 10;
+		auto& bolt = *static_cast<CrossbowBolt*>(other.GetCustomComponent());
+		this->m_Damage += (int)bolt.effect.immediateDamage;
 	}
 }
 

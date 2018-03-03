@@ -130,6 +130,73 @@ public:
 	}
 };
 
+struct ActiveEffect
+{
+	ActiveEffectType type;
+	std::chrono::duration<float> remainingDuration;
+};
+
+void AddActiveEffect(
+	const ActiveEffectType effectType,
+	std::vector<ActiveEffect>& activeEffects)
+{
+	using namespace std;
+
+	auto AddOrResetDuration = [&](const std::chrono::duration<float> duration) {
+		auto it = find_if(
+			begin(activeEffects),
+			end(activeEffects),
+			[effectType](const auto& effect) { return effectType == effect.type; });
+		if (it == end(activeEffects)) {
+			activeEffects.push_back({ effectType, duration });
+		}
+		else {
+			it->remainingDuration = duration;
+		}
+	};
+
+	switch (effectType)
+	{
+	case ActiveEffectType::None: return;
+	case ActiveEffectType::Poisoned:
+	{
+		const auto poisonDuration = 10s;
+		AddOrResetDuration(poisonDuration);
+		break;
+	}
+	case ActiveEffectType::Burning:
+	{
+		const auto burningDuration = 10s;
+		AddOrResetDuration(burningDuration);
+		break;
+	}
+	}
+}
+
+void ApplyEffect(const ActiveEffect& activeEffect, int& damage)
+{
+	switch (activeEffect.type)
+	{
+	case ActiveEffectType::None: assert(false); break;
+	case ActiveEffectType::Burning:
+		damage += 1;
+		break;
+	case ActiveEffectType::Poisoned:
+		damage += 1;
+		break;
+	}
+}
+
+// Returns true if the effect should be applied.
+bool UpdateEffect(ActiveEffect& activeEffect, const std::chrono::duration<float> deltaTime)
+{
+	const auto oldRemainingTime = activeEffect.remainingDuration;
+	activeEffect.remainingDuration -= deltaTime;
+	// Only apply effects when we cross over a second.
+	const float x = floor(oldRemainingTime.count());
+	return activeEffect.remainingDuration.count() < x && oldRemainingTime.count() >= x;
+}
+
 class Enemy : public CustomComponent
 {
 public:
@@ -185,6 +252,8 @@ private:
 	b2Fixture* m_Sensor;
 
 	EntityRef m_Target;
+
+	std::vector<ActiveEffect> m_ActiveEffects;
 };
 
 static b2CircleShape CreateCircleShape(const float radius)
@@ -230,7 +299,11 @@ void Enemy::OnBeginContact(Entity& other, b2Fixture& myFixture)
 		auto& bolt = *static_cast<CrossbowBolt*>(other.GetCustomComponent());
 		
 		this->m_Damage += (int)bolt.effect.immediateDamage;
+
+		AddActiveEffect(bolt.effect.appliesEffect, m_ActiveEffects);
 		
+		// TODO: Get the shooter and set them as the target.
+
 		wakeUp = true;
 	}
 
@@ -259,6 +332,19 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 	auto log = GetConsoleLogger();
 
 	const auto logCtx = "Enemy::OnStep:";
+
+	for (auto& effect : m_ActiveEffects) {
+		if (UpdateEffect(effect, timestep)) {
+			ApplyEffect(effect, m_Damage);
+		}
+	}
+
+	m_ActiveEffects.erase(
+		std::remove_if(
+			std::begin(m_ActiveEffects),
+			std::end(m_ActiveEffects),
+			[](const ActiveEffect& effect) { return effect.remainingDuration <= 0s; }),
+		std::end(m_ActiveEffects));
 
 	static const int MaxDamage = 10;
 	if (m_Damage >= MaxDamage)

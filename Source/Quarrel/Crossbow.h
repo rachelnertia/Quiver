@@ -54,31 +54,26 @@ private:
 
 	nlohmann::json mProjectileRenderCompJson;
 
-	enum class QuarrelType
-	{
-		Black, Red, Blue, Count
-	};
-
 	struct QuarrelTypeInfo
 	{
 		sf::Color colour;
 		CrossbowBoltEffect effect;
 	};
 
-	const std::array<QuarrelTypeInfo, (size_t)QuarrelType::Count> quarrelTypes =
-	{
-		sf::Color::Black, 10.0f, sf::Color::Red, 1.0f, sf::Color::Blue, -10.0f
-	};
+	static const int MaxEquippedQuarrelTypes = 3;
+
+	using QuarrelSlot = std::experimental::optional<QuarrelTypeInfo>;
+
+	std::array<QuarrelSlot, MaxEquippedQuarrelTypes> quarrelSlots;
 
 	struct Quarrel
 	{
-		QuarrelType     mType;
 		QuarrelTypeInfo mTypeInfo;
 	};
 
 	std::experimental::optional<Quarrel> mLoadedQuarrel;
 
-	void LoadQuarrel(const QuarrelType type);
+	void LoadQuarrel(const QuarrelTypeInfo& quarrel);
 
 	void Shoot();
 

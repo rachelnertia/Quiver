@@ -33,6 +33,23 @@ Crossbow::Crossbow(Player& player)
 	: Weapon(player) 
 	, deltaRadians(player.mCamera.GetRotation())
 {
+	QuarrelTypeInfo type;
+	type.colour = sf::Color::Black;
+	type.effect.immediateDamage = 10.0f;
+
+	quarrelSlots[0] = type;
+
+	type.colour = sf::Color::Red;
+	type.effect.immediateDamage = 1.0f;
+	type.effect.appliesEffect = ActiveEffectType::Burning;
+
+	quarrelSlots[1] = type;
+
+	type.colour = sf::Color::Green;
+	type.effect.appliesEffect = ActiveEffectType::Poisoned;
+
+	quarrelSlots[2] = type;
+
 	auto log = GetConsoleLogger();
 
 	auto LogLoadFail = [&log](const char* filename)
@@ -210,16 +227,24 @@ void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float delt
 			BinaryInput loadInputs2[] = { qvr::KeyboardKey::Num2, qvr::JoystickButton(xb::Button::X) };
 			BinaryInput loadInputs3[] = { qvr::KeyboardKey::Num3, qvr::JoystickButton(xb::Button::Y) };
 
-			if (AnyActive(inputDevices, loadInputs1)) {
-				LoadQuarrel(QuarrelType::Black);
+			if (quarrelSlots[0].has_value() &&
+				AnyActive(inputDevices, loadInputs1)) 
+			{
+				LoadQuarrel(*quarrelSlots[0]);
 				break;
 			}
-			else if (AnyActive(inputDevices, loadInputs2)) {
-				LoadQuarrel(QuarrelType::Red);
+			else if (
+				quarrelSlots[1].has_value() &&
+				AnyActive(inputDevices, loadInputs2))
+			{
+				LoadQuarrel(*quarrelSlots[1]);
 				break;
 			}
-			else if (AnyActive(inputDevices, loadInputs3)) {
-				LoadQuarrel(QuarrelType::Blue);
+			else if (
+				quarrelSlots[2].has_value() &&
+				AnyActive(inputDevices, loadInputs3))
+			{
+				LoadQuarrel(*quarrelSlots[2]);
 				break;
 			}
 		}
@@ -313,12 +338,12 @@ void Crossbow::Render(sf::RenderTarget& target)
 	}
 }
 
-void Crossbow::LoadQuarrel(const QuarrelType type)
+void Crossbow::LoadQuarrel(const QuarrelTypeInfo& type)
 {
 	if (!qvrVerify(mCockedState == CockedState::Cocked)) return;
 	if (!qvrVerify(!mLoadedQuarrel)) return;
 
-	mLoadedQuarrel = Quarrel{ type, quarrelTypes[(int)type] };
+	mLoadedQuarrel = Quarrel{ type };
 }
 
 using json = nlohmann::json;

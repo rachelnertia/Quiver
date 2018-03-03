@@ -107,29 +107,6 @@ Entity* MakeProjectile(
 	return projectile;
 }
 
-class EntityRef
-{
-	World * world = nullptr;
-public:
-	EntityId id = EntityId(0);
-
-	EntityRef() = default;
-
-	EntityRef(World& world, const EntityId id) : world(&world), id(id) {}
-
-	EntityRef(const Entity& entity) : EntityRef(entity.GetWorld(), entity.GetId()) {}
-
-	Entity* Get() {
-		if (!world) return nullptr;
-		if (id == EntityId(0)) return nullptr;
-		if (Entity* entity = world->GetEntity(id)) {
-			return entity;
-		}
-		id = EntityId(0);
-		return nullptr;
-	}
-};
-
 struct ActiveEffect
 {
 	ActiveEffectType type;
@@ -337,7 +314,9 @@ void Enemy::OnBeginContact(Entity& other, b2Fixture& myFixture)
 
 		AddActiveEffect(bolt.effect.appliesEffect, m_ActiveEffects);
 		
-		// TODO: Get the shooter and set them as the target.
+		if (bolt.shooter.Get()) {
+			m_Target = bolt.shooter;
+		}
 
 		wakeUp = true;
 	}
@@ -357,8 +336,6 @@ void Enemy::OnEndContact(Entity& other, b2Fixture& myFixture)
 	if (&myFixture == m_Sensor)
 	{
 		log->debug("{} Player left sensor.", logCtx);
-
-		m_Target = EntityRef();
 	}
 }
 

@@ -9,6 +9,7 @@
 #include <Quiver/Entity/Entity.h>
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
 #include <Quiver/Entity/PhysicsComponent/PhysicsComponent.h>
+#include <Quiver/World/World.h>
 
 using json = nlohmann::json;
 
@@ -142,4 +143,18 @@ void DeltaRadians::Update(const float currentRadians) {
 	// Limit the angle.
 	const float max = pi * 0.25f;
 	delta = std::max(-max, std::min(val, max));
+}
+
+EntityRef::EntityRef(const qvr::Entity& entity) 
+	: EntityRef(entity.GetWorld(), entity.GetId()) 
+{}
+
+qvr::Entity* EntityRef::Get() {
+	if (!world) return nullptr;
+	if (id == qvr::EntityId(0)) return nullptr;
+	if (qvr::Entity* entity = world->GetEntity(id)) {
+		return entity;
+	}
+	id = qvr::EntityId(0);
+	return nullptr;
 }

@@ -5,6 +5,7 @@
 #include <Box2D/Common/b2Math.h>
 #include <optional.hpp>
 
+#include <Quiver/Entity/EntityId.h>
 #include <Quiver/Physics/PhysicsUtils.h>
 
 class b2Fixture;
@@ -12,8 +13,9 @@ class b2World;
 struct b2AABB;
 
 namespace qvr {
-class Entity;
 class CustomComponent;
+class Entity;
+class World;
 }
 
 template <typename T>
@@ -121,4 +123,19 @@ public:
 	float Get() const {
 		return delta;
 	}
+};
+
+class EntityRef
+{
+	qvr::World * world = nullptr;
+public:
+	qvr::EntityId id = qvr::EntityId(0);
+
+	EntityRef() = default;
+
+	EntityRef(qvr::World& world, const qvr::EntityId id) : world(&world), id(id) {}
+
+	EntityRef(const qvr::Entity& entity);
+
+	qvr::Entity* Get();
 };

@@ -358,7 +358,8 @@ Entity* MakeCrossbowBolt(
 	const sf::Color& color,
 	const CrossbowBoltEffect& effect,
 	const qvr::AnimationId animation,
-	const qvr::AnimationData& animationData)
+	const qvr::AnimationData& animationData,
+	const EntityId shooter)
 {
 	b2PolygonShape shape;
 	{
@@ -405,6 +406,7 @@ Entity* MakeCrossbowBolt(
 	{
 		auto bolt = std::make_unique<CrossbowBolt>(*projectile);
 		bolt->effect = effect;
+		bolt->shooter = EntityRef(world, shooter);
 		projectile->AddCustomComponent(std::move(bolt));
 	}
 
@@ -436,7 +438,8 @@ void Crossbow::Shoot()
 		mLoadedQuarrel->mTypeInfo.colour,
 		mLoadedQuarrel->mTypeInfo.effect,
 		mProjectileAnimId,
-		mProjectileAnimData);
+		mProjectileAnimData,
+		mPlayer.GetEntity().GetId());
 
 	mLoadedQuarrel.reset();
 

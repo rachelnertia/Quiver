@@ -6,6 +6,8 @@
 
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
 
+#include "Utils.h"
+
 enum class ActiveEffectType
 {
 	None,
@@ -29,4 +31,5 @@ public:
 	std::string GetTypeName() const override { return "CrossbowBolt"; }
 
 	CrossbowBoltEffect effect;
+	EntityRef shooter;
 };

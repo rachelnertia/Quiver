@@ -187,14 +187,49 @@ void ApplyEffect(const ActiveEffect& activeEffect, int& damage)
 	}
 }
 
-// Returns true if the effect should be applied.
+// Returns true if the damage effect should be applied.
 bool UpdateEffect(ActiveEffect& activeEffect, const std::chrono::duration<float> deltaTime)
 {
 	const auto oldRemainingTime = activeEffect.remainingDuration;
 	activeEffect.remainingDuration -= deltaTime;
-	// Only apply effects when we cross over a second.
+	// Only apply damage effects when we cross over a second.
 	const float x = floor(oldRemainingTime.count());
 	return activeEffect.remainingDuration.count() < x && oldRemainingTime.count() >= x;
+}
+
+void ApplyEffect(const ActiveEffect& effect, qvr::RenderComponent& renderComponent)
+{
+	auto CalculatePulseColour = 
+	[](const std::chrono::duration<float> timeLeft, const sf::Color pulseColour)
+	{
+		const float seconds = timeLeft.count();
+		const sf::Uint8 s = (sf::Uint8)(255.0f * abs(seconds - round(seconds)));
+		const sf::Uint8 r = std::max(pulseColour.r, s);
+		const sf::Uint8 g = std::max(pulseColour.g, s);
+		const sf::Uint8 b = std::max(pulseColour.b, s);
+		return sf::Color(r, g, b);
+	};
+
+	switch (effect.type)
+	{
+	case ActiveEffectType::None: assert(false); break;
+	case ActiveEffectType::Burning:
+	{
+		renderComponent.SetColor(
+			CalculatePulseColour(
+				effect.remainingDuration, 
+				sf::Color::Red));
+		break;
+	}
+	case ActiveEffectType::Poisoned:
+	{
+		renderComponent.SetColor(
+			CalculatePulseColour(
+				effect.remainingDuration,
+				sf::Color::Green));
+		break;
+	}
+	}
 }
 
 class Enemy : public CustomComponent
@@ -337,6 +372,7 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 		if (UpdateEffect(effect, timestep)) {
 			ApplyEffect(effect, m_Damage);
 		}
+		ApplyEffect(effect, *GetEntity().GetGraphics());
 	}
 
 	m_ActiveEffects.erase(

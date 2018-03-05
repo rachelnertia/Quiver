@@ -47,6 +47,21 @@ PhysicsComponent::~PhysicsComponent()
 	mBody->SetUserData(nullptr);
 };
 
+namespace
+{
+
+const b2Fixture& GetLastFixtureInList(const b2Fixture& fixture) {
+	const b2Fixture* last = &fixture;
+	const b2Fixture* next = fixture.GetNext();
+	while (next != nullptr) {
+		last = next;
+		next = next->GetNext();
+	}
+	return *last;
+}
+
+}
+
 nlohmann::json PhysicsComponent::ToJson()
 {
 	auto log = spdlog::get("console");
@@ -61,9 +76,6 @@ nlohmann::json PhysicsComponent::ToJson()
 
 	json j;
 
-	// At the moment I don't support bodies with multiple fixtures, fixtures with multiple shapes,
-	// or shapes with child shapes.
-
 	j["Position"][0] = mBody->GetPosition().x;
 	j["Position"][1] = mBody->GetPosition().y;
 	j["Angle"] = mBody->GetAngle();
@@ -71,8 +83,6 @@ nlohmann::json PhysicsComponent::ToJson()
 	j["IsBullet"] = mBody->IsBullet();
 	j["LinearDamping"] = mBody->GetLinearDamping();
 	j["AngularDamping"] = mBody->GetAngularDamping();
-	j["Friction"] = mBody->GetFixtureList()->GetFriction();
-	j["Restitution"] = mBody->GetFixtureList()->GetRestitution();
 
 	switch (mBody->GetType()) {
 	case b2_staticBody:
@@ -90,8 +100,16 @@ nlohmann::json PhysicsComponent::ToJson()
 		break;
 	}
 
+	// At the moment I don't support serialization for bodies with multiple fixtures, 
+	// fixtures with multiple shapes, or shapes with child shapes.
+	// We grab the last fixture on the list, which is the fixture the body started with.
+	const b2Fixture& fixture = GetLastFixtureInList(*mBody->GetFixtureList());
+
+	j["Friction"] = fixture.GetFriction();
+	j["Restitution"] = fixture.GetRestitution();
+
 	{
-		json shapeData = PhysicsShape::ToJson(*mBody->GetFixtureList()->GetShape());
+		json shapeData = PhysicsShape::ToJson(*fixture.GetShape());
 		if (shapeData.empty()) {
 			log->error("Couldn't serialize shape.");
 			return {};

@@ -2,12 +2,12 @@
 #include <iostream>
 
 #include <Box2D/Common/b2Math.h>
-#include <Box2D/Collision/Shapes/b2Shape.h>
 #include <Box2D/Collision/Shapes/b2CircleShape.h>
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Dynamics/b2Fixture.h>
 #include <Box2D/Dynamics/b2World.h>
 #include <Box2D/Dynamics/b2WorldCallbacks.h>
+#include <Box2D/Dynamics/Contacts/b2Contact.h>
 #include <ImGui/imgui.h>
 #include <json.hpp>
 #include <optional.hpp>
@@ -114,6 +114,7 @@ struct ActiveEffect
 {
 	ActiveEffectType type;
 	std::chrono::duration<float> remainingDuration;
+	std::chrono::duration<float> runningDuration;
 };
 
 void AddActiveEffect(
@@ -128,7 +129,7 @@ void AddActiveEffect(
 			end(activeEffects),
 			[effectType](const auto& effect) { return effectType == effect.type; });
 		if (it == end(activeEffects)) {
-			activeEffects.push_back({ effectType, duration });
+			activeEffects.push_back({ effectType, duration, 0s });
 		}
 		else {
 			it->remainingDuration = duration;
@@ -170,11 +171,14 @@ void ApplyEffect(const ActiveEffect& activeEffect, int& damage)
 // Returns true if the damage effect should be applied.
 bool UpdateEffect(ActiveEffect& activeEffect, const std::chrono::duration<float> deltaTime)
 {
-	const auto oldRemainingTime = activeEffect.remainingDuration;
 	activeEffect.remainingDuration -= deltaTime;
+
+	const auto oldRunningDuration = activeEffect.runningDuration;
+	activeEffect.runningDuration += deltaTime;
+	
 	// Only apply damage effects when we cross over a second.
-	const float x = floor(oldRemainingTime.count());
-	return activeEffect.remainingDuration.count() < x && oldRemainingTime.count() >= x;
+	const float x = ceil(oldRunningDuration.count());
+	return activeEffect.runningDuration.count() > x && oldRunningDuration.count() <= x;
 }
 
 void ApplyEffect(const ActiveEffect& effect, qvr::RenderComponent& renderComponent)
@@ -275,6 +279,8 @@ private:
 	EntityRef m_Target;
 
 	std::vector<ActiveEffect> m_ActiveEffects;
+
+	std::vector<const b2Fixture*> m_FiresInContact;
 };
 
 static b2CircleShape CreateCircleShape(const float radius)
@@ -287,6 +293,10 @@ static b2CircleShape CreateCircleShape(const float radius)
 Enemy::Enemy(Entity& entity)
 	: CustomComponent(entity)
 {
+	SetCategoryBits(
+		*GetEntity().GetPhysics()->GetBody().GetFixtureList(),
+		FixtureFilterCategories::Enemy);
+
 	// Create sensor fixture.
 	b2FixtureDef fixtureDef;
 	b2CircleShape circleShape = CreateCircleShape(5.0f);
@@ -332,6 +342,18 @@ void Enemy::OnBeginContact(
 
 		wakeUp = true;
 	}
+	else if ((GetCategoryBits(otherFixture) & FixtureFilterCategories::Fire) != 0)
+	{
+		auto foundIt = 
+			std::find(
+				std::begin(m_FiresInContact), 
+				std::end(m_FiresInContact), 
+				&otherFixture);
+
+		if (foundIt == std::end(m_FiresInContact)) {
+			m_FiresInContact.push_back(&otherFixture);
+		}
+	}
 
 	if (wakeUp) {
 		if (m_Awakeness == Awakeness::None) {
@@ -359,6 +381,10 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 	auto log = GetConsoleLogger();
 
 	const auto logCtx = "Enemy::OnStep:";
+
+	if (!m_FiresInContact.empty()) {
+		AddActiveEffect(ActiveEffectType::Burning, m_ActiveEffects);
+	}
 
 	for (auto& effect : m_ActiveEffects) {
 		if (UpdateEffect(effect, timestep)) {

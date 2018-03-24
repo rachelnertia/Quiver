@@ -97,13 +97,15 @@ void CrossbowBolt::OnStep(const std::chrono::duration<float> deltaTime)
 		PhysicsComponent& physicsComp = *GetEntity().GetPhysics();
 
 		physicsComp.GetBody().SetType(b2BodyType::b2_staticBody);
-		physicsComp.GetBody().GetFixtureList()->SetSensor(true);
+		//physicsComp.GetBody().GetFixtureList()->SetSensor(true);
 
 		SetCategoryBits(
 			*physicsComp.GetBody().GetFixtureList(), 
 			FixtureFilterCategories::Fire);
 
-		SetMaskBits(*physicsComp.GetBody().GetFixtureList(), 0);
+		SetMaskBits(
+			*physicsComp.GetBody().GetFixtureList(), 
+			FixtureFilterCategories::Enemy);
 
 		this->GetEntity().AddCustomComponent(std::make_unique<Fire>(GetEntity()));
 	}

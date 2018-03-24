@@ -105,7 +105,7 @@ void Wanderer::OnStep(const std::chrono::duration<float> timestep)
 	}
 }
 
-void Wanderer::OnBeginContact(Entity& other, b2Fixture& myFixture)
+void Wanderer::OnBeginContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherFixture)
 {
 	auto log = spdlog::get("console");
 	assert(log);
@@ -121,7 +121,7 @@ void Wanderer::OnBeginContact(Entity& other, b2Fixture& myFixture)
 	}
 }
 
-void Wanderer::OnEndContact(Entity& other, b2Fixture& myFixture)
+void Wanderer::OnEndContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherFixture)
 {
 	auto log = spdlog::get("console");
 	assert(log);

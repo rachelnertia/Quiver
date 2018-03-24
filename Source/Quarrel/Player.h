@@ -25,8 +25,14 @@ public:
 
 	void OnStep(const std::chrono::duration<float> deltaTime) override;
 
-	void OnBeginContact(qvr::Entity& other, b2Fixture& myFixture) override;
-	void OnEndContact  (qvr::Entity& other, b2Fixture& myFixture) override;
+	void OnBeginContact(
+		qvr::Entity& other, 
+		b2Fixture& myFixture,
+		b2Fixture& otherFixture) override;
+	void OnEndContact(
+		qvr::Entity& other, 
+		b2Fixture& myFixture,
+		b2Fixture& otherFixture) override;
 
 	std::string GetTypeName() const override { return "Player"; }
 

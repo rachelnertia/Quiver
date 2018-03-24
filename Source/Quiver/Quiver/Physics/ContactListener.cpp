@@ -34,12 +34,17 @@ void ContactListener::BeginContact(b2Contact * contact)
 		= GetEntityFromFixture(*contact->GetFixtureB());
 	if (entityA && entityB) {
 		if (entityA->GetCustomComponent()) {
-			entityA->GetCustomComponent()->OnBeginContact(*entityB, *contact->GetFixtureA());
+			entityA->GetCustomComponent()->OnBeginContact(
+				*entityB, 
+				*contact->GetFixtureA(), 
+				*contact->GetFixtureB());
 		}
 		if (entityB->GetCustomComponent()) {
-			entityB->GetCustomComponent()->OnBeginContact(*entityA, *contact->GetFixtureB());
+			entityB->GetCustomComponent()->OnBeginContact(
+				*entityA, 
+				*contact->GetFixtureB(), 
+				*contact->GetFixtureA());
 		}
-
 	}
 }
 
@@ -51,10 +56,16 @@ void ContactListener::EndContact(b2Contact * contact)
 		= GetEntityFromFixture(*contact->GetFixtureB());
 	if (entityA && entityB) {
 		if (entityA->GetCustomComponent()) {
-			entityA->GetCustomComponent()->OnEndContact(*entityB, *contact->GetFixtureA());
+			entityA->GetCustomComponent()->OnEndContact(
+				*entityB, 
+				*contact->GetFixtureA(),
+				*contact->GetFixtureB());
 		}
 		if (entityB->GetCustomComponent()) {
-			entityB->GetCustomComponent()->OnEndContact(*entityA, *contact->GetFixtureB());
+			entityB->GetCustomComponent()->OnEndContact(
+				*entityA, 
+				*contact->GetFixtureB(),
+				*contact->GetFixtureB());
 		}
 	}
 }

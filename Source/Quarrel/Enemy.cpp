@@ -41,7 +41,10 @@ class EnemyProjectile : public qvr::CustomComponent
 public:
 	EnemyProjectile(qvr::Entity& entity) : CustomComponent(entity) {}
 
-	void OnBeginContact(qvr::Entity& other, b2Fixture& fixture) override
+	void OnBeginContact(
+		qvr::Entity& other, 
+		b2Fixture& myFixture, 
+		b2Fixture& otherFixture) override
 	{
 		this->SetRemoveFlag(true);
 	}
@@ -218,8 +221,14 @@ public:
 
 	void OnStep(const std::chrono::duration<float> timestep) override;
 
-	void OnBeginContact(Entity& other, b2Fixture& myFixture) override;
-	void OnEndContact  (Entity& other, b2Fixture& myFixture) override;
+	void OnBeginContact(
+		Entity& other, 
+		b2Fixture& myFixture, 
+		b2Fixture& otherFixture) override;
+	void OnEndContact(
+		Entity& other, 
+		b2Fixture& myFixture, 
+		b2Fixture& otherFixture) override;
 
 	std::unique_ptr<CustomComponentEditor> CreateEditor() override;
 
@@ -289,7 +298,10 @@ Enemy::Enemy(Entity& entity)
 	m_Sensor = GetEntity().GetPhysics()->GetBody().CreateFixture(&fixtureDef);
 }
 
-void Enemy::OnBeginContact(Entity& other, b2Fixture& myFixture)
+void Enemy::OnBeginContact(
+	Entity& other, 
+	b2Fixture& myFixture, 
+	b2Fixture& otherFixture)
 {
 	auto log = qvr::GetConsoleLogger();
 	const char* logCtx = "Enemy::OnBeginContact:";
@@ -328,7 +340,10 @@ void Enemy::OnBeginContact(Entity& other, b2Fixture& myFixture)
 	}
 }
 
-void Enemy::OnEndContact(Entity& other, b2Fixture& myFixture)
+void Enemy::OnEndContact(
+	Entity& other, 
+	b2Fixture& myFixture,
+	b2Fixture& otherFixture)
 {
 	auto log = qvr::GetConsoleLogger();
 	const char* logCtx = "Enemy::OnEndContact:";

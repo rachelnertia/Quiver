@@ -37,7 +37,10 @@ class WorldExit : public CustomComponent
 public:
 	WorldExit(Entity& entity);
 
-	void OnBeginContact(Entity& other, b2Fixture& myFixture) override;
+	void OnBeginContact(
+		Entity& other, 
+		b2Fixture& myFixture, 
+		b2Fixture& otherFixture) override;
 
 	std::string GetTypeName() const override { return "WorldExit"; }
 
@@ -69,7 +72,10 @@ public:
 	}
 };
 
-void WorldExit::OnBeginContact(Entity& other, b2Fixture& myFixture)
+void WorldExit::OnBeginContact(
+	Entity& other, 
+	b2Fixture& myFixture, 
+	b2Fixture& otherFixture)
 {
 	if (!other.GetCustomComponent()) return;
 

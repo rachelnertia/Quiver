@@ -26,7 +26,10 @@ class CrossbowBolt : public qvr::CustomComponent
 public:
 	CrossbowBolt(qvr::Entity& entity);
 
-	void OnBeginContact(qvr::Entity& other, b2Fixture& myFixture) override;
+	void OnBeginContact(
+		qvr::Entity& other, 
+		b2Fixture& myFixture,
+		b2Fixture& otherFixture) override;
 
 	void OnStep(const std::chrono::duration<float> deltaTime) override;
 

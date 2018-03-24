@@ -21,7 +21,10 @@ CrossbowBolt::CrossbowBolt(Entity & entity)
 	filter.categoryBits = FixtureFilterCategories::CrossbowBolt;
 }
 
-void CrossbowBolt::OnBeginContact(Entity & other, b2Fixture & myFixture)
+void CrossbowBolt::OnBeginContact(
+	Entity& other, 
+	b2Fixture& myFixture, 
+	b2Fixture& otherFixture)
 {
 	collided = true;
 }

@@ -46,8 +46,8 @@ public:
 		qvr::RawInputDevices& inputDevices, 
 		const std::chrono::duration<float> deltaTime) {}
 
-	virtual void OnBeginContact(Entity& other, b2Fixture& myFixture) {}
-	virtual void OnEndContact  (Entity& other, b2Fixture& myFixture) {}
+	virtual void OnBeginContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherFixture) {}
+	virtual void OnEndContact  (Entity& other, b2Fixture& myFixture, b2Fixture& otherFixture) {}
 
 	virtual std::unique_ptr<CustomComponentEditor> CreateEditor() { return nullptr; }
 

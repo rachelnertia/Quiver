@@ -196,7 +196,7 @@ void Player::OnStep(const std::chrono::duration<float> deltaTime)
 	qvr::UpdateListener(mCamera);
 }
 
-void Player::OnBeginContact(Entity& other, b2Fixture& myFixture)
+void Player::OnBeginContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherFixture)
 {
 	if (other.GetCustomComponent()) {
 		auto log = GetConsoleLogger();
@@ -211,7 +211,7 @@ void Player::OnBeginContact(Entity& other, b2Fixture& myFixture)
 	}
 }
 
-void Player::OnEndContact(Entity& other, b2Fixture& myFixture)
+void Player::OnEndContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherFixture)
 {
 	auto log = GetConsoleLogger();
 

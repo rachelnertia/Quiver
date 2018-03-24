@@ -6,14 +6,8 @@
 
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
 
+#include "Effects.h"
 #include "Utils.h"
-
-enum class ActiveEffectType
-{
-	None,
-	Burning,
-	Poisoned
-};
 
 struct CrossbowBoltEffect
 {

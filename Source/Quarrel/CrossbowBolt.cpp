@@ -52,6 +52,25 @@ auto GetAnimators(CustomComponent& customComponent) -> AnimatorCollection&
 	return customComponent.GetEntity().GetWorld().GetAnimators();
 }
 
+using namespace std::chrono;
+
+class Fire : public CustomComponent
+{
+public:
+	Fire(Entity& entity) : CustomComponent(entity) {};
+
+	std::chrono::duration<float> lifetimeLeft = 10s;
+
+	void OnStep(const std::chrono::duration<float> deltaTime) {
+		lifetimeLeft -= deltaTime;
+		if (lifetimeLeft < 0s) {
+			GetEntity().GetWorld().RemoveEntityImmediate(GetEntity());
+		}
+	}
+
+	std::string GetTypeName() const { return "Fire"; };
+};
+
 void CrossbowBolt::OnStep(const std::chrono::duration<float> deltaTime)
 {
 	if (!collided) return;
@@ -77,11 +96,13 @@ void CrossbowBolt::OnStep(const std::chrono::duration<float> deltaTime)
 		physicsComp.GetBody().SetType(b2BodyType::b2_staticBody);
 		physicsComp.GetBody().GetFixtureList()->SetSensor(true);
 
-		using namespace FixtureFilterCategories;
-		SetCategoryBits(*physicsComp.GetBody().GetFixtureList(), Fire);
+		SetCategoryBits(
+			*physicsComp.GetBody().GetFixtureList(), 
+			FixtureFilterCategories::Fire);
+
 		SetMaskBits(*physicsComp.GetBody().GetFixtureList(), 0);
 
-		this->GetEntity().AddCustomComponent(nullptr);
+		this->GetEntity().AddCustomComponent(std::make_unique<Fire>(GetEntity()));
 	}
 	else
 	{

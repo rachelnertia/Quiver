@@ -15,6 +15,26 @@ using json = nlohmann::json;
 
 using namespace std::chrono;
 
+void SetCategoryBits(b2Fixture& fixture, const uint16 categoryBits) {
+	b2Filter filter = fixture.GetFilterData();
+	filter.categoryBits = categoryBits;
+	fixture.SetFilterData(filter);
+}
+
+void SetMaskBits(b2Fixture& fixture, const uint16 maskBits) {
+	b2Filter filter = fixture.GetFilterData();
+	filter.maskBits = maskBits;
+	fixture.SetFilterData(filter);
+}
+
+uint16 GetCategoryBits(const b2Fixture& fixture) {
+	return fixture.GetFilterData().categoryBits;
+}
+
+uint16 GetMaskBits(const b2Fixture& fixture) {
+	return fixture.GetFilterData().maskBits;
+}
+
 qvr::CustomComponent* GetCustomComponent(const b2Fixture* fixture)
 {
 	// Not every Fixture is guaranteed to have a RenderComponent,
@@ -92,7 +112,7 @@ optional<b2Vec2> RayCastToFindPlayer(
 			override
 		{
 			using namespace FixtureFilterCategories;
-			const unsigned ignoreMask = RenderOnly | Projectile;
+			const unsigned ignoreMask = RenderOnly | Projectile | Fire;
 
 			if ((fixture->GetFilterData().categoryBits & ignoreMask) != 0)
 			{

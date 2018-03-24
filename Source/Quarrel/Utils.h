@@ -29,6 +29,7 @@ const uint16 Sensor = 1 << 2;
 const uint16 Projectile = 1 << 3;
 const uint16 CrossbowBolt = 1 << 4;
 const uint16 Enemy = 1 << 5;
+const uint16 Fire = 1 << 6;
 // RenderOnly is set by the engine. We shouldn't touch it.
 const uint16 RenderOnly = 1 << 15;
 }
@@ -42,8 +43,15 @@ inline qvr::FixtureFilterBitNames CreateFilterBitNames()
 	bitNames[3] = "Projectile";
 	bitNames[4] = "CrossbowBolt";
 	bitNames[5] = "Enemy";
+	bitNames[5] = "Fire";
 	return bitNames;
 }
+
+void SetCategoryBits(b2Fixture& fixture, const uint16 categoryBits);
+void SetMaskBits(b2Fixture& fixture, const uint16 maskBits);
+
+uint16 GetCategoryBits(const b2Fixture& fixture);
+uint16 GetMaskBits(const b2Fixture& fixture);
 
 qvr::CustomComponent* GetCustomComponent(const b2Fixture* fixture);
 

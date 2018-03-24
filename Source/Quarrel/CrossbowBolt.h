@@ -28,8 +28,11 @@ public:
 
 	void OnBeginContact(qvr::Entity& other, b2Fixture& myFixture) override;
 
+	void OnStep(const std::chrono::duration<float> deltaTime) override;
+
 	std::string GetTypeName() const override { return "CrossbowBolt"; }
 
 	CrossbowBoltEffect effect;
 	EntityRef shooter;
+	bool collided = false;
 };

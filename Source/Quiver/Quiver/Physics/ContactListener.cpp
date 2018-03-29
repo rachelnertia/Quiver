@@ -64,7 +64,7 @@ void ContactListener::EndContact(b2Contact * contact)
 		if (entityB->GetCustomComponent()) {
 			entityB->GetCustomComponent()->OnEndContact(
 				*entityA, 
-				*contact->GetFixtureB(),
+				*contact->GetFixtureA(),
 				*contact->GetFixtureB());
 		}
 	}

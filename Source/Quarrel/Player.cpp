@@ -34,6 +34,7 @@
 #include "PlayerInput.h"
 #include "Utils.h"
 
+using namespace std::chrono_literals;
 using namespace qvr;
 
 namespace xb = qvr::Xbox360Controller;
@@ -57,6 +58,7 @@ Player::Player(Entity& entity)
 	
 	mCamera.SetOverlayDrawer([this](sf::RenderTarget& target) {
 		this->RenderCurrentWeapon(target);
+		this->RenderActiveEffects(target);
 		this->RenderHud(target);
 	});
 }
@@ -177,9 +179,34 @@ void Player::OnStep(const std::chrono::duration<float> deltaTime)
 {
 	auto log = GetConsoleLogger();
 	const char* logCtx = "Player::OnStep:";
+
+	if (!m_FiresInContact.empty()) {
+		AddActiveEffect(ActiveEffectType::Burning, m_ActiveEffects);
+	}
 	
+	{
+		int damage = (int)this->mDamage;
+
+		for (auto& effect : m_ActiveEffects) {
+			if (UpdateEffect(effect, deltaTime)) {
+				ApplyEffect(effect, damage);
+			}
+			ApplyEffect(effect, *GetEntity().GetGraphics());
+		}
+
+		mDamage = (float)damage;
+	}
+
+	m_ActiveEffects.erase(
+		std::remove_if(
+			std::begin(m_ActiveEffects),
+			std::end(m_ActiveEffects),
+			[](const ActiveEffect& effect) { return effect.remainingDuration <= 0s; }),
+		std::end(m_ActiveEffects));
+
 	if (mCannotDie == false &&
-		mDamage >= PlayerDamageMax) {
+		mDamage >= PlayerDamageMax) 
+	{
 		log->debug("{} Oh no! I've taken too much damage!", logCtx);
 		
 		GetEntity().AddCustomComponent(std::make_unique<DeadPlayer>(GetEntity(), *this));
@@ -198,15 +225,34 @@ void Player::OnStep(const std::chrono::duration<float> deltaTime)
 
 void Player::OnBeginContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherFixture)
 {
+	auto log = GetConsoleLogger();
+	const char* logCtx = "Player::OnBeginContact";
+	
 	if (other.GetCustomComponent()) {
-		auto log = GetConsoleLogger();
-		const char* logCtx = "Player::OnBeginContact";
 
-		log->debug("{} Player beginning contact with {}...", logCtx, other.GetCustomComponent()->GetTypeName());
+		log->debug(
+			"{} Player beginning contact with {}...", 
+			logCtx, 
+			other.GetCustomComponent()->GetTypeName());
 
-		if (other.GetCustomComponent()->GetTypeName() == "EnemyProjectile") {
+		if (other.GetCustomComponent()->GetTypeName() == "EnemyProjectile") 
+		{
 			log->debug("{} Player taking damage", logCtx);
+
 			mDamage += EnemyProjectileDamage;
+		}
+	}
+
+	if ((GetCategoryBits(otherFixture) & FixtureFilterCategories::Fire) != 0)
+	{
+		auto foundIt =
+			std::find(
+				std::begin(m_FiresInContact),
+				std::end(m_FiresInContact),
+				&otherFixture);
+
+		if (foundIt == std::end(m_FiresInContact)) {
+			m_FiresInContact.push_back(&otherFixture);
 		}
 	}
 }
@@ -217,6 +263,17 @@ void Player::OnEndContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherF
 
 	if (other.GetCustomComponent()) {
 		log->debug("Player finishing contact with {}...", other.GetCustomComponent()->GetTypeName());
+	}
+
+	{
+		auto it = std::find(
+			std::begin(m_FiresInContact),
+			std::end(m_FiresInContact),
+			&otherFixture);
+
+		if (it != std::end(m_FiresInContact)) {
+			m_FiresInContact.erase(it);
+		}
 	}
 }
 
@@ -305,4 +362,34 @@ void Player::RenderHud(sf::RenderTarget& target) const {
 	if (mDamage > 0.0f) {
 		DrawDamage(target, PlayerDamageMax, mDamage);
 	}
+}
+
+namespace {
+
+void RenderActiveEffects(
+	const gsl::span<const ActiveEffect> effects,
+	sf::RenderTarget& target)
+{
+	if (effects.empty()) return;
+
+	auto it = std::find_if(
+		std::begin(effects), 
+		std::end(effects), 
+		[](const ActiveEffect& effect)
+		{
+			return effect.type == ActiveEffectType::Burning;
+		});
+
+	if (it == std::end(effects)) return;
+
+	sf::RectangleShape rectShape;
+	rectShape.setSize(sf::Vector2f((float)target.getSize().x, (float)target.getSize().y));
+	rectShape.setFillColor(sf::Color(255, 0, 0, 128));
+	target.draw(rectShape);
+}
+
+}
+
+void Player::RenderActiveEffects(sf::RenderTarget& target) const {
+	::RenderActiveEffects(m_ActiveEffects, target);
 }

@@ -3,6 +3,7 @@
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 #include "Quiver/Graphics/Camera3D.h"
 
+#include "Effects.h"
 #include "Weapon.h"
 
 namespace sf {
@@ -48,6 +49,10 @@ public:
 private:
 	void RenderCurrentWeapon(sf::RenderTarget& target) const;
 	void RenderHud          (sf::RenderTarget& target) const;
+	void RenderActiveEffects(sf::RenderTarget& target) const;
+
+	std::vector<ActiveEffect> m_ActiveEffects;
+	std::vector<const b2Fixture*> m_FiresInContact;
 
 	float mMoveSpeed = 1.0f;
 	float mDamage = 0.0f;

@@ -7,6 +7,7 @@
 #include <Box2D/Common/b2Math.h>
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Dynamics/b2Fixture.h>
+#include <Box2D/Dynamics/b2World.h>
 #include <Box2D/Collision/Shapes/b2CircleShape.h>
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
 #include <ImGui/imgui.h>
@@ -106,9 +107,59 @@ void Toggle(bool& b) {
 	b = !b;
 }
 
+bool EnemyAhead(
+	const b2World& world,
+	const b2Vec2& startPos,
+	const b2Vec2& direction) 
+{
+	class ClosestHitCallback : public b2RayCastCallback
+	{
+	public:
+		b2Fixture* closestFixture = nullptr;
+
+		float32 ReportFixture(
+			b2Fixture* fixture,
+			const b2Vec2& point,
+			const b2Vec2& normal,
+			float32 fraction) override
+		{
+			using namespace FixtureFilterCategories;
+			const unsigned ignoreMask = RenderOnly | Projectile | Fire | Sensor;
+
+			if ((GetCategoryBits(*fixture) & ignoreMask) != 0)
+			{
+				return -1;
+			}
+
+			closestFixture = fixture;
+
+			return fraction;
+		}
+	};
+	
+	ClosestHitCallback cb;
+
+	const float range = 20.0f;
+
+	world.RayCast(&cb, startPos, startPos + (range * direction));
+
+	if (cb.closestFixture) {
+		const uint16 categoryBits = GetCategoryBits(*cb.closestFixture);
+		const auto result = (categoryBits & FixtureFilterCategories::Enemy);
+		if (result != 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
-void Player::HandleInput(qvr::RawInputDevices& devices, const std::chrono::duration<float> deltaTime)
+}
+
+void Player::HandleInput(
+	qvr::RawInputDevices& devices, 
+	const std::chrono::duration<float> deltaTime)
 {
 	using namespace Quarrel;
 	
@@ -133,6 +184,17 @@ void Player::HandleInput(qvr::RawInputDevices& devices, const std::chrono::durat
 	{
 		float rotateAngle = GetTurnAngle(devices);
 		
+		const bool stickyLook =
+			EnemyAhead(
+				*GetEntity().GetWorld().GetPhysicsWorld(),
+				body.GetPosition(),
+				mCamera.GetForwards());
+
+		if (stickyLook) {
+			const float stickyLookModifier = 0.5f;
+			rotateAngle *= stickyLookModifier;
+		}
+
 		if (rotateAngle != 0.0f) {
 			const float rotateSpeed = 3.14f; // radians per second
 

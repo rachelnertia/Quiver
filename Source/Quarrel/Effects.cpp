@@ -5,17 +5,19 @@
 
 #include <Quiver/Entity/RenderComponent/RenderComponent.h>
 
-void AddActiveEffect(const ActiveEffectType effectType, std::vector<ActiveEffect>& activeEffects)
+using namespace std::chrono_literals;
+
+void AddActiveEffect(const ActiveEffectType effectType, ActiveEffectSet& activeEffects)
 {
 	using namespace std;
 
 	auto AddOrResetDuration = [&](const std::chrono::duration<float> duration) {
 		auto it = find_if(
-			begin(activeEffects),
-			end(activeEffects),
+			begin(activeEffects.container),
+			end(activeEffects.container),
 			[effectType](const auto& effect) { return effectType == effect.type; });
-		if (it == end(activeEffects)) {
-			activeEffects.push_back({ effectType, duration, 0s });
+		if (it == end(activeEffects.container)) {
+			activeEffects.container.push_back({ effectType, duration, 0s });
 		}
 		else {
 			it->remainingDuration = duration;
@@ -38,6 +40,16 @@ void AddActiveEffect(const ActiveEffectType effectType, std::vector<ActiveEffect
 		break;
 	}
 	}
+}
+
+void RemoveExpiredEffects(ActiveEffectSet& effects)
+{
+	effects.container.erase(
+		std::remove_if(
+			std::begin(effects.container),
+			std::end(effects.container),
+			[](const ActiveEffect& effect) { return effect.remainingDuration <= 0s; }),
+		std::end(effects.container));
 }
 
 void ApplyEffect(const ActiveEffect & activeEffect, int & damage)

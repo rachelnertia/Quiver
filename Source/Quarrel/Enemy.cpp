@@ -26,6 +26,7 @@
 
 #include "CrossbowBolt.h"
 #include "Effects.h"
+#include "FirePropagation.h"
 #include "Utils.h"
 
 using namespace qvr;
@@ -173,9 +174,9 @@ private:
 
 	EntityRef m_Target;
 
-	std::vector<ActiveEffect> m_ActiveEffects;
+	ActiveEffectSet m_ActiveEffects;
 
-	std::vector<const b2Fixture*> m_FiresInContact;
+	FiresInContact m_FiresInContact;
 };
 
 static b2CircleShape CreateCircleShape(const float radius)
@@ -237,17 +238,9 @@ void Enemy::OnBeginContact(
 
 		wakeUp = true;
 	}
-	else if ((GetCategoryBits(otherFixture) & FixtureFilterCategories::Fire) != 0)
+	else
 	{
-		auto foundIt = 
-			std::find(
-				std::begin(m_FiresInContact), 
-				std::end(m_FiresInContact), 
-				&otherFixture);
-
-		if (foundIt == std::end(m_FiresInContact)) {
-			m_FiresInContact.push_back(&otherFixture);
-		}
+		::OnBeginContact(m_FiresInContact, otherFixture);
 	}
 
 	if (wakeUp) {
@@ -269,6 +262,8 @@ void Enemy::OnEndContact(
 	{
 		log->debug("{} Player left sensor.", logCtx);
 	}
+
+	::OnEndContact(m_FiresInContact, otherFixture);
 }
 
 void Enemy::OnStep(const std::chrono::duration<float> timestep)
@@ -277,23 +272,16 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 
 	const auto logCtx = "Enemy::OnStep:";
 
-	if (!m_FiresInContact.empty()) {
-		AddActiveEffect(ActiveEffectType::Burning, m_ActiveEffects);
-	}
+	ApplyFires(m_FiresInContact, m_ActiveEffects);
 
-	for (auto& effect : m_ActiveEffects) {
+	for (auto& effect : m_ActiveEffects.container) {
 		if (UpdateEffect(effect, timestep)) {
 			ApplyEffect(effect, m_Damage);
 		}
 		ApplyEffect(effect, *GetEntity().GetGraphics());
 	}
 
-	m_ActiveEffects.erase(
-		std::remove_if(
-			std::begin(m_ActiveEffects),
-			std::end(m_ActiveEffects),
-			[](const ActiveEffect& effect) { return effect.remainingDuration <= 0s; }),
-		std::end(m_ActiveEffects));
+	RemoveExpiredEffects(m_ActiveEffects);
 
 	static const int MaxDamage = 10;
 	if (m_Damage >= MaxDamage)

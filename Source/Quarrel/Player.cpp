@@ -242,14 +242,12 @@ void Player::OnStep(const std::chrono::duration<float> deltaTime)
 	auto log = GetConsoleLogger();
 	const char* logCtx = "Player::OnStep:";
 
-	if (!m_FiresInContact.empty()) {
-		AddActiveEffect(ActiveEffectType::Burning, m_ActiveEffects);
-	}
+	ApplyFires(m_FiresInContact, m_ActiveEffects);
 	
 	{
 		int damage = (int)this->mDamage;
 
-		for (auto& effect : m_ActiveEffects) {
+		for (auto& effect : m_ActiveEffects.container) {
 			if (UpdateEffect(effect, deltaTime)) {
 				ApplyEffect(effect, damage);
 			}
@@ -259,12 +257,7 @@ void Player::OnStep(const std::chrono::duration<float> deltaTime)
 		mDamage = (float)damage;
 	}
 
-	m_ActiveEffects.erase(
-		std::remove_if(
-			std::begin(m_ActiveEffects),
-			std::end(m_ActiveEffects),
-			[](const ActiveEffect& effect) { return effect.remainingDuration <= 0s; }),
-		std::end(m_ActiveEffects));
+	RemoveExpiredEffects(m_ActiveEffects);
 
 	if (mCannotDie == false &&
 		mDamage >= PlayerDamageMax) 
@@ -305,18 +298,7 @@ void Player::OnBeginContact(Entity& other, b2Fixture& myFixture, b2Fixture& othe
 		}
 	}
 
-	if ((GetCategoryBits(otherFixture) & FixtureFilterCategories::Fire) != 0)
-	{
-		auto foundIt =
-			std::find(
-				std::begin(m_FiresInContact),
-				std::end(m_FiresInContact),
-				&otherFixture);
-
-		if (foundIt == std::end(m_FiresInContact)) {
-			m_FiresInContact.push_back(&otherFixture);
-		}
-	}
+	::OnBeginContact(m_FiresInContact, otherFixture);
 }
 
 void Player::OnEndContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherFixture)
@@ -327,16 +309,7 @@ void Player::OnEndContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherF
 		log->debug("Player finishing contact with {}...", other.GetCustomComponent()->GetTypeName());
 	}
 
-	{
-		auto it = std::find(
-			std::begin(m_FiresInContact),
-			std::end(m_FiresInContact),
-			&otherFixture);
-
-		if (it != std::end(m_FiresInContact)) {
-			m_FiresInContact.erase(it);
-		}
-	}
+	::OnEndContact(m_FiresInContact, otherFixture);
 }
 
 class PlayerEditor : public CustomComponentEditorType<Player>
@@ -453,5 +426,5 @@ void RenderActiveEffects(
 }
 
 void Player::RenderActiveEffects(sf::RenderTarget& target) const {
-	::RenderActiveEffects(m_ActiveEffects, target);
+	::RenderActiveEffects(m_ActiveEffects.container, target);
 }

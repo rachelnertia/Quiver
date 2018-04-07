@@ -147,3 +147,9 @@ public:
 
 	qvr::Entity* Get();
 };
+
+template <typename T>
+bool FlagsAreSet(const T flag, const T bitfield)
+{
+	return (flag & bitfield) == flag;
+}

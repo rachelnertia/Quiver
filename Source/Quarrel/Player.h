@@ -4,6 +4,7 @@
 #include "Quiver/Graphics/Camera3D.h"
 
 #include "Effects.h"
+#include "FirePropagation.h"
 #include "Weapon.h"
 
 namespace sf {
@@ -22,7 +23,9 @@ public:
 	Player(qvr::Entity& entity);
 	~Player();
 
-	void HandleInput(qvr::RawInputDevices& inputDevices, const std::chrono::duration<float> deltaTime) override;
+	void HandleInput(
+		qvr::RawInputDevices& inputDevices, 
+		const std::chrono::duration<float> deltaTime) override;
 
 	void OnStep(const std::chrono::duration<float> deltaTime) override;
 
@@ -51,8 +54,9 @@ private:
 	void RenderHud          (sf::RenderTarget& target) const;
 	void RenderActiveEffects(sf::RenderTarget& target) const;
 
-	std::vector<ActiveEffect> m_ActiveEffects;
-	std::vector<const b2Fixture*> m_FiresInContact;
+	ActiveEffectSet m_ActiveEffects;
+	
+	FiresInContact m_FiresInContact;
 
 	float mMoveSpeed = 1.0f;
 	float mDamage = 0.0f;

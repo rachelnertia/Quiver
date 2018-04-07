@@ -22,9 +22,16 @@ struct ActiveEffect
 	std::chrono::duration<float> runningDuration;
 };
 
+struct ActiveEffectSet
+{
+	std::vector<ActiveEffect> container;
+};
+
 void AddActiveEffect(
 	const ActiveEffectType effectType,
-	std::vector<ActiveEffect>& activeEffects);
+	ActiveEffectSet& activeEffects);
+
+void RemoveExpiredEffects(ActiveEffectSet& activeEffects);
 
 // Returns true if the damage effect should be applied this frame.
 bool UpdateEffect(ActiveEffect& activeEffect, const std::chrono::duration<float> deltaTime);

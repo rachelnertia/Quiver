@@ -255,7 +255,15 @@ void RenderComponent::SetDetached(const bool detached)
 	{
 		// Go to detached mode.
 
-		GetFixture()->SetUserData(nullptr);
+		// If the PhysicsComponent body has multiple fixtures, make sure none of them have 
+		// fixture render data.
+		{
+			b2Fixture* physicsComponentFixture = GetFixture();
+			while (physicsComponentFixture) {
+				physicsComponentFixture->SetUserData(nullptr);
+				physicsComponentFixture = physicsComponentFixture->GetNext();
+			}
+		}
 
 		{
 			b2BodyDef bdef;

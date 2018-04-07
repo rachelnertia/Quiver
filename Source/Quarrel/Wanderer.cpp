@@ -18,13 +18,6 @@
 
 using namespace qvr;
 
-static b2CircleShape CreateCircleShape(const float radius)
-{
-	b2CircleShape circle;
-	circle.m_radius = radius;
-	return circle;
-}
-
 Wanderer::Wanderer(Entity& entity) 
 	: CustomComponent(entity) 
 {

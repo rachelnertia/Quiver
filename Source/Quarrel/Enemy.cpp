@@ -179,13 +179,6 @@ private:
 	FiresInContact m_FiresInContact;
 };
 
-static b2CircleShape CreateCircleShape(const float radius)
-{
-	b2CircleShape circle;
-	circle.m_radius = radius;
-	return circle;
-}
-
 Enemy::Enemy(Entity& entity)
 	: CustomComponent(entity)
 {

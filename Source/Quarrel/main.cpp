@@ -2,6 +2,7 @@
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 
 #include "Enemy.h"
+#include "EnemyMelee.h"
 #include "Player.h"
 #include "Wanderer.h"
 #include "WorldExit.h"
@@ -34,6 +35,11 @@ qvr::CustomComponentTypeLibrary CreateQuarrelTypes()
 		std::make_unique<CustomComponentType>(
 			"Enemy",
 			&CreateEnemy));
+
+	library.RegisterType(
+		std::make_unique<CustomComponentType>(
+			"EnemyMelee",
+			&CreateEnemyMelee));
 
 	return library;
 }

@@ -2,6 +2,7 @@
 
 #include <functional>
 
+#include <Box2D/Collision/Shapes/b2CircleShape.h>
 #include <Box2D/Common/b2Math.h>
 #include <optional.hpp>
 
@@ -152,4 +153,11 @@ template <typename T>
 bool FlagsAreSet(const T flag, const T bitfield)
 {
 	return (flag & bitfield) == flag;
+}
+
+inline b2CircleShape CreateCircleShape(const float radius)
+{
+	b2CircleShape circle;
+	circle.m_radius = radius;
+	return circle;
 }

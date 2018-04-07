@@ -7,4 +7,4 @@ class Entity;
 class CustomComponent;
 }
 
-std::unique_ptr<qvr::CustomComponent> CreateEnemy(qvr::Entity& entity);
+std::unique_ptr<qvr::CustomComponent> CreateEnemyMelee(qvr::Entity& entity);

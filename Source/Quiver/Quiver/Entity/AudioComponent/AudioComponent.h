@@ -9,7 +9,7 @@ namespace qvr {
 
 class AudioLibrary;
 
-class AudioComponent : public Component
+class AudioComponent final : public Component
 {
 public:
 	explicit AudioComponent(Entity& entity);

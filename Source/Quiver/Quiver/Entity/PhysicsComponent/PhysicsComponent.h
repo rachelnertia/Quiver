@@ -18,7 +18,7 @@ namespace qvr {
 class World;
 struct PhysicsComponentDef;
 
-class PhysicsComponent : public Component {
+class PhysicsComponent final : public Component {
 public:
 	explicit PhysicsComponent(Entity&entity, const PhysicsComponentDef& def);
 

@@ -15,7 +15,7 @@ class b2Body;
 
 namespace qvr {
 
-class RenderComponent : public Component {
+class RenderComponent final : public Component {
 public:
 	explicit RenderComponent(Entity& entity);
 	~RenderComponent();

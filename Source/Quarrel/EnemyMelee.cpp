@@ -94,7 +94,6 @@ void EnemyMelee::OnStep(const std::chrono::duration<float> deltaTime) {
 		velocity.Normalize();
 		velocity *= 1.0f;
 
-		//body.ApplyForceToCenter(force, true);
 		body.SetLinearVelocity(velocity);
 	}
 }

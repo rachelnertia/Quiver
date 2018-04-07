@@ -1,6 +1,6 @@
 {
     "AmbientLight": {
-        "Colour": "bb81ffff"
+        "Colour": "efecffff"
     },
     "Animations": [
         {
@@ -28,164 +28,6 @@
         "Color": "450a1d00"
     },
     "Entities": [
-        {
-            "Diff": [
-                {
-                    "op": "replace",
-                    "path": "/PhysicsComponent/Angle",
-                    "value": -2.57445693016052
-                },
-                {
-                    "op": "replace",
-                    "path": "/PhysicsComponent/Friction",
-                    "value": 0.200000002980232
-                },
-                {
-                    "op": "replace",
-                    "path": "/PhysicsComponent/Position/0",
-                    "value": -3.69028043746948
-                },
-                {
-                    "op": "replace",
-                    "path": "/PhysicsComponent/Position/1",
-                    "value": -6.24054288864136
-                },
-                {
-                    "op": "replace",
-                    "path": "/PhysicsComponent/Shape/Vertices/0/0",
-                    "value": 0.224737644195557
-                },
-                {
-                    "op": "replace",
-                    "path": "/PhysicsComponent/Shape/Vertices/0/1",
-                    "value": -0.218975320458412
-                },
-                {
-                    "op": "replace",
-                    "path": "/PhysicsComponent/Shape/Vertices/1/0",
-                    "value": 0.224737644195557
-                },
-                {
-                    "op": "replace",
-                    "path": "/PhysicsComponent/Shape/Vertices/1/1",
-                    "value": 0.218975320458412
-                },
-                {
-                    "op": "replace",
-                    "path": "/PhysicsComponent/Shape/Vertices/2/0",
-                    "value": -0.224737644195557
-                },
-                {
-                    "op": "replace",
-                    "path": "/PhysicsComponent/Shape/Vertices/2/1",
-                    "value": 0.218975320458412
-                },
-                {
-                    "op": "replace",
-                    "path": "/PhysicsComponent/Shape/Vertices/3/0",
-                    "value": -0.224737644195557
-                },
-                {
-                    "op": "replace",
-                    "path": "/PhysicsComponent/Shape/Vertices/3/1",
-                    "value": -0.218975320458412
-                },
-                {
-                    "op": "replace",
-                    "path": "/RenderComponent/Height",
-                    "value": 1.1710000038147
-                }
-            ],
-            "PrefabName": "Pillar"
-        },
-        {
-            "PhysicsComponent": {
-                "Angle": 0.0,
-                "AngularDamping": 0.0,
-                "BodyType": "Static",
-                "FixedRotation": false,
-                "Friction": 0.200000002980232,
-                "IsBullet": false,
-                "LinearDamping": 0.0,
-                "Position": [
-                    -6.68520927429199,
-                    -17.5590019226074
-                ],
-                "Restitution": 0.0,
-                "Shape": {
-                    "Type": "Polygon",
-                    "Vertices": [
-                        [
-                            6.74995231628418,
-                            -3.29359436035156
-                        ],
-                        [
-                            5.68194437026978,
-                            -0.201269149780273
-                        ],
-                        [
-                            -5.23199462890625,
-                            2.89613914489746
-                        ],
-                        [
-                            -7.37958145141602,
-                            0.884895324707031
-                        ]
-                    ]
-                }
-            },
-            "RenderComponent": {
-                "Colour": "ff7950ff",
-                "Detached": false,
-                "GroundOffset": 0.0,
-                "Height": 5.25600004196167,
-                "SpriteRadius": 0.5
-            }
-        },
-        {
-            "PhysicsComponent": {
-                "Angle": 0.0,
-                "AngularDamping": 0.0,
-                "BodyType": "Static",
-                "FixedRotation": false,
-                "Friction": 0.200000002980232,
-                "IsBullet": false,
-                "LinearDamping": 0.0,
-                "Position": [
-                    -5.45141363143921,
-                    -1.09316396713257
-                ],
-                "Restitution": 0.0,
-                "Shape": {
-                    "Type": "Polygon",
-                    "Vertices": [
-                        [
-                            1.09375,
-                            -4.875
-                        ],
-                        [
-                            1.09375,
-                            4.875
-                        ],
-                        [
-                            -1.09375,
-                            4.875
-                        ],
-                        [
-                            -1.09375,
-                            -4.875
-                        ]
-                    ]
-                }
-            },
-            "RenderComponent": {
-                "Colour": "b62d38ff",
-                "Detached": false,
-                "GroundOffset": 0.0,
-                "Height": 8.0,
-                "SpriteRadius": 0.5
-            }
-        },
         {
             "PhysicsComponent": {
                 "Angle": -0.500160276889801,
@@ -539,6 +381,164 @@
                 }
             ],
             "PrefabName": "Pillar"
+        },
+        {
+            "Diff": [
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Angle",
+                    "value": -2.57445693016052
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Friction",
+                    "value": 0.200000002980232
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Position/0",
+                    "value": -3.69028043746948
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Position/1",
+                    "value": -6.24054288864136
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Shape/Vertices/0/0",
+                    "value": 0.224737644195557
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Shape/Vertices/0/1",
+                    "value": -0.218975320458412
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Shape/Vertices/1/0",
+                    "value": 0.224737644195557
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Shape/Vertices/1/1",
+                    "value": 0.218975320458412
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Shape/Vertices/2/0",
+                    "value": -0.224737644195557
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Shape/Vertices/2/1",
+                    "value": 0.218975320458412
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Shape/Vertices/3/0",
+                    "value": -0.224737644195557
+                },
+                {
+                    "op": "replace",
+                    "path": "/PhysicsComponent/Shape/Vertices/3/1",
+                    "value": -0.218975320458412
+                },
+                {
+                    "op": "replace",
+                    "path": "/RenderComponent/Height",
+                    "value": 1.1710000038147
+                }
+            ],
+            "PrefabName": "Pillar"
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    -6.68520927429199,
+                    -17.5590019226074
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            6.74995231628418,
+                            -3.29359436035156
+                        ],
+                        [
+                            5.68194437026978,
+                            -0.201269149780273
+                        ],
+                        [
+                            -5.23199462890625,
+                            2.89613914489746
+                        ],
+                        [
+                            -7.37958145141602,
+                            0.884895324707031
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ff7950ff",
+                "Detached": false,
+                "GroundOffset": 0.0,
+                "Height": 5.25600004196167,
+                "SpriteRadius": 0.5
+            }
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    -5.45141363143921,
+                    -1.09316396713257
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            1.09375,
+                            -4.875
+                        ],
+                        [
+                            1.09375,
+                            4.875
+                        ],
+                        [
+                            -1.09375,
+                            4.875
+                        ],
+                        [
+                            -1.09375,
+                            -4.875
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "b62d38ff",
+                "Detached": false,
+                "GroundOffset": 0.0,
+                "Height": 8.0,
+                "SpriteRadius": 0.5
+            }
         },
         {
             "PhysicsComponent": {
@@ -1185,33 +1185,6 @@
                 "Detached": false,
                 "GroundOffset": 0.0,
                 "Height": 2.69500017166138,
-                "SpriteRadius": 0.5
-            }
-        },
-        {
-            "PhysicsComponent": {
-                "Angle": 2.91230201721191,
-                "AngularDamping": 0.0,
-                "BodyType": "Static",
-                "FixedRotation": false,
-                "Friction": 0.200000002980232,
-                "IsBullet": false,
-                "LinearDamping": 0.0,
-                "Position": [
-                    -7.0244665145874,
-                    -23.0759601593018
-                ],
-                "Restitution": 0.0,
-                "Shape": {
-                    "Radius": 0.846410512924194,
-                    "Type": "Circle"
-                }
-            },
-            "RenderComponent": {
-                "Colour": "959495ff",
-                "Detached": false,
-                "GroundOffset": 0.0,
-                "Height": 2.97000002861023,
                 "SpriteRadius": 0.5
             }
         },
@@ -2029,168 +2002,6 @@
         },
         {
             "PhysicsComponent": {
-                "Angle": -0.43127828836441,
-                "AngularDamping": 0.0,
-                "BodyType": "Static",
-                "FixedRotation": false,
-                "Friction": 0.200000002980232,
-                "IsBullet": false,
-                "LinearDamping": 0.0,
-                "Position": [
-                    -6.04267120361328,
-                    -23.5358581542969
-                ],
-                "Restitution": 0.0,
-                "Shape": {
-                    "Radius": 0.485333651304245,
-                    "Type": "Circle"
-                }
-            },
-            "RenderComponent": {
-                "Colour": "6185a2e3",
-                "Detached": false,
-                "GroundOffset": 0.0,
-                "Height": 2.4210000038147,
-                "SpriteRadius": 0.5
-            }
-        },
-        {
-            "PhysicsComponent": {
-                "Angle": -0.43127828836441,
-                "AngularDamping": 0.0,
-                "BodyType": "Static",
-                "FixedRotation": false,
-                "Friction": 0.200000002980232,
-                "IsBullet": false,
-                "LinearDamping": 0.0,
-                "Position": [
-                    -5.42383575439453,
-                    -23.9246826171875
-                ],
-                "Restitution": 0.0,
-                "Shape": {
-                    "Radius": 0.324406832456589,
-                    "Type": "Circle"
-                }
-            },
-            "RenderComponent": {
-                "Colour": "8b8d8f84",
-                "Detached": false,
-                "GroundOffset": 0.0,
-                "Height": 1.50600004196167,
-                "SpriteRadius": 0.5
-            }
-        },
-        {
-            "PhysicsComponent": {
-                "Angle": -0.43127828836441,
-                "AngularDamping": 0.0,
-                "BodyType": "Static",
-                "FixedRotation": false,
-                "Friction": 0.200000002980232,
-                "IsBullet": false,
-                "LinearDamping": 0.0,
-                "Position": [
-                    -5.27277612686157,
-                    -24.390417098999
-                ],
-                "Restitution": 0.0,
-                "Shape": {
-                    "Radius": 0.211956650018692,
-                    "Type": "Circle"
-                }
-            },
-            "RenderComponent": {
-                "Colour": "ff81ff66",
-                "Detached": false,
-                "GroundOffset": 0.0,
-                "Height": 1.0,
-                "SpriteRadius": 0.5
-            }
-        },
-        {
-            "PhysicsComponent": {
-                "Angle": -0.43127828836441,
-                "AngularDamping": 0.0,
-                "BodyType": "Static",
-                "FixedRotation": false,
-                "Friction": 0.200000002980232,
-                "IsBullet": false,
-                "LinearDamping": 0.0,
-                "Position": [
-                    -8.03986740112305,
-                    -22.9503936767578
-                ],
-                "Restitution": 0.0,
-                "Shape": {
-                    "Radius": 0.52959793806076,
-                    "Type": "Circle"
-                }
-            },
-            "RenderComponent": {
-                "Colour": "898684ea",
-                "Detached": false,
-                "GroundOffset": 0.0,
-                "Height": 2.54300022125244,
-                "SpriteRadius": 0.5
-            }
-        },
-        {
-            "PhysicsComponent": {
-                "Angle": -0.43127828836441,
-                "AngularDamping": 0.0,
-                "BodyType": "Static",
-                "FixedRotation": false,
-                "Friction": 0.200000002980232,
-                "IsBullet": false,
-                "LinearDamping": 0.0,
-                "Position": [
-                    -8.69656848907471,
-                    -23.1337928771973
-                ],
-                "Restitution": 0.0,
-                "Shape": {
-                    "Radius": 0.37182143330574,
-                    "Type": "Circle"
-                }
-            },
-            "RenderComponent": {
-                "Colour": "7c797ab2",
-                "Detached": false,
-                "GroundOffset": 0.0,
-                "Height": 1.44500005245209,
-                "SpriteRadius": 0.5
-            }
-        },
-        {
-            "PhysicsComponent": {
-                "Angle": -0.43127828836441,
-                "AngularDamping": 0.0,
-                "BodyType": "Static",
-                "FixedRotation": false,
-                "Friction": 0.200000002980232,
-                "IsBullet": false,
-                "LinearDamping": 0.0,
-                "Position": [
-                    -9.13168716430664,
-                    -23.4297695159912
-                ],
-                "Restitution": 0.0,
-                "Shape": {
-                    "Radius": 0.222804248332977,
-                    "Type": "Circle"
-                }
-            },
-            "RenderComponent": {
-                "Colour": "b0afae6b",
-                "Detached": false,
-                "GroundOffset": 0.0,
-                "Height": 1.0,
-                "SpriteRadius": 0.5
-            }
-        },
-        {
-            "PhysicsComponent": {
                 "Angle": 0.0,
                 "AngularDamping": 0.0,
                 "BodyType": "Static",
@@ -2613,11 +2424,18 @@
                 }
             },
             "RenderComponent": {
-                "Colour": "ff0000ff",
-                "Detached": false,
+                "Colour": "ffffffff",
+                "Detached": true,
                 "GroundOffset": 0.0,
-                "Height": 1.0,
-                "SpriteRadius": 0.5
+                "Height": 1.93600010871887,
+                "SpriteRadius": 0.5,
+                "Texture": "textures/evil_knight.png",
+                "TextureRect": {
+                    "bottom": 64,
+                    "left": 0,
+                    "right": 64,
+                    "top": 0
+                }
             }
         }
     ],

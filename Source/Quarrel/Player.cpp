@@ -209,14 +209,14 @@ void Player::HandleInput(
 
 	// Debug stuff!
 	{
-		const float d = 20.0f;
+		const int debugDamage = (int)std::ceil(20.0f * deltaTime.count());
 
 		if (devices.GetKeyboard().IsDown(qvr::KeyboardKey::U)) {
-			mDamage += d * deltaTime.count();
+			mDamage += debugDamage;
 		}
 
 		if (devices.GetKeyboard().IsDown(qvr::KeyboardKey::J)) {
-			mDamage -= d * deltaTime.count();
+			mDamage -= debugDamage;
 		}
 
 		if (devices.GetKeyboard().JustDown(qvr::KeyboardKey::K)) {
@@ -231,9 +231,9 @@ void Player::HandleInput(
 
 namespace {
 
-const float PlayerDamageMax = 100.0f;
+const int PlayerDamageMax = 100;
 
-const float EnemyProjectileDamage = 20.0f;
+const int EnemyProjectileDamage = 20;
 
 }
 
@@ -244,17 +244,11 @@ void Player::OnStep(const std::chrono::duration<float> deltaTime)
 
 	ApplyFires(m_FiresInContact, m_ActiveEffects);
 	
-	{
-		int damage = (int)this->mDamage;
-
-		for (auto& effect : m_ActiveEffects.container) {
-			if (UpdateEffect(effect, deltaTime)) {
-				ApplyEffect(effect, damage);
-			}
-			ApplyEffect(effect, *GetEntity().GetGraphics());
+	for (auto& effect : m_ActiveEffects.container) {
+		if (UpdateEffect(effect, deltaTime)) {
+			ApplyEffect(effect, mDamage);
 		}
-
-		mDamage = (float)damage;
+		ApplyEffect(effect, *GetEntity().GetGraphics());
 	}
 
 	RemoveExpiredEffects(m_ActiveEffects);
@@ -362,7 +356,7 @@ void Player::RenderCurrentWeapon(sf::RenderTarget& target) const {
 	}
 }
 
-void DrawDamage(sf::RenderTarget& target, const float maxDamage, float damage)
+void DrawDamage(sf::RenderTarget& target, const int maxDamage, int damage)
 {
 	sf::RectangleShape background;
 	const float scale = 0.8f;
@@ -386,7 +380,7 @@ void DrawDamage(sf::RenderTarget& target, const float maxDamage, float damage)
 	bar.setOutlineThickness(-3.0f);
 	bar.setSize(
 		sf::Vector2f(
-			background.getSize().x * (damage / maxDamage),
+			background.getSize().x * ((float)damage / maxDamage),
 			background.getSize().y));
 	bar.setOrigin(bar.getSize());
 	bar.setPosition(background.getPosition());

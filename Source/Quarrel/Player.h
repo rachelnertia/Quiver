@@ -59,7 +59,8 @@ private:
 	FiresInContact m_FiresInContact;
 
 	float mMoveSpeed = 1.0f;
-	float mDamage = 0.0f;
+	
+	int mDamage = 0;
 	
 	std::unique_ptr<Weapon> mCurrentWeapon;
 

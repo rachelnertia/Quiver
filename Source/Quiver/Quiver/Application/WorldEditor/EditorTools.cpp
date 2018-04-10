@@ -101,16 +101,24 @@ void SelectTool::OnMouseClick3D(WorldEditor & editor,
 	const float screenWidth)
 {
 	// Just get the first fixture we hit.
-	struct Callback : public b2RayCastCallback {
-		b2Fixture* mFixture = nullptr;
+	class Callback : public b2RayCastCallback {
+	public:
+		b2Fixture * closestFixture = nullptr;
 
-		float32 ReportFixture(b2Fixture* fixture,
+		float32 ReportFixture(
+			b2Fixture* fixture,
 			const b2Vec2& point,
 			const b2Vec2& normal,
-			float32 fraction)
-			override
+			float32 fraction) override
 		{
-			mFixture = fixture;
+			// Filter out render-only fixtures
+			if ((fixture->GetFilterData().categoryBits & 0xF000) != 0)
+			{
+				return -1;
+			}
+
+			closestFixture = fixture;
+
 			return fraction;
 		}
 	};
@@ -135,10 +143,10 @@ void SelectTool::OnMouseClick3D(WorldEditor & editor,
 
 	editor.GetWorld()->GetPhysicsWorld()->RayCast(&callback, camera.GetPosition(), rayEnd);
 
-	if (callback.mFixture) {
+	if (callback.closestFixture) {
 		// Follow the fixture's PhysicsComponent to the Entity.
 		auto physComp =
-			(PhysicsComponent*)(callback.mFixture->GetBody()->GetUserData());
+			(PhysicsComponent*)(callback.closestFixture->GetBody()->GetUserData());
 		editor.SetCurrentSelection(&physComp->GetEntity());
 	}
 	else {

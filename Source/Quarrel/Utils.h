@@ -19,6 +19,9 @@ class Entity;
 class World;
 }
 
+struct DamageCount;
+struct ActiveEffectSet;
+
 template <typename T>
 using optional = std::experimental::optional<T>;
 
@@ -150,9 +153,9 @@ public:
 };
 
 template <typename T>
-bool FlagsAreSet(const T flag, const T bitfield)
+bool FlagsAreSet(const T flags, const T bitfield)
 {
-	return (flag & bitfield) == flag;
+	return (flags & bitfield) == flags;
 }
 
 inline b2CircleShape CreateCircleShape(const float radius)
@@ -161,3 +164,14 @@ inline b2CircleShape CreateCircleShape(const float radius)
 	circle.m_radius = radius;
 	return circle;
 }
+
+bool IsCrossbowBolt(const b2Fixture& fixture);
+
+void HandleContactWithCrossbowBolt(
+	const qvr::Entity& crossbowBoltEntity,
+	DamageCount& damageCounter);
+void HandleContactWithCrossbowBolt(
+	const qvr::Entity& crossbowBoltEntity,
+	ActiveEffectSet& activeEffects);
+
+EntityRef GetCrossbowBoltFirer(const qvr::Entity& crossbowBoltEntity);

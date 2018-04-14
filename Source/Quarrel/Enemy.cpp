@@ -216,18 +216,15 @@ void Enemy::OnBeginContact(
 
 		wakeUp = true;
 	}
-	else if (
-		other.GetCustomComponent() &&
-		other.GetCustomComponent()->GetTypeName() == "CrossbowBolt")
+	else if (IsCrossbowBolt(otherFixture))
 	{
-		auto& bolt = *static_cast<CrossbowBolt*>(other.GetCustomComponent());
-		
-		AddDamage(this->m_Damage, bolt.effect.immediateDamage);
+		HandleContactWithCrossbowBolt(other, m_Damage);
+		HandleContactWithCrossbowBolt(other, m_ActiveEffects);
 
-		AddActiveEffect(bolt.effect.appliesEffect, m_ActiveEffects);
-		
-		if (bolt.shooter.Get()) {
-			m_Target = bolt.shooter;
+		EntityRef shooter = GetCrossbowBoltFirer(other);
+
+		if (shooter.Get()) {
+			m_Target = shooter;
 		}
 
 		wakeUp = true;

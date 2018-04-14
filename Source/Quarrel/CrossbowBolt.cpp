@@ -16,9 +16,9 @@ using namespace qvr;
 CrossbowBolt::CrossbowBolt(Entity & entity)
 	: CustomComponent(entity)
 {
-	b2Fixture& fixture = *GetEntity().GetPhysics()->GetBody().GetFixtureList();
-	b2Filter filter = fixture.GetFilterData();
-	filter.categoryBits = FixtureFilterCategories::CrossbowBolt;
+	SetCategoryBits(
+		*GetEntity().GetPhysics()->GetBody().GetFixtureList(),
+		FixtureFilterCategories::CrossbowBolt);
 }
 
 void CrossbowBolt::OnBeginContact(

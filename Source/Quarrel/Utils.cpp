@@ -11,6 +11,10 @@
 #include <Quiver/Entity/PhysicsComponent/PhysicsComponent.h>
 #include <Quiver/World/World.h>
 
+#include "CrossbowBolt.h"
+#include "Damage.h"
+#include "Effects.h"
+
 using json = nlohmann::json;
 
 using namespace std::chrono;
@@ -177,4 +181,34 @@ qvr::Entity* EntityRef::Get() {
 	}
 	id = qvr::EntityId(0);
 	return nullptr;
+}
+
+bool IsCrossbowBolt(const b2Fixture& fixture) {
+	return FlagsAreSet(
+		FixtureFilterCategories::CrossbowBolt,
+		GetCategoryBits(fixture));
+}
+
+void HandleContactWithCrossbowBolt(
+	const qvr::Entity& crossbowBoltEntity,
+	DamageCount& damageCounter)
+{
+	auto& bolt = (CrossbowBolt&)(*crossbowBoltEntity.GetCustomComponent());
+
+	AddDamage(damageCounter, bolt.effect.immediateDamage);
+}
+
+void HandleContactWithCrossbowBolt(
+	const qvr::Entity& crossbowBoltEntity,
+	ActiveEffectSet& activeEffects)
+{
+	auto& bolt = (CrossbowBolt&)(*crossbowBoltEntity.GetCustomComponent());
+
+	AddActiveEffect(bolt.effect.appliesEffect, activeEffects);
+}
+
+EntityRef GetCrossbowBoltFirer(const qvr::Entity& crossbowBoltEntity) {
+	auto& bolt = (CrossbowBolt&)(*crossbowBoltEntity.GetCustomComponent());
+
+	return bolt.shooter;
 }

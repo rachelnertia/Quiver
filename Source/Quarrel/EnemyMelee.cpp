@@ -10,6 +10,9 @@
 #include <Quiver/Entity/RenderComponent/RenderComponent.h>
 #include <Quiver/World/World.h>
 
+#include "Damage.h"
+#include "Effects.h"
+#include "FirePropagation.h"
 #include "Utils.h"
 
 using namespace std::chrono_literals;
@@ -23,6 +26,10 @@ class EnemyMelee : public qvr::CustomComponent
 	EntityRef target;
 
 	float upVelocity = 0.0f;
+
+	DamageCount damageCounter = DamageCount(30);
+	ActiveEffectSet activeEffects;
+	FiresInContact firesInContact;
 
 public:
 	EnemyMelee(qvr::Entity& entity);
@@ -77,7 +84,17 @@ void EnemyMelee::OnBeginContact(
 		if (target.Get() == nullptr) {
 			target = EntityRef(other);
 		}
+
+		return;
 	}
+	
+	if (IsCrossbowBolt(otherFixture))
+	{
+		HandleContactWithCrossbowBolt(other, damageCounter);
+		HandleContactWithCrossbowBolt(other, activeEffects);
+	}
+
+	::OnBeginContact(firesInContact, otherFixture);
 }
 
 void EnemyMelee::OnEndContact(
@@ -90,9 +107,31 @@ void EnemyMelee::OnEndContact(
 			target = {};
 		}
 	}
+	else {
+		::OnEndContact(firesInContact, otherFixture);
+	}
 }
 
 void EnemyMelee::OnStep(const seconds deltaTime) {
+	
+
+	ApplyFires(firesInContact, activeEffects);
+	
+	for (auto& effect : activeEffects.container) {
+		if (UpdateEffect(effect, deltaTime)) {
+			ApplyEffect(effect, damageCounter);
+		}
+		ApplyEffect(effect, *GetEntity().GetGraphics());
+	}
+
+	RemoveExpiredEffects(activeEffects);
+
+	if (HasExceededLimit(damageCounter)) {
+		// ?
+		GetEntity().AddCustomComponent(nullptr);
+		return;
+	}
+
 	if (target.Get()) {
 		b2Body& body = GetEntity().GetPhysics()->GetBody();
 		

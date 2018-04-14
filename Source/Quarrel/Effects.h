@@ -8,6 +8,8 @@ namespace qvr
 class RenderComponent;
 }
 
+struct DamageCount;
+
 enum class ActiveEffectType
 {
 	None,
@@ -36,5 +38,5 @@ void RemoveExpiredEffects(ActiveEffectSet& activeEffects);
 // Returns true if the damage effect should be applied this frame.
 bool UpdateEffect(ActiveEffect& activeEffect, const std::chrono::duration<float> deltaTime);
 
-void ApplyEffect(const ActiveEffect& activeEffect, int& damage);
+void ApplyEffect(const ActiveEffect& activeEffect, DamageCount& damage);
 void ApplyEffect(const ActiveEffect& effect, qvr::RenderComponent& renderComponent);

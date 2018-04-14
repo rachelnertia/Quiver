@@ -5,6 +5,8 @@
 
 #include <Quiver/Entity/RenderComponent/RenderComponent.h>
 
+#include "Damage.h"
+
 using namespace std::chrono_literals;
 
 void AddActiveEffect(const ActiveEffectType effectType, ActiveEffectSet& activeEffects)
@@ -52,16 +54,16 @@ void RemoveExpiredEffects(ActiveEffectSet& effects)
 		std::end(effects.container));
 }
 
-void ApplyEffect(const ActiveEffect & activeEffect, int & damage)
+void ApplyEffect(const ActiveEffect & activeEffect, DamageCount & damage)
 {
 	switch (activeEffect.type)
 	{
 	case ActiveEffectType::None: assert(false); break;
 	case ActiveEffectType::Burning:
-		damage += 1;
+		AddDamage(damage, 1);
 		break;
 	case ActiveEffectType::Poisoned:
-		damage += 1;
+		AddDamage(damage, 1);
 		break;
 	}
 }

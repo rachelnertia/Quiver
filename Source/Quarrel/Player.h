@@ -3,6 +3,7 @@
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 #include "Quiver/Graphics/Camera3D.h"
 
+#include "Damage.h"
 #include "Effects.h"
 #include "FirePropagation.h"
 #include "Weapon.h"
@@ -60,7 +61,7 @@ private:
 
 	float mMoveSpeed = 1.0f;
 	
-	int mDamage = 0;
+	DamageCount mDamage = DamageCount(50);
 	
 	std::unique_ptr<Weapon> mCurrentWeapon;
 

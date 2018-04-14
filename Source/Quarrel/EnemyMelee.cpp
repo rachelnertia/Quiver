@@ -14,6 +14,8 @@
 
 using namespace std::chrono_literals;
 
+using seconds = std::chrono::duration<float>;
+
 class EnemyMelee : public qvr::CustomComponent
 {
 	b2Fixture* sensorFixture = nullptr;
@@ -29,7 +31,7 @@ public:
 		return "EnemyMelee";
 	}
 
-	void OnStep(const std::chrono::duration<float> deltaTime) override;
+	void OnStep(const seconds deltaTime) override;
 
 	void OnBeginContact(
 		qvr::Entity& other,
@@ -89,8 +91,6 @@ void EnemyMelee::OnEndContact(
 		}
 	}
 }
-
-using seconds = std::chrono::duration<float>;
 
 void EnemyMelee::OnStep(const seconds deltaTime) {
 	if (target.Get()) {

@@ -11,7 +11,7 @@
 
 struct CrossbowBoltEffect
 {
-	float immediateDamage = 0.0f;
+	int immediateDamage = 0;
 	ActiveEffectType appliesEffect = ActiveEffectType::None;
 };
 

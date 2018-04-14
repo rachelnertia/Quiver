@@ -212,11 +212,11 @@ void Player::HandleInput(
 		const int debugDamage = (int)std::ceil(20.0f * deltaTime.count());
 
 		if (devices.GetKeyboard().IsDown(qvr::KeyboardKey::U)) {
-			mDamage += debugDamage;
+			AddDamage(mDamage, debugDamage);
 		}
 
 		if (devices.GetKeyboard().IsDown(qvr::KeyboardKey::J)) {
-			mDamage -= debugDamage;
+			RemoveDamage(mDamage, debugDamage);
 		}
 
 		if (devices.GetKeyboard().JustDown(qvr::KeyboardKey::K)) {
@@ -254,7 +254,7 @@ void Player::OnStep(const std::chrono::duration<float> deltaTime)
 	RemoveExpiredEffects(m_ActiveEffects);
 
 	if (mCannotDie == false &&
-		mDamage >= PlayerDamageMax) 
+		HasExceededLimit(mDamage)) 
 	{
 		log->debug("{} Oh no! I've taken too much damage!", logCtx);
 		
@@ -288,7 +288,7 @@ void Player::OnBeginContact(Entity& other, b2Fixture& myFixture, b2Fixture& othe
 		{
 			log->debug("{} Player taking damage", logCtx);
 
-			mDamage += EnemyProjectileDamage;
+			AddDamage(mDamage, EnemyProjectileDamage);
 		}
 	}
 
@@ -356,7 +356,7 @@ void Player::RenderCurrentWeapon(sf::RenderTarget& target) const {
 	}
 }
 
-void DrawDamage(sf::RenderTarget& target, const int maxDamage, int damage)
+void DrawDamage(sf::RenderTarget& target, const DamageCount& counter)
 {
 	sf::RectangleShape background;
 	const float scale = 0.8f;
@@ -380,7 +380,7 @@ void DrawDamage(sf::RenderTarget& target, const int maxDamage, int damage)
 	bar.setOutlineThickness(-3.0f);
 	bar.setSize(
 		sf::Vector2f(
-			background.getSize().x * ((float)damage / maxDamage),
+			background.getSize().x * ((float)counter.damage / counter.max),
 			background.getSize().y));
 	bar.setOrigin(bar.getSize());
 	bar.setPosition(background.getPosition());
@@ -388,8 +388,8 @@ void DrawDamage(sf::RenderTarget& target, const int maxDamage, int damage)
 }
 
 void Player::RenderHud(sf::RenderTarget& target) const {
-	if (mDamage > 0.0f) {
-		DrawDamage(target, PlayerDamageMax, mDamage);
+	if (HasTakenDamage(mDamage)) {
+		DrawDamage(target, mDamage);
 	}
 }
 

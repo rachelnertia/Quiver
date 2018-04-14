@@ -25,6 +25,7 @@
 #include "Quiver/World/World.h"
 
 #include "CrossbowBolt.h"
+#include "Damage.h"
 #include "Effects.h"
 #include "FirePropagation.h"
 #include "Utils.h"
@@ -148,7 +149,7 @@ private:
 		AnimatorRepeatSetting repeatSetting = AnimatorRepeatSetting::Forever);
 	void SetAnimation(std::initializer_list<AnimatorStartSetting> animChain);
 
-	int m_Damage = 0;
+	DamageCount m_Damage = DamageCount(10);
 
 	enum class Awakeness {
 		None,
@@ -221,7 +222,7 @@ void Enemy::OnBeginContact(
 	{
 		auto& bolt = *static_cast<CrossbowBolt*>(other.GetCustomComponent());
 		
-		this->m_Damage += (int)bolt.effect.immediateDamage;
+		AddDamage(this->m_Damage, bolt.effect.immediateDamage);
 
 		AddActiveEffect(bolt.effect.appliesEffect, m_ActiveEffects);
 		
@@ -276,10 +277,9 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 
 	RemoveExpiredEffects(m_ActiveEffects);
 
-	static const int MaxDamage = 10;
-	if (m_Damage >= MaxDamage)
+	if (HasExceededLimit(m_Damage))
 	{
-		log->debug("{} Dying - received {}/{} damage", logCtx, m_Damage, MaxDamage);
+		log->debug("{} Dying - received {}/{} damage", logCtx, m_Damage.damage, m_Damage.max);
 		SetAnimation(m_DieAnim, AnimatorRepeatSetting::Never);
 		GetEntity().GetPhysics()->GetBody().DestroyFixture(m_Sensor);
 		// Remove the CustomComponent, but not the Entity.

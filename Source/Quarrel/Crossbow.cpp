@@ -35,12 +35,12 @@ Crossbow::Crossbow(Player& player)
 {
 	QuarrelTypeInfo type;
 	type.colour = sf::Color::Black;
-	type.effect.immediateDamage = 10.0f;
+	type.effect.immediateDamage = 5;
 
 	quarrelSlots[0] = type;
 
 	type.colour = sf::Color::Red;
-	type.effect.immediateDamage = 1.0f;
+	type.effect.immediateDamage = 1;
 	type.effect.appliesEffect = ActiveEffectType::Burning;
 
 	quarrelSlots[1] = type;

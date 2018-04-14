@@ -7,14 +7,20 @@
 #include <Quiver/Entity/Entity.h>
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
 #include <Quiver/Entity/PhysicsComponent/PhysicsComponent.h>
+#include <Quiver/Entity/RenderComponent/RenderComponent.h>
+#include <Quiver/World/World.h>
 
 #include "Utils.h"
+
+using namespace std::chrono_literals;
 
 class EnemyMelee : public qvr::CustomComponent
 {
 	b2Fixture* sensorFixture = nullptr;
 	
 	EntityRef target;
+
+	float upVelocity = 0.0f;
 
 public:
 	EnemyMelee(qvr::Entity& entity);
@@ -84,7 +90,9 @@ void EnemyMelee::OnEndContact(
 	}
 }
 
-void EnemyMelee::OnStep(const std::chrono::duration<float> deltaTime) {
+using seconds = std::chrono::duration<float>;
+
+void EnemyMelee::OnStep(const seconds deltaTime) {
 	if (target.Get()) {
 		b2Body& body = GetEntity().GetPhysics()->GetBody();
 		
@@ -95,5 +103,23 @@ void EnemyMelee::OnStep(const std::chrono::duration<float> deltaTime) {
 		velocity *= 1.0f;
 
 		body.SetLinearVelocity(velocity);
+
+		if (GetEntity().GetGraphics()->GetGroundOffset() <= 0.0f) {
+			const float jumpVelocity = 2.0f;
+			upVelocity = jumpVelocity;
+		}
 	}
+
+	const float gravity = 10.0f;
+
+	upVelocity -= gravity * deltaTime.count();
+
+	float groundOffset = GetEntity().GetGraphics()->GetGroundOffset();
+
+	groundOffset = 
+		std::max(
+			0.0f, 
+			groundOffset + (upVelocity * deltaTime.count()));
+
+	GetEntity().GetGraphics()->SetGroundOffset(groundOffset);
 }

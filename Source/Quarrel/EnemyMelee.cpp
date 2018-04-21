@@ -13,6 +13,7 @@
 #include "Damage.h"
 #include "Effects.h"
 #include "FirePropagation.h"
+#include "Gravity.h"
 #include "Utils.h"
 
 using namespace std::chrono_literals;
@@ -112,9 +113,8 @@ void EnemyMelee::OnEndContact(
 	}
 }
 
-void EnemyMelee::OnStep(const seconds deltaTime) {
-	
-
+void EnemyMelee::OnStep(const seconds deltaTime) 
+{
 	ApplyFires(firesInContact, activeEffects);
 	
 	for (auto& effect : activeEffects.container) {
@@ -149,16 +149,7 @@ void EnemyMelee::OnStep(const seconds deltaTime) {
 		}
 	}
 
-	const float gravity = 10.0f;
-
-	upVelocity -= gravity * deltaTime.count();
-
-	float groundOffset = GetEntity().GetGraphics()->GetGroundOffset();
-
-	groundOffset = 
-		std::max(
-			0.0f, 
-			groundOffset + (upVelocity * deltaTime.count()));
-
-	GetEntity().GetGraphics()->SetGroundOffset(groundOffset);
+	upVelocity = ApplyGravity(upVelocity, deltaTime);
+	
+	UpdateGroundOffset(*GetEntity().GetGraphics(), GetPositionDelta(upVelocity, deltaTime));
 }

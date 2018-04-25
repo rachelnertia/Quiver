@@ -248,6 +248,9 @@ void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float delt
 				break;
 			}
 		}
+		else if (AnyJustActive(inputDevices, mCockInputs)) {
+			UnloadQuarrel();
+		}
 
 		if (AnyJustActive(inputDevices, mTriggerInputs))
 		{
@@ -344,6 +347,13 @@ void Crossbow::LoadQuarrel(const QuarrelTypeInfo& type)
 	if (!qvrVerify(!mLoadedQuarrel)) return;
 
 	mLoadedQuarrel = Quarrel{ type };
+}
+
+void Crossbow::UnloadQuarrel() {
+	if (!qvrVerify(mCockedState == CockedState::Cocked)) return;
+	if (!qvrVerify(mLoadedQuarrel)) return;
+
+	mLoadedQuarrel = {};
 }
 
 using json = nlohmann::json;

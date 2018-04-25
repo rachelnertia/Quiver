@@ -74,6 +74,7 @@ private:
 	std::experimental::optional<Quarrel> mLoadedQuarrel;
 
 	void LoadQuarrel(const QuarrelTypeInfo& quarrel);
+	void UnloadQuarrel();
 
 	void Shoot();
 

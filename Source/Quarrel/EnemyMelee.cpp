@@ -113,6 +113,14 @@ void EnemyMelee::OnEndContact(
 	}
 }
 
+void MoveTowardsPosition(b2Body& body, const b2Vec2& targetPosition, const float speed) {
+	b2Vec2 velocity = targetPosition - body.GetPosition();
+	velocity.Normalize();
+	velocity *= speed;
+
+	body.SetLinearVelocity(velocity);
+}
+
 void EnemyMelee::OnStep(const seconds deltaTime) 
 {
 	ApplyFires(firesInContact, activeEffects);
@@ -133,15 +141,12 @@ void EnemyMelee::OnStep(const seconds deltaTime)
 	}
 
 	if (target.Get()) {
-		b2Body& body = GetEntity().GetPhysics()->GetBody();
-		
-		const b2Vec2 targetPosition = target.Get()->GetPhysics()->GetPosition();
+		const float speed = 1.0f;
 
-		b2Vec2 velocity = targetPosition - body.GetPosition();
-		velocity.Normalize();
-		velocity *= 1.0f;
-
-		body.SetLinearVelocity(velocity);
+		MoveTowardsPosition(
+			GetEntity().GetPhysics()->GetBody(),
+			target.Get()->GetPhysics()->GetPosition(),
+			speed);
 
 		if (GetEntity().GetGraphics()->GetGroundOffset() <= 0.0f) {
 			const float jumpVelocity = 2.0f;

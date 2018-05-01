@@ -87,7 +87,10 @@ void ApplyEffect(const ActiveEffect & effect, qvr::RenderComponent & renderCompo
 		[](const std::chrono::duration<float> timeLeft, const sf::Color pulseColour)
 	{
 		const float seconds = timeLeft.count();
-		const sf::Uint8 s = (sf::Uint8)(255.0f * abs(seconds - round(seconds)));
+		const sf::Uint8 s = 
+			floor(seconds) > 0.0f ? 
+			(sf::Uint8)(255.0f * abs(seconds - round(seconds))) : 
+			(sf::Uint8)(255.0f * abs(1.0f - seconds));
 		const sf::Uint8 r = std::max(pulseColour.r, s);
 		const sf::Uint8 g = std::max(pulseColour.g, s);
 		const sf::Uint8 b = std::max(pulseColour.b, s);

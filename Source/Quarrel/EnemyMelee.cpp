@@ -88,6 +88,22 @@ std::unique_ptr<qvr::CustomComponent> CreateEnemyMelee(qvr::Entity& entity) {
 	return std::make_unique<EnemyMelee>(entity);
 }
 
+using Radius = fluent::NamedType<float, struct RadiusTag>;
+
+b2Fixture* CreateSensorFixture(
+	b2Body& body, 
+	const Radius radius, 
+	const uint16 collidesWithCategories) 
+{
+	b2FixtureDef fixtureDef;
+	b2CircleShape circleShape = CreateCircleShape(radius.get());
+	fixtureDef.shape = &circleShape;
+	fixtureDef.isSensor = true;
+	fixtureDef.filter.categoryBits = FixtureFilterCategories::Sensor;
+	fixtureDef.filter.maskBits = collidesWithCategories;
+	return body.CreateFixture(&fixtureDef);
+}
+
 EnemyMelee::EnemyMelee(qvr::Entity& entity)
 	: CustomComponent(entity)
 {
@@ -96,15 +112,12 @@ EnemyMelee::EnemyMelee(qvr::Entity& entity)
 			*GetEntity().GetPhysics()->GetBody().GetFixtureList(),
 			FixtureFilterCategories::Enemy);
 
-		// Create sensor fixture.
-		b2FixtureDef fixtureDef;
-		b2CircleShape circleShape = CreateCircleShape(5.0f);
-		fixtureDef.shape = &circleShape;
-		fixtureDef.isSensor = true;
-		fixtureDef.filter.categoryBits = FixtureFilterCategories::Sensor;
-		// Only collide with Players.
-		fixtureDef.filter.maskBits = FixtureFilterCategories::Player;
-		sensorFixture = GetEntity().GetPhysics()->GetBody().CreateFixture(&fixtureDef);
+		// Create sensor fixture that only collides with Players.
+		sensorFixture = 
+			CreateSensorFixture(
+				GetEntity().GetPhysics()->GetBody(),
+				Radius(5.0f),
+				FixtureFilterCategories::Player);
 	}
 }
 

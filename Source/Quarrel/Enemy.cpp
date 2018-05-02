@@ -27,6 +27,7 @@
 #include "CrossbowBolt.h"
 #include "Damage.h"
 #include "Effects.h"
+#include "GuiUtils.h"
 #include "FirePropagation.h"
 #include "Utils.h"
 
@@ -326,18 +327,12 @@ void Enemy::OnStep(const std::chrono::duration<float> timestep)
 bool Enemy::CanShoot() const
 {
 	{
-		// Prevent shooting while playing certain anims.
-		const AnimatorCollection& animSystem = GetEntity().GetWorld().GetAnimators();
-		const AnimatorId animator = GetEntity().GetGraphics()->GetAnimatorId();
-		if (animSystem.Exists(animator))
-		{
-			const AnimationId anim = animSystem.GetAnimation(animator);
+		const AnimationId anim = GetCurrentAnimation(GetEntity());
 
-			if (anim == m_AwakeAnim ||
-				anim == m_ShootAnim)
-			{
-				return false;
-			}
+		if (anim == m_AwakeAnim ||
+			anim == m_ShootAnim)
+		{
+			return false;
 		}
 	}
 
@@ -415,40 +410,6 @@ void Enemy::SetAnimation(const AnimationId animationId, const AnimatorRepeatSett
 	}
 }
 
-optional<AnimationId> PickAnimationGui(
-	const char* title, 
-	const AnimationId currentAnim, 
-	const AnimatorCollection& animators)
-{
-	if (ImGui::CollapsingHeader(title))
-	{
-		ImGui::AutoIndent autoIndent;
-
-		if (currentAnim != AnimationId::Invalid)
-		{
-			if (auto animSourceInfo = animators.GetAnimations().GetSourceInfo(currentAnim))
-			{
-				ImGui::Text("Animation ID: %d", currentAnim.GetValue());
-				ImGui::Text("Animation Data Source:");
-				ImGui::Text("  Name: %s", animSourceInfo->name.c_str());
-				ImGui::Text("  File: %s", animSourceInfo->filename.c_str());
-			}
-			
-			if (ImGui::Button(fmt::format("No {}", title).c_str()))
-			{
-				return AnimationId::Invalid;
-			}
-		}
-		else
-		{
-			int selection = -1;
-			return PickAnimation(animators.GetAnimations(), selection);
-		}
-	}
-
-	return {};
-}
-
 class EnemyEditor : public CustomComponentEditorType<Enemy>
 {
 public:
@@ -486,40 +447,6 @@ public:
 
 std::unique_ptr<CustomComponentEditor> Enemy::CreateEditor() {
 	return std::make_unique<EnemyEditor>(*this);
-}
-
-json AnimationToJson(const AnimatorCollection& animators, const AnimationId animationId)
-{
-	if (animationId == AnimationId::Invalid) return {};
-	
-	auto log = GetConsoleLogger();
-
-	const std::string logCtx = fmt::format("AnimationToJson({}):", animationId);
-
-	if (!animators.GetAnimations().Contains(animationId))
-	{
-		log->error("{} Animation does not exist", logCtx);
-		return {};
-	}
-
-	const auto animSource = animators.GetAnimations().GetSourceInfo(animationId);
-	
-	if (!animSource)
-	{
-		log->error("{} Could not retrieve any Source Info for this Animation", logCtx);
-		return {};
-	}
-
-	json j = animSource.value();
-
-	return j;
-}
-
-AnimationId AnimationFromJson(const AnimatorCollection& animators, const nlohmann::json& j)
-{
-	AnimationSourceInfo animSource = j;
-
-	return animators.GetAnimations().GetAnimation(animSource);
 }
 
 json Enemy::ToJson() const

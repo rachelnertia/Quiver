@@ -4,8 +4,10 @@
 
 #include <Box2D/Collision/Shapes/b2CircleShape.h>
 #include <Box2D/Common/b2Math.h>
+#include <json.hpp>
 #include <optional.hpp>
 
+#include <Quiver/Animation/AnimationId.h>
 #include <Quiver/Entity/EntityId.h>
 #include <Quiver/Physics/PhysicsUtils.h>
 
@@ -14,6 +16,7 @@ class b2World;
 struct b2AABB;
 
 namespace qvr {
+class AnimatorCollection;
 class CustomComponent;
 class Entity;
 class World;
@@ -175,3 +178,13 @@ void HandleContactWithCrossbowBolt(
 	ActiveEffectSet& activeEffects);
 
 EntityRef GetCrossbowBoltFirer(const qvr::Entity& crossbowBoltEntity);
+
+qvr::AnimationId GetCurrentAnimation(const qvr::Entity& entity);
+
+nlohmann::json AnimationToJson(
+	const qvr::AnimatorCollection& animators, 
+	const qvr::AnimationId animationId);
+
+qvr::AnimationId AnimationFromJson(
+	const qvr::AnimatorCollection& animators, 
+	const nlohmann::json& j);

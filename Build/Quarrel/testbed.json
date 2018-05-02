@@ -8,6 +8,9 @@
             "Name": "awaken"
         },
         {
+            "File": "animations/evil_knight_attack.json"
+        },
+        {
             "File": "animations/darkmage_anims.json",
             "Name": "attack"
         },
@@ -28,6 +31,94 @@
         "Color": "450a1d00"
     },
     "Entities": [
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    -6.68520927429199,
+                    -17.5590019226074
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            6.74995231628418,
+                            -3.29359436035156
+                        ],
+                        [
+                            5.68194437026978,
+                            -0.201269149780273
+                        ],
+                        [
+                            -5.23199462890625,
+                            2.89613914489746
+                        ],
+                        [
+                            -7.37958145141602,
+                            0.884895324707031
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ff7950ff",
+                "Detached": false,
+                "GroundOffset": 0.0,
+                "Height": 5.25600004196167,
+                "SpriteRadius": 0.5
+            }
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    -5.45141363143921,
+                    -1.09316396713257
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            1.09375,
+                            -4.875
+                        ],
+                        [
+                            1.09375,
+                            4.875
+                        ],
+                        [
+                            -1.09375,
+                            4.875
+                        ],
+                        [
+                            -1.09375,
+                            -4.875
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "b62d38ff",
+                "Detached": false,
+                "GroundOffset": 0.0,
+                "Height": 8.0,
+                "SpriteRadius": 0.5
+            }
+        },
         {
             "PhysicsComponent": {
                 "Angle": -0.500160276889801,
@@ -451,94 +542,6 @@
                 }
             ],
             "PrefabName": "Pillar"
-        },
-        {
-            "PhysicsComponent": {
-                "Angle": 0.0,
-                "AngularDamping": 0.0,
-                "BodyType": "Static",
-                "FixedRotation": false,
-                "Friction": 0.200000002980232,
-                "IsBullet": false,
-                "LinearDamping": 0.0,
-                "Position": [
-                    -6.68520927429199,
-                    -17.5590019226074
-                ],
-                "Restitution": 0.0,
-                "Shape": {
-                    "Type": "Polygon",
-                    "Vertices": [
-                        [
-                            6.74995231628418,
-                            -3.29359436035156
-                        ],
-                        [
-                            5.68194437026978,
-                            -0.201269149780273
-                        ],
-                        [
-                            -5.23199462890625,
-                            2.89613914489746
-                        ],
-                        [
-                            -7.37958145141602,
-                            0.884895324707031
-                        ]
-                    ]
-                }
-            },
-            "RenderComponent": {
-                "Colour": "ff7950ff",
-                "Detached": false,
-                "GroundOffset": 0.0,
-                "Height": 5.25600004196167,
-                "SpriteRadius": 0.5
-            }
-        },
-        {
-            "PhysicsComponent": {
-                "Angle": 0.0,
-                "AngularDamping": 0.0,
-                "BodyType": "Static",
-                "FixedRotation": false,
-                "Friction": 0.200000002980232,
-                "IsBullet": false,
-                "LinearDamping": 0.0,
-                "Position": [
-                    -5.45141363143921,
-                    -1.09316396713257
-                ],
-                "Restitution": 0.0,
-                "Shape": {
-                    "Type": "Polygon",
-                    "Vertices": [
-                        [
-                            1.09375,
-                            -4.875
-                        ],
-                        [
-                            1.09375,
-                            4.875
-                        ],
-                        [
-                            -1.09375,
-                            4.875
-                        ],
-                        [
-                            -1.09375,
-                            -4.875
-                        ]
-                    ]
-                }
-            },
-            "RenderComponent": {
-                "Colour": "b62d38ff",
-                "Detached": false,
-                "GroundOffset": 0.0,
-                "Height": 8.0,
-                "SpriteRadius": 0.5
-            }
         },
         {
             "PhysicsComponent": {
@@ -2402,7 +2405,11 @@
         },
         {
             "CustomComponent": {
-                "Data": null,
+                "Data": {
+                    "AttackAnim": {
+                        "File": "animations/evil_knight_attack.json"
+                    }
+                },
                 "Type": "EnemyMelee"
             },
             "PhysicsComponent": {

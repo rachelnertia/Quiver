@@ -8,7 +8,9 @@
 
 #include <Quiver/Entity/Entity.h>
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
+#include <Quiver/Entity/RenderComponent/RenderComponent.h>
 #include <Quiver/Entity/PhysicsComponent/PhysicsComponent.h>
+#include <Quiver/Misc/Logging.h>
 #include <Quiver/World/World.h>
 
 #include "CrossbowBolt.h"
@@ -211,4 +213,50 @@ EntityRef GetCrossbowBoltFirer(const qvr::Entity& crossbowBoltEntity) {
 	auto& bolt = (CrossbowBolt&)(*crossbowBoltEntity.GetCustomComponent());
 
 	return bolt.shooter;
+}
+
+qvr::AnimationId GetCurrentAnimation(const qvr::Entity& entity) {
+	const qvr::AnimatorCollection& animSystem = entity.GetWorld().GetAnimators();
+	const qvr::AnimatorId animator = entity.GetGraphics()->GetAnimatorId();
+	if (animSystem.Exists(animator))
+	{
+		return animSystem.GetAnimation(animator);
+	}
+	return qvr::AnimationId::Invalid;
+}
+
+using json = nlohmann::json;
+
+json AnimationToJson(const qvr::AnimatorCollection & animators, const qvr::AnimationId animationId)
+{
+	if (animationId == qvr::AnimationId::Invalid) return {};
+
+	auto log = qvr::GetConsoleLogger();
+
+	const std::string logCtx = fmt::format("AnimationToJson({}):", animationId);
+
+	if (!animators.GetAnimations().Contains(animationId))
+	{
+		log->error("{} Animation does not exist", logCtx);
+		return {};
+	}
+
+	const auto animSource = animators.GetAnimations().GetSourceInfo(animationId);
+
+	if (!animSource)
+	{
+		log->error("{} Could not retrieve any Source Info for this Animation", logCtx);
+		return {};
+	}
+
+	json j = animSource.value();
+
+	return j;
+}
+
+qvr::AnimationId AnimationFromJson(const qvr::AnimatorCollection & animators, const json & j)
+{
+	qvr::AnimationSourceInfo animSource = j;
+
+	return animators.GetAnimations().GetAnimation(animSource);
 }

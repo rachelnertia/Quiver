@@ -493,12 +493,15 @@ void AnimationEditor::ProcessGui() {
 
 		ImGui::SliderAngle("Object Angle", &mAnimationPreviewObjectAngle, 0, 360.0f);
 
-		PutFrame(
-			mTexture, 
-			CalculateView(
-				mAnimationPreviewTarget.views, 
-				mAnimationPreviewObjectAngle,
-				mAnimationPreviewViewAngle));
+		if (mAnimationPreviewTarget.views.viewCount > 0)
+		{
+			PutFrame(
+				mTexture,
+				CalculateView(
+					mAnimationPreviewTarget.views,
+					mAnimationPreviewObjectAngle,
+					mAnimationPreviewViewAngle));
+		}
 	}
 
 	ImGui::End();

@@ -51,6 +51,8 @@ inline const Animation::Rect& CalculateView(
 	const float objectAngle, 
 	const float viewAngle)
 {
+	assert(vb.viewCount > 0);
+
 	const float Tau = 6.28318530718f;
 
 	const int viewIndex =

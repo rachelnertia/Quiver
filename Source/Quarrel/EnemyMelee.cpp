@@ -13,6 +13,7 @@
 #include "Damage.h"
 #include "Effects.h"
 #include "FirePropagation.h"
+#include "GuiUtils.h"
 #include "Gravity.h"
 #include "Utils.h"
 
@@ -32,6 +33,10 @@ class EnemyMelee : public qvr::CustomComponent
 	ActiveEffectSet activeEffects;
 	FiresInContact firesInContact;
 
+	qvr::AnimationId attackAnimation;
+
+	bool CanAttack();
+
 public:
 	EnemyMelee(qvr::Entity& entity);
 
@@ -50,7 +55,34 @@ public:
 		qvr::Entity& other,
 		b2Fixture& myFixture,
 		b2Fixture& otherFixture) override;
+
+	std::unique_ptr<qvr::CustomComponentEditor> CreateEditor() override;
+
+	nlohmann::json ToJson() const override;
+
+	bool FromJson(const nlohmann::json& j) override;
+
+	friend class EnemyMeleeEditor;
 };
+
+class EnemyMeleeEditor : public qvr::CustomComponentEditorType<EnemyMelee>
+{
+public:
+	EnemyMeleeEditor(EnemyMelee& target) : CustomComponentEditorType(target) {}
+
+	void GuiControls() override {
+		qvr::AnimatorCollection& animSystem = Target().GetEntity().GetWorld().GetAnimators();
+
+		if (const auto animationId = PickAnimationGui("Attack Animation", Target().attackAnimation, animSystem))
+		{
+			Target().attackAnimation = animationId.value();
+		}
+	}
+};
+
+std::unique_ptr<qvr::CustomComponentEditor> EnemyMelee::CreateEditor() {
+	return std::make_unique<EnemyMeleeEditor>(*this);
+}
 
 std::unique_ptr<qvr::CustomComponent> CreateEnemyMelee(qvr::Entity& entity) {
 	return std::make_unique<EnemyMelee>(entity);
@@ -140,21 +172,57 @@ void EnemyMelee::OnStep(const seconds deltaTime)
 		return;
 	}
 
-	if (target.Get()) {
-		const float speed = 1.0f;
+	qvr::Entity* targetEntity = target.Get();
 
-		MoveTowardsPosition(
-			GetEntity().GetPhysics()->GetBody(),
-			target.Get()->GetPhysics()->GetPosition(),
-			speed);
+	if (targetEntity) {
+		const float distance =
+			(GetEntity().GetPhysics()->GetPosition() - targetEntity->GetPhysics()->GetPosition()).Length();
 
-		if (GetEntity().GetGraphics()->GetGroundOffset() <= 0.0f) {
-			const float jumpVelocity = 2.0f;
-			upVelocity = jumpVelocity;
+		const float attackDistance = 1.0f;
+
+		if (distance > attackDistance) {
+			const float speed = 1.0f;
+
+			MoveTowardsPosition(
+				GetEntity().GetPhysics()->GetBody(),
+				targetEntity->GetPhysics()->GetPosition(),
+				speed);
+
+			if (GetEntity().GetGraphics()->GetGroundOffset() <= 0.0f) {
+				const float jumpVelocity = 2.0f;
+				upVelocity = jumpVelocity;
+			}
+		}
+		else if (CanAttack()) {
+			qvr::RenderComponent& graphics = *GetEntity().GetGraphics();
+
+			graphics.SetAnimation(attackAnimation, qvr::AnimatorRepeatSetting::Never);
 		}
 	}
 
 	upVelocity = ApplyGravity(upVelocity, deltaTime);
 	
 	UpdateGroundOffset(*GetEntity().GetGraphics(), GetPositionDelta(upVelocity, deltaTime));
+}
+
+bool EnemyMelee::CanAttack() {
+	return GetCurrentAnimation(GetEntity()) != attackAnimation;
+}
+
+using json = nlohmann::json;
+
+json EnemyMelee::ToJson() const {
+	const auto& animSystem = GetEntity().GetWorld().GetAnimators();
+
+	return json{
+		{"AttackAnim", AnimationToJson(animSystem, attackAnimation)}
+	};
+}
+
+bool EnemyMelee::FromJson(const nlohmann::json& j) {
+	auto& animSystem = GetEntity().GetWorld().GetAnimators();
+
+	attackAnimation = AnimationFromJson(animSystem, j.value<json>("AttackAnim", {}));
+
+	return true;
 }

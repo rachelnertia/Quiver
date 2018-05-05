@@ -3,12 +3,14 @@
 #include <functional>
 
 #include <Box2D/Collision/Shapes/b2CircleShape.h>
+#include <Box2D/Collision/Shapes/b2PolygonShape.h>
 #include <Box2D/Common/b2Math.h>
 #include <json.hpp>
 #include <optional.hpp>
 
 #include <Quiver/Animation/AnimationId.h>
 #include <Quiver/Entity/EntityId.h>
+#include <Quiver/Misc/Verify.h>
 #include <Quiver/Physics/PhysicsUtils.h>
 
 class b2Fixture;
@@ -37,6 +39,7 @@ const uint16 Projectile = 1 << 3;
 const uint16 CrossbowBolt = 1 << 4;
 const uint16 Enemy = 1 << 5;
 const uint16 Fire = 1 << 6;
+const uint16 EnemyAttack = 1 << 7;
 // RenderOnly is set by the engine. We shouldn't touch it.
 const uint16 RenderOnly = 1 << 15;
 }
@@ -166,6 +169,32 @@ inline b2CircleShape CreateCircleShape(const float radius)
 	b2CircleShape circle;
 	circle.m_radius = radius;
 	return circle;
+}
+
+inline b2PolygonShape CreateRegularPolygonShape(
+	const int vertexCount,
+	const float radius)
+{
+	b2PolygonShape shape;
+
+	if (!qvrVerify(vertexCount >= 3)) return shape;
+	if (!qvrVerify(vertexCount <= 8)) return shape;
+
+	std::array<b2Vec2, 8> points;
+
+	points[0].x = 0.0f;
+	points[1].y = radius;
+
+	const float stepRadians = (b2_pi * 2.0f) / vertexCount;
+	for (int pointIndex = 1; pointIndex < vertexCount; pointIndex++) {
+		const float radians = stepRadians * pointIndex;
+		points[pointIndex].x = sin(radians) * radius;
+		points[pointIndex].y = cos(radians) * radius;
+	}
+
+	shape.Set(points.data(), vertexCount);
+
+	return shape;
 }
 
 bool IsCrossbowBolt(const b2Fixture& fixture);

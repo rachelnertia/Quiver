@@ -235,6 +235,8 @@ const int PlayerDamageMax = 100;
 
 const int EnemyProjectileDamage = 20;
 
+const int EnemyAttackDamage = 30;
+
 }
 
 void Player::OnStep(const std::chrono::duration<float> deltaTime)
@@ -276,6 +278,15 @@ void Player::OnBeginContact(Entity& other, b2Fixture& myFixture, b2Fixture& othe
 {
 	auto log = GetConsoleLogger();
 	const char* logCtx = "Player::OnBeginContact";
+
+	if (FlagsAreSet(
+		FixtureFilterCategories::EnemyAttack,
+		otherFixture.GetFilterData().categoryBits))
+	{
+		log->debug("{} Player touching EnemyAttack fixture", logCtx);
+
+		AddDamage(mDamage, EnemyAttackDamage);
+	}
 	
 	if (other.GetCustomComponent()) {
 

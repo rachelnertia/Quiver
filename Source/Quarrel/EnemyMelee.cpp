@@ -36,6 +36,7 @@ class EnemyMelee : public qvr::CustomComponent
 	FiresInContact firesInContact;
 
 	qvr::AnimationId attackAnimation;
+	qvr::AnimationId dieAnimation;
 
 	std::function<void()> pendingAction;
 
@@ -87,6 +88,11 @@ public:
 		if (const auto animationId = PickAnimationGui("Attack Animation", Target().attackAnimation, animSystem))
 		{
 			Target().attackAnimation = animationId.value();
+		}
+
+		if (const auto animationId = PickAnimationGui("Die Animation", Target().dieAnimation, animSystem))
+		{
+			Target().dieAnimation = animationId.value();
 		}
 	}
 };
@@ -215,6 +221,11 @@ void EnemyMelee::OnStep(const seconds deltaTime)
 
 	if (HasExceededLimit(damageCounter)) {
 		DestroyAttackSwipeFixture();
+		
+		GetEntity().GetGraphics()->SetAnimation(
+			dieAnimation,
+			qvr::AnimatorRepeatSetting::Never);
+		
 		GetEntity().AddCustomComponent(nullptr);
 		return;
 	}
@@ -273,7 +284,8 @@ json EnemyMelee::ToJson() const {
 	const auto& animSystem = GetEntity().GetWorld().GetAnimators();
 
 	return json{
-		{"AttackAnim", AnimationToJson(animSystem, attackAnimation)}
+		{"AttackAnim", AnimationToJson(animSystem, attackAnimation)},
+		{"DieAnim", AnimationToJson(animSystem, dieAnimation)}
 	};
 }
 
@@ -281,6 +293,7 @@ bool EnemyMelee::FromJson(const nlohmann::json& j) {
 	auto& animSystem = GetEntity().GetWorld().GetAnimators();
 
 	attackAnimation = AnimationFromJson(animSystem, j.value<json>("AttackAnim", {}));
+	dieAnimation = AnimationFromJson(animSystem, j.value<json>("DieAnim", {}));
 
 	return true;
 }

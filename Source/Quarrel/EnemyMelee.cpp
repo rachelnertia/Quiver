@@ -215,12 +215,11 @@ void EnemyMelee::OnStep(const seconds deltaTime)
 	RemoveExpiredEffects(activeEffects);
 
 	if (HasExceededLimit(damageCounter)) {
-		// ?
+		DestroyAttackSwipeFixture();
 		GetEntity().AddCustomComponent(nullptr);
 		return;
 	}
 
-	
 	if (!IsAttacking()) {
 		DestroyAttackSwipeFixture();
 

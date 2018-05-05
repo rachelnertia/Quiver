@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Quiver/Entity/CustomComponent/CustomComponent.h"
-#include "Quiver/Graphics/Camera3D.h"
+#include <Quiver/Entity/CustomComponent/CustomComponent.h>
+#include <Quiver/Graphics/Camera3D.h>
 
 #include "Damage.h"
 #include "Effects.h"

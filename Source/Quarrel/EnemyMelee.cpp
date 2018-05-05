@@ -1,6 +1,7 @@
 #include "EnemyMelee.h"
 
 #include <Box2D/Collision/Shapes/b2CircleShape.h>
+#include <Box2D/Collision/Shapes/b2PolygonShape.h>
 #include <Box2D/Dynamics/b2Body.h>
 #include <Box2D/Dynamics/b2Fixture.h>
 
@@ -24,6 +25,7 @@ using seconds = std::chrono::duration<float>;
 class EnemyMelee : public qvr::CustomComponent
 {
 	b2Fixture* sensorFixture = nullptr;
+	b2Fixture* attackSwipeFixture = nullptr;
 	
 	EntityRef target;
 
@@ -35,7 +37,17 @@ class EnemyMelee : public qvr::CustomComponent
 
 	qvr::AnimationId attackAnimation;
 
-	bool CanAttack();
+	std::function<void()> pendingAction;
+
+	bool IsAttacking();
+	bool CanAttack() { return !IsAttacking(); }
+
+	void DestroyAttackSwipeFixture() {
+		if (attackSwipeFixture) {
+			GetEntity().GetPhysics()->GetBody().DestroyFixture(attackSwipeFixture);
+			attackSwipeFixture = nullptr;
+		}
+	}
 
 public:
 	EnemyMelee(qvr::Entity& entity);
@@ -104,6 +116,16 @@ b2Fixture* CreateSensorFixture(
 	return body.CreateFixture(&fixtureDef);
 }
 
+b2Fixture* CreateAttackSwipeFixture(b2Body& body, const Radius radius) {
+	b2FixtureDef fixtureDef;
+	b2CircleShape shape = CreateCircleShape(radius.get());
+	fixtureDef.shape = &shape;
+	fixtureDef.isSensor = true;
+	fixtureDef.filter.categoryBits = FixtureFilterCategories::EnemyAttack;
+	fixtureDef.filter.maskBits = FixtureFilterCategories::Player;
+	return body.CreateFixture(&fixtureDef);
+}
+
 EnemyMelee::EnemyMelee(qvr::Entity& entity)
 	: CustomComponent(entity)
 {
@@ -130,6 +152,14 @@ void EnemyMelee::OnBeginContact(
 		if (target.Get() == nullptr) {
 			target = EntityRef(other);
 		}
+
+		return;
+	}
+
+	if (&myFixture == attackSwipeFixture) {
+		pendingAction = [this]() -> void {
+			DestroyAttackSwipeFixture();
+		};
 
 		return;
 	}
@@ -168,6 +198,11 @@ void MoveTowardsPosition(b2Body& body, const b2Vec2& targetPosition, const float
 
 void EnemyMelee::OnStep(const seconds deltaTime) 
 {
+	if (pendingAction) {
+		pendingAction();
+		pendingAction = nullptr;
+	}
+
 	ApplyFires(firesInContact, activeEffects);
 	
 	for (auto& effect : activeEffects.container) {
@@ -185,31 +220,43 @@ void EnemyMelee::OnStep(const seconds deltaTime)
 		return;
 	}
 
-	qvr::Entity* targetEntity = target.Get();
+	
+	if (!IsAttacking()) {
+		DestroyAttackSwipeFixture();
 
-	if (targetEntity) {
-		const float distance =
-			(GetEntity().GetPhysics()->GetPosition() - targetEntity->GetPhysics()->GetPosition()).Length();
+		qvr::Entity* targetEntity = target.Get();
 
-		const float attackDistance = 1.0f;
+		if (targetEntity) {
+			const float distance =
+				(GetEntity().GetPhysics()->GetPosition() - targetEntity->GetPhysics()->GetPosition()).Length();
 
-		if (distance > attackDistance) {
-			const float speed = 1.0f;
+			const float attackDistance = 1.0f;
 
-			MoveTowardsPosition(
-				GetEntity().GetPhysics()->GetBody(),
-				targetEntity->GetPhysics()->GetPosition(),
-				speed);
+			if (distance > attackDistance) {
+				const float speed = 1.0f;
 
-			if (GetEntity().GetGraphics()->GetGroundOffset() <= 0.0f) {
-				const float jumpVelocity = 2.0f;
-				upVelocity = jumpVelocity;
+				MoveTowardsPosition(
+					GetEntity().GetPhysics()->GetBody(),
+					targetEntity->GetPhysics()->GetPosition(),
+					speed);
+
+				if (GetEntity().GetGraphics()->GetGroundOffset() <= 0.0f) {
+					const float jumpVelocity = 2.0f;
+					upVelocity = jumpVelocity;
+				}
 			}
-		}
-		else if (CanAttack()) {
-			qvr::RenderComponent& graphics = *GetEntity().GetGraphics();
+			else if (CanAttack()) {
+				qvr::RenderComponent& graphics = *GetEntity().GetGraphics();
 
-			graphics.SetAnimation(attackAnimation, qvr::AnimatorRepeatSetting::Never);
+				graphics.SetAnimation(attackAnimation, qvr::AnimatorRepeatSetting::Never);
+
+				if (attackSwipeFixture == nullptr) {
+					attackSwipeFixture =
+						CreateAttackSwipeFixture(
+							GetEntity().GetPhysics()->GetBody(),
+							Radius(1.0f));
+				}
+			}
 		}
 	}
 
@@ -218,8 +265,8 @@ void EnemyMelee::OnStep(const seconds deltaTime)
 	UpdateGroundOffset(*GetEntity().GetGraphics(), GetPositionDelta(upVelocity, deltaTime));
 }
 
-bool EnemyMelee::CanAttack() {
-	return GetCurrentAnimation(GetEntity()) != attackAnimation;
+bool EnemyMelee::IsAttacking() {
+	return GetCurrentAnimation(GetEntity()) == attackAnimation;
 }
 
 using json = nlohmann::json;

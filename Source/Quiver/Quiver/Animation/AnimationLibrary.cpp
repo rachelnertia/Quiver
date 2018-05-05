@@ -245,6 +245,9 @@ void to_json(json& j, const AnimationSourceInfo& animationSource) {
 
 void from_json(const json& j, AnimationSourceInfo& animationSource)
 {
+	if (j.empty()) {
+		return;
+	}
 	animationSource.filename = j.at("File").get<std::string>();
 	animationSource.name     = j.value<std::string>("Name", {});
 }

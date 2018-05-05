@@ -40,7 +40,6 @@ class EnemyMelee : public qvr::CustomComponent
 	std::function<void()> pendingAction;
 
 	bool IsAttacking();
-	bool CanAttack() { return !IsAttacking(); }
 
 	void DestroyAttackSwipeFixture() {
 		if (attackSwipeFixture) {
@@ -244,7 +243,7 @@ void EnemyMelee::OnStep(const seconds deltaTime)
 					upVelocity = jumpVelocity;
 				}
 			}
-			else if (CanAttack()) {
+			else {
 				qvr::RenderComponent& graphics = *GetEntity().GetGraphics();
 
 				graphics.SetAnimation(attackAnimation, qvr::AnimatorRepeatSetting::Never);

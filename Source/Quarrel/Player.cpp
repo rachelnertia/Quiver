@@ -165,18 +165,16 @@ void Player::HandleInput(
 	
 	b2Body& body = GetEntity().GetPhysics()->GetBody();
 
-	// Move.
-	{
+	// Move. Don't check player input if the player is being pushed quickly by something
+	// already.
+	if (mMoveSpeed > body.GetLinearVelocity().Length()) {
 		const b2Vec2 dir = GetDirectionVector(devices);
 
 		// Don't override the body's velocity if the player isn't providing any input.
 		if (dir.LengthSquared() != 0.0f) {
-			b2Rot bodyRot(body.GetAngle());
-
 			// Rotate the direction vector into the body's frame.
-			b2Vec2 forceDir = b2Mul(bodyRot, dir);
-
-			body.SetLinearVelocity(mMoveSpeed * forceDir);
+			b2Vec2 moveDir = b2Mul(b2Rot(body.GetAngle()), dir);
+			body.SetLinearVelocity(mMoveSpeed * moveDir);
 		}
 	}
 
@@ -286,6 +284,15 @@ void Player::OnBeginContact(Entity& other, b2Fixture& myFixture, b2Fixture& othe
 		log->debug("{} Player touching EnemyAttack fixture", logCtx);
 
 		AddDamage(mDamage, EnemyAttackDamage);
+
+		b2Body& myBody = GetEntity().GetPhysics()->GetBody();
+		const b2Vec2 impulseDirection = [&myBody, &otherFixture]() {
+			b2Vec2 direction = myBody.GetPosition() - otherFixture.GetBody()->GetPosition();
+			direction.Normalize();
+			return direction;
+		}();
+
+		myBody.ApplyLinearImpulse(5.0f * impulseDirection, myBody.GetPosition(), true);
 	}
 	
 	if (other.GetCustomComponent()) {

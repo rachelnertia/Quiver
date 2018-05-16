@@ -16,6 +16,7 @@
 #include "FirePropagation.h"
 #include "GuiUtils.h"
 #include "Gravity.h"
+#include "MovementSpeed.h"
 #include "Utils.h"
 
 using namespace std::chrono_literals;
@@ -39,6 +40,8 @@ class EnemyMelee : public qvr::CustomComponent
 	qvr::AnimationId dieAnimation;
 
 	std::function<void()> pendingAction;
+
+	MovementSpeed movementSpeed = MovementSpeed(1.0f);
 
 	bool IsAttacking();
 
@@ -208,6 +211,8 @@ void EnemyMelee::OnStep(const seconds deltaTime)
 		pendingAction = nullptr;
 	}
 
+	movementSpeed.ResetMultiplier();
+
 	ApplyFires(firesInContact, activeEffects);
 	
 	for (auto& effect : activeEffects.container) {
@@ -215,6 +220,7 @@ void EnemyMelee::OnStep(const seconds deltaTime)
 			ApplyEffect(effect, damageCounter);
 		}
 		ApplyEffect(effect, *GetEntity().GetGraphics());
+		ApplyEffect(effect, movementSpeed);
 	}
 
 	RemoveExpiredEffects(activeEffects);
@@ -242,16 +248,16 @@ void EnemyMelee::OnStep(const seconds deltaTime)
 			const float attackDistance = 1.0f;
 
 			if (distance > attackDistance) {
-				const float speed = 1.0f;
+				if (movementSpeed.Get() > 0.0f) {
+					MoveTowardsPosition(
+						GetEntity().GetPhysics()->GetBody(),
+						targetEntity->GetPhysics()->GetPosition(),
+						movementSpeed.Get());
 
-				MoveTowardsPosition(
-					GetEntity().GetPhysics()->GetBody(),
-					targetEntity->GetPhysics()->GetPosition(),
-					speed);
-
-				if (GetEntity().GetGraphics()->GetGroundOffset() <= 0.0f) {
-					const float jumpVelocity = 2.0f;
-					upVelocity = jumpVelocity;
+					if (GetEntity().GetGraphics()->GetGroundOffset() <= 0.0f) {
+						const float jumpVelocity = 2.0f;
+						upVelocity = jumpVelocity;
+					}
 				}
 			}
 			else {

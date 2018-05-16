@@ -6,6 +6,7 @@
 #include <Quiver/Entity/RenderComponent/RenderComponent.h>
 
 #include "Damage.h"
+#include "MovementSpeed.h"
 
 using namespace std::chrono_literals;
 
@@ -41,6 +42,14 @@ void AddActiveEffect(const ActiveEffectType effectType, ActiveEffectSet& activeE
 		AddOrResetDuration(burningDuration);
 		break;
 	}
+	case ActiveEffectType::Frozen:
+	{
+		// TODO: Fun stuff with interactions between Frozen/Wet and Burning.
+
+		const auto frozenDuration = 10s;
+		AddOrResetDuration(frozenDuration);
+		break;
+	}
 	}
 }
 
@@ -65,6 +74,18 @@ void ApplyEffect(const ActiveEffect & activeEffect, DamageCount & damage)
 	case ActiveEffectType::Poisoned:
 		AddDamage(damage, 1);
 		break;
+	}
+}
+
+void ApplyEffect(const ActiveEffect& effect, MovementSpeed& speed)
+{
+	assert(effect.type != ActiveEffectType::None);
+
+	if (effect.type == ActiveEffectType::Chilled) {
+		speed.SetMultiplier(0.5f);
+	}
+	else if (effect.type == ActiveEffectType::Frozen) {
+		speed.SetMultiplier(0.0f);
 	}
 }
 
@@ -116,5 +137,10 @@ void ApplyEffect(const ActiveEffect & effect, qvr::RenderComponent & renderCompo
 				sf::Color::Green));
 		break;
 	}
+	case ActiveEffectType::Frozen:
+		renderComponent.SetColor(
+			CalculatePulseColour(
+				effect.remainingDuration,
+				sf::Color::Blue));
 	}
 }

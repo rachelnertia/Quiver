@@ -54,6 +54,7 @@ inline qvr::FixtureFilterBitNames CreateFilterBitNames()
 	bitNames[4] = "CrossbowBolt";
 	bitNames[5] = "Enemy";
 	bitNames[6] = "Fire";
+	bitNames[7] = "EnemyAttack";
 	return bitNames;
 }
 

@@ -45,8 +45,8 @@ Crossbow::Crossbow(Player& player)
 
 	quarrelSlots[1] = type;
 
-	type.colour = sf::Color::Green;
-	type.effect.appliesEffect = ActiveEffectType::Poisoned;
+	type.colour = sf::Color::Blue;
+	type.effect.appliesEffect = ActiveEffectType::Frozen;
 
 	quarrelSlots[2] = type;
 

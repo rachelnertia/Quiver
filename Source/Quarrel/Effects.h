@@ -10,11 +10,15 @@ class RenderComponent;
 
 struct DamageCount;
 
+class MovementSpeed;
+
 enum class ActiveEffectType
 {
 	None,
 	Burning,
-	Poisoned
+	Poisoned,
+	Chilled,
+	Frozen
 };
 
 struct ActiveEffect
@@ -39,4 +43,5 @@ void RemoveExpiredEffects(ActiveEffectSet& activeEffects);
 bool UpdateEffect(ActiveEffect& activeEffect, const std::chrono::duration<float> deltaTime);
 
 void ApplyEffect(const ActiveEffect& activeEffect, DamageCount& damage);
+void ApplyEffect(const ActiveEffect& effect, MovementSpeed& speed);
 void ApplyEffect(const ActiveEffect& effect, qvr::RenderComponent& renderComponent);

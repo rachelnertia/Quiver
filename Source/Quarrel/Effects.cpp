@@ -10,44 +10,81 @@
 
 using namespace std::chrono_literals;
 
-void AddActiveEffect(const ActiveEffectType effectType, ActiveEffectSet& activeEffects)
+bool RemoveActiveEffect(const ActiveEffectType effectType, ActiveEffectSet& effects)
+{
+	const auto removedIt = 
+		std::remove_if(
+			std::begin(effects.container),
+			std::end(effects.container),
+			[effectType](const ActiveEffect& effect) { return effect.type == effectType; });
+
+	const bool removed = removedIt != std::end(effects.container);
+
+	effects.container.erase(removedIt, std::end(effects.container));
+
+	return removed;
+}
+
+auto AddOrResetDuration(
+	const ActiveEffectType type,
+	const std::chrono::duration<float> duration,
+	ActiveEffectSet& effects) 
 {
 	using namespace std;
 
-	auto AddOrResetDuration = [&](const std::chrono::duration<float> duration) {
-		auto it = find_if(
-			begin(activeEffects.container),
-			end(activeEffects.container),
-			[effectType](const auto& effect) { return effectType == effect.type; });
-		if (it == end(activeEffects.container)) {
-			activeEffects.container.push_back({ effectType, duration, 0s });
-		}
-		else {
-			it->remainingDuration = duration;
-		}
-	};
+	auto it = find_if(
+		begin(effects.container),
+		end(effects.container),
+		[type](const auto& effect) { return type == effect.type; });
+	if (it == end(effects.container)) {
+		effects.container.push_back({ type, duration, 0s });
+	}
+	else {
+		it->remainingDuration = duration;
+	}
+};
 
+void AddActiveEffect(const ActiveEffectType effectType, ActiveEffectSet& activeEffects)
+{
 	switch (effectType)
 	{
 	case ActiveEffectType::None: return;
 	case ActiveEffectType::Poisoned:
 	{
 		const auto poisonDuration = 10s;
-		AddOrResetDuration(poisonDuration);
+		AddOrResetDuration(effectType, poisonDuration, activeEffects);
 		break;
 	}
 	case ActiveEffectType::Burning:
 	{
-		const auto burningDuration = 10s;
-		AddOrResetDuration(burningDuration);
+		if (RemoveActiveEffect(ActiveEffectType::Frozen, activeEffects))
+		{
+			const auto chilledDuration = 5s;
+			AddOrResetDuration(ActiveEffectType::Chilled, chilledDuration, activeEffects);
+		}
+		else if (RemoveActiveEffect(ActiveEffectType::Chilled, activeEffects) == false)
+		{
+			const auto burningDuration = 10s;
+			AddOrResetDuration(effectType, burningDuration, activeEffects);
+		}
+
 		break;
 	}
 	case ActiveEffectType::Frozen:
 	{
-		// TODO: Fun stuff with interactions between Frozen/Wet and Burning.
+		if (RemoveActiveEffect(ActiveEffectType::Burning, activeEffects))
+		{
+			const auto chilledDuration = 5s;
+			AddOrResetDuration(ActiveEffectType::Chilled, chilledDuration, activeEffects);
+		}
+		else
+		{
+			RemoveActiveEffect(ActiveEffectType::Chilled, activeEffects);
 
-		const auto frozenDuration = 10s;
-		AddOrResetDuration(frozenDuration);
+			const auto frozenDuration = 10s;
+			AddOrResetDuration(effectType, frozenDuration, activeEffects);
+		}
+
 		break;
 	}
 	}

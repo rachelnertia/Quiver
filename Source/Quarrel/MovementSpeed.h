@@ -18,6 +18,8 @@ public:
 
 	float Get() const { return baseSpeed * multiplier; }
 
+	float GetBase() const { return baseSpeed; }
+
 	float GetMultiplier() const { return multiplier; }
 	
 	void SetMultiplier(const float newMultiplier) { 

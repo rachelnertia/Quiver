@@ -5,6 +5,7 @@
 #include "CameraHelpers.h"
 #include "Damage.h"
 #include "Effects.h"
+#include "MovementSpeed.h"
 #include "FirePropagation.h"
 #include "Utils.h"
 #include "Weapon.h"
@@ -23,7 +24,7 @@ class Weapon;
 struct PlayerDesc {
 	ActiveEffectSet activeEffects;
 	DamageCount damage = DamageCount(50);
-	float moveSpeed = 1.0f;
+	MovementSpeed moveSpeed = MovementSpeed(1.0f);
 };
 
 class Player : public qvr::CustomComponent {
@@ -71,7 +72,7 @@ private:
 	
 	FiresInContact m_FiresInContact;
 
-	float mMoveSpeed;
+	MovementSpeed mMoveSpeed;
 	
 	DamageCount mDamage;
 	

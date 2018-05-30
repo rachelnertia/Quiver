@@ -17,19 +17,20 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
-#include "Quiver/Audio/Listener.h"
-#include "Quiver/Animation/Animators.h"
-#include "Quiver/Animation/AnimationData.h"
-#include "Quiver/Entity/Entity.h"
-#include "Quiver/Entity/RenderComponent/RenderComponent.h"
-#include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
-#include "Quiver/Input/BinaryInput.h"
-#include "Quiver/Input/Mouse.h"
-#include "Quiver/Input/Keyboard.h"
-#include "Quiver/Input/RawInput.h"
-#include "Quiver/Misc/JsonHelpers.h"
-#include "Quiver/Misc/Logging.h"
-#include "Quiver/World/World.h"
+#include <Quiver/Audio/Listener.h>
+#include <Quiver/Animation/Animators.h>
+#include <Quiver/Animation/AnimationData.h>
+#include <Quiver/Entity/Entity.h>
+#include <Quiver/Entity/RenderComponent/RenderComponent.h>
+#include <Quiver/Entity/PhysicsComponent/PhysicsComponent.h>
+#include <Quiver/Input/BinaryInput.h>
+#include <Quiver/Input/Mouse.h>
+#include <Quiver/Input/Keyboard.h>
+#include <Quiver/Input/RawInput.h>
+#include <Quiver/Misc/ImGuiHelpers.h>
+#include <Quiver/Misc/JsonHelpers.h>
+#include <Quiver/Misc/Logging.h>
+#include <Quiver/World/World.h>
 
 #include "Crossbow.h"
 #include "PlayerInput.h"
@@ -165,14 +166,14 @@ void Player::HandleInput(
 
 	// Move. Don't check player input if the player is being pushed quickly by something
 	// already.
-	if (mMoveSpeed > body.GetLinearVelocity().Length()) {
+	if (mMoveSpeed.Get() > body.GetLinearVelocity().Length()) {
 		const b2Vec2 dir = GetDirectionVector(devices);
 
 		// Don't override the body's velocity if the player isn't providing any input.
 		if (dir.LengthSquared() != 0.0f) {
 			// Rotate the direction vector into the body's frame.
 			b2Vec2 moveDir = b2Mul(b2Rot(body.GetAngle()), dir);
-			body.SetLinearVelocity(mMoveSpeed * moveDir);
+			body.SetLinearVelocity(mMoveSpeed.Get() * moveDir);
 		}
 	}
 
@@ -330,7 +331,7 @@ public:
 	PlayerEditor(Player& player) : CustomComponentEditorType(player) {}
 	
 	void GuiControls() override {
-		ImGui::SliderFloat("Move Speed", &Target().mMoveSpeed, 0.0f, 20.0f);
+		ImGui::SliderFloat("Move Speed", Target().mMoveSpeed, &MovementSpeed::GetBase, &MovementSpeed::SetBase, 0.0f, 20.0f);
 	}
 };
 
@@ -342,7 +343,7 @@ nlohmann::json Player::ToJson() const
 {
 	nlohmann::json j;
 
-	j["MoveSpeed"] = mMoveSpeed;
+	j["MoveSpeed"] = mMoveSpeed.GetBase();
 
 	{
 		nlohmann::json cameraJson;
@@ -358,7 +359,7 @@ nlohmann::json Player::ToJson() const
 bool Player::FromJson(const nlohmann::json& j)
 {
 	if (j.find("MoveSpeed") != j.end()) {
-		mMoveSpeed = j["MoveSpeed"];
+		mMoveSpeed = MovementSpeed(j["MoveSpeed"].get<float>());
 	}
 
 	if (j.find("Camera") != j.end()) {

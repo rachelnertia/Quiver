@@ -1,11 +1,12 @@
 #pragma once
 
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
-#include <Quiver/Graphics/Camera3D.h>
 
+#include "CameraHelpers.h"
 #include "Damage.h"
 #include "Effects.h"
 #include "FirePropagation.h"
+#include "Utils.h"
 #include "Weapon.h"
 
 namespace sf {
@@ -19,10 +20,16 @@ class Entity;
 class PlayerEditor;
 class Weapon;
 
+struct PlayerDesc {
+	ActiveEffectSet activeEffects;
+	DamageCount damage = DamageCount(50);
+	float moveSpeed = 1.0f;
+};
+
 class Player : public qvr::CustomComponent {
 public:
 	Player(qvr::Entity& entity);
-	~Player();
+	Player(qvr::Entity& entity, CameraOwner&& camera, const PlayerDesc& desc);
 
 	void HandleInput(
 		qvr::RawInputDevices& inputDevices, 
@@ -46,7 +53,12 @@ public:
 	nlohmann::json ToJson() const override;
 	bool FromJson(const nlohmann::json& j) override;
 
-	qvr::Camera3D mCamera;
+	PlayerDesc GetDesc();
+
+	qvr::Camera3D       & GetCamera()       { return cameraOwner.camera; }
+	qvr::Camera3D const & GetCamera() const { return cameraOwner.camera; }
+
+	CameraOwner cameraOwner;
 
 	friend class PlayerEditor;
 
@@ -59,11 +71,13 @@ private:
 	
 	FiresInContact m_FiresInContact;
 
-	float mMoveSpeed = 1.0f;
+	float mMoveSpeed;
 	
-	DamageCount mDamage = DamageCount(50);
+	DamageCount mDamage;
 	
 	std::unique_ptr<Weapon> mCurrentWeapon;
 
 	bool mCannotDie = false;
+
+	TimeLerper<float> fovLerper;
 };

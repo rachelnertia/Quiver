@@ -23,7 +23,7 @@ class Crossbow : public Weapon {
 public:
 	Crossbow(Player& player);
 
-	void OnStep(const qvr::RawInputDevices& inputDevices, const float deltaSeconds) override;
+	void HandleInput(const qvr::RawInputDevices& inputDevices, const float deltaSeconds) override;
 	void Render(sf::RenderTarget& target) override;
 
 private:

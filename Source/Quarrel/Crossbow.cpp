@@ -9,6 +9,7 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 
+#include <Quiver/Audio/Listener.h>
 #include <Quiver/World/World.h>
 #include <Quiver/Entity/Entity.h>
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
@@ -31,7 +32,7 @@ using namespace qvr;
 
 Crossbow::Crossbow(Player& player) 
 	: Weapon(player) 
-	, deltaRadians(player.mCamera.GetRotation())
+	, deltaRadians(player.GetCamera().GetRotation())
 {
 	QuarrelTypeInfo type;
 	type.colour = sf::Color::Black;
@@ -45,8 +46,9 @@ Crossbow::Crossbow(Player& player)
 
 	quarrelSlots[1] = type;
 
-	type.colour = sf::Color::Blue;
-	type.effect.appliesEffect = ActiveEffectType::Frozen;
+	type.colour = sf::Color::White;
+	type.effect.appliesEffect = ActiveEffectType::None;
+	type.effect.specialEffect = SpecialEffectType::Teleport;
 
 	quarrelSlots[2] = type;
 
@@ -162,7 +164,7 @@ void Crossbow::UpdateOffset(const float deltaSeconds)
 	// Account for forwards/backwards movement.
 	const float forwardsVelocity = b2Dot(
 		mPlayer.GetEntity().GetPhysics()->GetBody().GetLinearVelocity(),
-		mPlayer.mCamera.GetForwards());
+		mPlayer.GetCamera().GetForwards());
 
 	offsetYTarget += 0.025f * std::max(-1.0f, std::min(1.0f, forwardsVelocity));
 	
@@ -180,16 +182,16 @@ void Crossbow::UpdateOffset(const float deltaSeconds)
 	// Account for sideways movement.
 	const float lateralVelocity = b2Dot(
 		mPlayer.GetEntity().GetPhysics()->GetBody().GetLinearVelocity(),
-		mPlayer.mCamera.GetRightwards());
+		mPlayer.GetCamera().GetRightwards());
 
 	offsetXTarget += 0.05f * std::max(-1.0f, std::min(1.0f, lateralVelocity));
 
 	mOffset.x = Lerp(mOffset.x, offsetXTarget, 0.25f);
 }
 
-void Crossbow::OnStep(const qvr::RawInputDevices& inputDevices, const float deltaSeconds)
+void Crossbow::HandleInput(const qvr::RawInputDevices& inputDevices, const float deltaSeconds)
 {
-	deltaRadians.Update(mPlayer.mCamera.GetRotation());
+	deltaRadians.Update(mPlayer.GetCamera().GetRotation());
 
 	namespace xb = qvr::Xbox360Controller;
 
@@ -423,6 +425,82 @@ Entity* MakeCrossbowBolt(
 	return projectile;
 }
 
+class TeleportBolt : public qvr::CustomComponent
+{
+public:
+	std::string GetTypeName() const override { return "TeleportBolt"; }
+
+	const float fovMultiplier = 1.5f;
+
+	TeleportBolt(Player& player, const b2Vec2& velocity) 
+		: qvr::CustomComponent(player.GetEntity()) 
+		, velocity(velocity)
+		, cameraOwner(std::move(player.cameraOwner))
+		, playerDesc(player.GetDesc())
+		, fovLerper(
+			GetCamera().GetFovRadians(), 
+			GetCamera().GetFovRadians() * fovMultiplier,
+			0.25f)
+	{}
+
+	b2Vec2 velocity;
+
+	CameraOwner cameraOwner;
+
+	PlayerDesc playerDesc;
+
+	TimeLerper<float> fovLerper;
+
+	bool finish = false;
+
+	Camera3D& GetCamera() { return cameraOwner.camera; }
+
+	void OnBeginContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherFixture) override
+	{
+		if (FlagsAreSet(FixtureFilterCategories::Sensor, GetCategoryBits(otherFixture)))
+		{
+			return;
+		}
+
+		finish = true;
+	}
+
+	void OnStep(const std::chrono::duration<float> deltaTime) override
+	{
+		b2Body& body = GetEntity().GetPhysics()->GetBody();
+		
+		if (finish) {
+			body.SetLinearVelocity(b2Vec2(0.0f, 0.0f));
+
+			GetEntity().AddCustomComponent(
+				std::make_unique<Player>(GetEntity(), std::move(cameraOwner), playerDesc));
+
+			return;
+		}
+
+		body.SetLinearVelocity(velocity);
+
+		GetCamera().SetFov(fovLerper.Update(deltaTime.count()));
+
+		GetCamera().SetPosition(body.GetPosition());
+		GetCamera().SetRotation(body.GetAngle());
+
+		qvr::UpdateListener(GetCamera());
+
+		// TODO: Camera control.
+	}
+};
+
+void MakeTeleportBolt(
+	Player& shooter,
+	const b2Vec2& velocity)
+{
+	shooter.GetEntity().AddCustomComponent(
+		std::make_unique<TeleportBolt>(
+			shooter,
+			velocity));
+}
+
 void Crossbow::Shoot()
 {
 	if (!qvrVerify(mLoadedQuarrel))
@@ -435,15 +513,24 @@ void Crossbow::Shoot()
 	mShootSound.play();
 
 	const auto position = mPlayer.GetEntity().GetPhysics()->GetPosition();
-	const auto direction = mPlayer.mCamera.GetForwards();
-	const auto velocity = mPlayer.GetEntity().GetPhysics()->GetBody().GetLinearVelocity();
+	const auto direction = mPlayer.GetCamera().GetForwards();
+	const auto speed = 40.0f;
+
+	if (mLoadedQuarrel->mTypeInfo.effect.specialEffect == SpecialEffectType::Teleport)
+	{
+		MakeTeleportBolt(this->mPlayer, speed * direction);
+		
+		return;
+	}
+
+	const auto inheritedVelocity = 0.1f * mPlayer.GetEntity().GetPhysics()->GetBody().GetLinearVelocity();
 
 	MakeCrossbowBolt(
 		mPlayer.GetEntity().GetWorld(),
 		position,
 		direction,
-		40.0f,
-		0.1f * velocity,
+		speed,
+		inheritedVelocity,
 		mProjectileRenderCompJson,
 		mLoadedQuarrel->mTypeInfo.colour,
 		mLoadedQuarrel->mTypeInfo.effect,

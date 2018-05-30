@@ -9,10 +9,17 @@
 #include "Effects.h"
 #include "Utils.h"
 
+enum class SpecialEffectType
+{
+	None,
+	Teleport
+};
+
 struct CrossbowBoltEffect
 {
 	int immediateDamage = 0;
 	ActiveEffectType appliesEffect = ActiveEffectType::None;
+	SpecialEffectType specialEffect = SpecialEffectType::None;
 };
 
 class CrossbowBolt : public qvr::CustomComponent

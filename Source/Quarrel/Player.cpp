@@ -46,27 +46,31 @@ void AddFilterCategories(b2Fixture& fixture, const int16 categories) {
 	fixture.SetFilterData(filter);
 }
 
-Player::Player(Entity& entity) 
+Player::Player(Entity& entity)
+	: Player(
+		entity, 
+		CameraOwner(entity.GetWorld(), entity.GetPhysics()->GetBody().GetTransform()),
+		PlayerDesc())
+{}
+
+Player::Player(Entity& entity, CameraOwner&& camera, const PlayerDesc& desc)
 	: CustomComponent(entity)
-	, mCurrentWeapon(std::make_unique<Crossbow>(*this)) 
-	, mCamera(entity.GetPhysics()->GetBody().GetTransform())
+	, mCurrentWeapon(std::make_unique<Crossbow>(*this))
+	, cameraOwner(std::move(camera))
+	, mMoveSpeed(desc.moveSpeed)
+	, mDamage(desc.damage)
+	, m_ActiveEffects(desc.activeEffects)
+	, fovLerper(GetCamera().GetFovRadians(), b2_pi / 2, 0.1f)
 {
 	AddFilterCategories(
 		*GetEntity().GetPhysics()->GetBody().GetFixtureList(),
 		FixtureFilterCategories::Player);
 
-	GetEntity().GetWorld().RegisterCamera(mCamera);
-	
-	mCamera.SetOverlayDrawer([this](sf::RenderTarget& target) {
+	GetCamera().SetOverlayDrawer([this](sf::RenderTarget& target) {
 		this->RenderCurrentWeapon(target);
 		this->RenderActiveEffects(target);
 		this->RenderHud(target);
 	});
-}
-
-Player::~Player() 
-{
-	GetEntity().GetWorld().UnregisterCamera(mCamera);
 }
 
 class DeadPlayer : public CustomComponent
@@ -74,15 +78,9 @@ class DeadPlayer : public CustomComponent
 public:
 	DeadPlayer(Entity& entity, Player& player)
 		: CustomComponent(entity)
-		, mCamera(player.mCamera)
+		, mCamera(std::move(player.cameraOwner))
 	{
-		entity.GetWorld().RegisterCamera(mCamera);
-
-		if (entity.GetWorld().GetMainCamera() == &player.mCamera) {
-			entity.GetWorld().SetMainCamera(mCamera);
-		}
-
-		mCamera.SetHeight(0.0f);
+		mCamera.camera.SetHeight(0.0f);
 	}
 
 	std::string GetTypeName() const override { return "DeadPlayer"; }
@@ -90,14 +88,14 @@ public:
 	void OnStep(const std::chrono::duration<float> deltaTime) override {
 		b2Body& body = GetEntity().GetPhysics()->GetBody();
 
-		mCamera.SetPosition(body.GetPosition());
-		mCamera.SetRotation(body.GetAngle());
+		mCamera.camera.SetPosition(body.GetPosition());
+		mCamera.camera.SetRotation(body.GetAngle());
 
-		qvr::UpdateListener(mCamera);
+		qvr::UpdateListener(mCamera.camera);
 	}
 
 private:
-	Camera3D mCamera;
+	CameraOwner mCamera;
 
 };
 
@@ -186,7 +184,7 @@ void Player::HandleInput(
 			EnemyAhead(
 				*GetEntity().GetWorld().GetPhysicsWorld(),
 				body.GetPosition(),
-				mCamera.GetForwards());
+				GetCamera().GetForwards());
 
 		if (stickyLook) {
 			const float stickyLookModifier = 0.5f;
@@ -223,7 +221,7 @@ void Player::HandleInput(
 	}
 
 	if (mCurrentWeapon != nullptr) {
-		mCurrentWeapon->OnStep(devices, deltaTime.count());
+		mCurrentWeapon->HandleInput(devices, deltaTime.count());
 	}
 }
 
@@ -266,10 +264,12 @@ void Player::OnStep(const std::chrono::duration<float> deltaTime)
 
 	b2Body& body = GetEntity().GetPhysics()->GetBody();
 
-	mCamera.SetPosition(body.GetPosition());
-	mCamera.SetRotation(body.GetAngle());
+	GetCamera().SetPosition(body.GetPosition());
+	GetCamera().SetRotation(body.GetAngle());
 
-	qvr::UpdateListener(mCamera);
+	GetCamera().SetFov(fovLerper.Update(deltaTime.count()));
+
+	qvr::UpdateListener(GetCamera());
 }
 
 void Player::OnBeginContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherFixture)
@@ -347,7 +347,7 @@ nlohmann::json Player::ToJson() const
 	{
 		nlohmann::json cameraJson;
 
-		if (mCamera.ToJson(cameraJson, &GetEntity().GetWorld())) {
+		if (GetCamera().ToJson(cameraJson, &GetEntity().GetWorld())) {
 			j["Camera"] = cameraJson;
 		}
 	}
@@ -362,10 +362,18 @@ bool Player::FromJson(const nlohmann::json& j)
 	}
 
 	if (j.find("Camera") != j.end()) {
-		mCamera.FromJson(j["Camera"], &GetEntity().GetWorld());
+		GetCamera().FromJson(j["Camera"], &GetEntity().GetWorld());
 	}
 	
 	return true;
+}
+
+PlayerDesc Player::GetDesc() {
+	return PlayerDesc{
+		m_ActiveEffects,
+		mDamage,
+		mMoveSpeed
+	};
 }
 
 void Player::RenderCurrentWeapon(sf::RenderTarget& target) const {

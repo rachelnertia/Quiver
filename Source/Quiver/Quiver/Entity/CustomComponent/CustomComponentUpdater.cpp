@@ -13,6 +13,10 @@ void CustomComponentUpdater::Update(const std::chrono::duration<float> deltaTime
 	for (m_Index = 0; m_Index < (int)m_CustomComponents.size(); m_Index++)
 	{
 		m_CustomComponents[m_Index].get().HandleInput(inputDevices, deltaTime);
+	}
+
+	for (m_Index = 0; m_Index < (int)m_CustomComponents.size(); m_Index++)
+	{
 		m_CustomComponents[m_Index].get().OnStep(deltaTime);
 	}
 

@@ -23,7 +23,7 @@ public:
 
 	virtual ~Weapon() = default;
 
-	virtual void OnStep(
+	virtual void HandleInput(
 		const qvr::RawInputDevices& inputDevices,
 		const float deltaSeconds) = 0;
 

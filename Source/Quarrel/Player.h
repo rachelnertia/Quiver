@@ -26,6 +26,7 @@ struct PlayerDesc {
 	ActiveEffectSet activeEffects;
 	DamageCount damage = DamageCount(50);
 	MovementSpeed moveSpeed = MovementSpeed(1.0f);
+	PlayerQuiver quiver;
 };
 
 class Player : public qvr::CustomComponent {

@@ -47,12 +47,34 @@ void AddFilterCategories(b2Fixture& fixture, const int16 categories) {
 	fixture.SetFilterData(filter);
 }
 
+void DebugInitQuiver(PlayerQuiver& quiver) {
+	QuarrelTypeInfo type;
+	type.colour = sf::Color::Black;
+	type.effect.immediateDamage = 5;
+
+	quiver.quarrelSlots[0] = type;
+
+	type.colour = sf::Color::Red;
+	type.effect.immediateDamage = 1;
+	type.effect.appliesEffect = ActiveEffectType::Burning;
+
+	quiver.quarrelSlots[1] = type;
+
+	type.colour = sf::Color::White;
+	type.effect.appliesEffect = ActiveEffectType::None;
+	type.effect.specialEffect = SpecialEffectType::Teleport;
+
+	quiver.quarrelSlots[2] = type;
+}
+
 Player::Player(Entity& entity)
 	: Player(
 		entity, 
 		CameraOwner(entity.GetWorld(), entity.GetPhysics()->GetBody().GetTransform()),
 		PlayerDesc())
-{}
+{
+	DebugInitQuiver(quiver);
+}
 
 Player::Player(Entity& entity, CameraOwner&& camera, const PlayerDesc& desc)
 	: CustomComponent(entity)
@@ -61,6 +83,7 @@ Player::Player(Entity& entity, CameraOwner&& camera, const PlayerDesc& desc)
 	, mMoveSpeed(desc.moveSpeed)
 	, mDamage(desc.damage)
 	, m_ActiveEffects(desc.activeEffects)
+	, quiver(desc.quiver)
 	, fovLerper(GetCamera().GetFovRadians(), b2_pi / 2, 0.1f)
 {
 	AddFilterCategories(
@@ -373,7 +396,8 @@ PlayerDesc Player::GetDesc() {
 	return PlayerDesc{
 		m_ActiveEffects,
 		mDamage,
-		mMoveSpeed
+		mMoveSpeed,
+		quiver
 	};
 }
 

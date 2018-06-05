@@ -16,8 +16,6 @@ struct QuarrelTypeInfo
 
 class PlayerQuiver {
 public:
-	PlayerQuiver();
-
 	static const int MaxEquippedQuarrelTypes = 3;
 
 	using QuarrelSlot = std::experimental::optional<QuarrelTypeInfo>;

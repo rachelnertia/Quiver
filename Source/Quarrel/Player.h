@@ -5,8 +5,9 @@
 #include "CameraHelpers.h"
 #include "Damage.h"
 #include "Effects.h"
-#include "MovementSpeed.h"
 #include "FirePropagation.h"
+#include "MovementSpeed.h"
+#include "PlayerQuiver.h"
 #include "Utils.h"
 #include "Weapon.h"
 
@@ -59,6 +60,8 @@ public:
 	qvr::Camera3D       & GetCamera()       { return cameraOwner.camera; }
 	qvr::Camera3D const & GetCamera() const { return cameraOwner.camera; }
 
+	PlayerQuiver& GetQuiver() { return quiver; }
+
 	CameraOwner cameraOwner;
 
 	friend class PlayerEditor;
@@ -67,6 +70,8 @@ private:
 	void RenderCurrentWeapon(sf::RenderTarget& target) const;
 	void RenderHud          (sf::RenderTarget& target) const;
 	void RenderActiveEffects(sf::RenderTarget& target) const;
+
+	PlayerQuiver quiver;
 
 	ActiveEffectSet m_ActiveEffects;
 	

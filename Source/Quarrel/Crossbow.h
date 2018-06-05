@@ -10,30 +10,15 @@
 #include <SFML/Audio/SoundBuffer.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
-#include "Quiver/Animation/AnimationData.h"
-#include "Quiver/Input/BinaryInput.h"
-#include "Quiver/Input/Mouse.h"
-#include "Quiver/Input/Keyboard.h"
-#include "Quiver/Input/RawInput.h"
+#include <Quiver/Animation/AnimationData.h>
+#include <Quiver/Input/BinaryInput.h>
+#include <Quiver/Input/Mouse.h>
+#include <Quiver/Input/Keyboard.h>
+#include <Quiver/Input/RawInput.h>
 
 #include "CrossbowBolt.h"
+#include "PlayerQuiver.h"
 #include "Utils.h"
-
-struct QuarrelTypeInfo
-{
-	sf::Color colour;
-	CrossbowBoltEffect effect;
-};
-
-class PlayerQuiver {
-public:
-	static const int MaxEquippedQuarrelTypes = 3;
-
-	using QuarrelSlot = std::experimental::optional<QuarrelTypeInfo>;
-
-	std::array<QuarrelSlot, MaxEquippedQuarrelTypes> quarrelSlots;
-
-};
 
 class Crossbow : public Weapon {
 public:
@@ -70,9 +55,7 @@ private:
 
 	nlohmann::json mProjectileRenderCompJson;
 
-	PlayerQuiver quiver;
-
-	PlayerQuiver& GetQuiver() { return quiver; }
+	PlayerQuiver& GetQuiver();
 	
 	struct Quarrel
 	{

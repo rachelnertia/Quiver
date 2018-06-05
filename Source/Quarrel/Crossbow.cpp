@@ -38,19 +38,19 @@ Crossbow::Crossbow(Player& player)
 	type.colour = sf::Color::Black;
 	type.effect.immediateDamage = 5;
 
-	quarrelSlots[0] = type;
+	GetQuiver().quarrelSlots[0] = type;
 
 	type.colour = sf::Color::Red;
 	type.effect.immediateDamage = 1;
 	type.effect.appliesEffect = ActiveEffectType::Burning;
 
-	quarrelSlots[1] = type;
+	GetQuiver().quarrelSlots[1] = type;
 
 	type.colour = sf::Color::White;
 	type.effect.appliesEffect = ActiveEffectType::None;
 	type.effect.specialEffect = SpecialEffectType::Teleport;
 
-	quarrelSlots[2] = type;
+	GetQuiver().quarrelSlots[2] = type;
 
 	auto log = GetConsoleLogger();
 
@@ -229,24 +229,24 @@ void Crossbow::HandleInput(const qvr::RawInputDevices& inputDevices, const float
 			BinaryInput loadInputs2[] = { qvr::KeyboardKey::Num2, qvr::JoystickButton(xb::Button::X) };
 			BinaryInput loadInputs3[] = { qvr::KeyboardKey::Num3, qvr::JoystickButton(xb::Button::Y) };
 
-			if (quarrelSlots[0].has_value() &&
+			if (GetQuiver().quarrelSlots[0].has_value() &&
 				AnyActive(inputDevices, loadInputs1)) 
 			{
-				LoadQuarrel(*quarrelSlots[0]);
+				LoadQuarrel(*GetQuiver().quarrelSlots[0]);
 				break;
 			}
 			else if (
-				quarrelSlots[1].has_value() &&
+				GetQuiver().quarrelSlots[1].has_value() &&
 				AnyActive(inputDevices, loadInputs2))
 			{
-				LoadQuarrel(*quarrelSlots[1]);
+				LoadQuarrel(*GetQuiver().quarrelSlots[1]);
 				break;
 			}
 			else if (
-				quarrelSlots[2].has_value() &&
+				GetQuiver().quarrelSlots[2].has_value() &&
 				AnyActive(inputDevices, loadInputs3))
 			{
-				LoadQuarrel(*quarrelSlots[2]);
+				LoadQuarrel(*GetQuiver().quarrelSlots[2]);
 				break;
 			}
 		}
@@ -430,7 +430,7 @@ class TeleportBolt : public qvr::CustomComponent
 public:
 	std::string GetTypeName() const override { return "TeleportBolt"; }
 
-	const float fovMultiplier = 1.5f;
+	const float fovMultiplier = 0.5f;
 
 	TeleportBolt(Player& player, const b2Vec2& velocity) 
 		: qvr::CustomComponent(player.GetEntity()) 
@@ -462,6 +462,8 @@ public:
 			return;
 		}
 
+		myFixture.GetBody()->SetLinearVelocity(b2Vec2(0.0f, 0.0f));
+
 		finish = true;
 	}
 
@@ -470,8 +472,6 @@ public:
 		b2Body& body = GetEntity().GetPhysics()->GetBody();
 		
 		if (finish) {
-			body.SetLinearVelocity(b2Vec2(0.0f, 0.0f));
-
 			GetEntity().AddCustomComponent(
 				std::make_unique<Player>(GetEntity(), std::move(cameraOwner), playerDesc));
 

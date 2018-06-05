@@ -19,6 +19,22 @@
 #include "CrossbowBolt.h"
 #include "Utils.h"
 
+struct QuarrelTypeInfo
+{
+	sf::Color colour;
+	CrossbowBoltEffect effect;
+};
+
+class PlayerQuiver {
+public:
+	static const int MaxEquippedQuarrelTypes = 3;
+
+	using QuarrelSlot = std::experimental::optional<QuarrelTypeInfo>;
+
+	std::array<QuarrelSlot, MaxEquippedQuarrelTypes> quarrelSlots;
+
+};
+
 class Crossbow : public Weapon {
 public:
 	Crossbow(Player& player);
@@ -54,18 +70,10 @@ private:
 
 	nlohmann::json mProjectileRenderCompJson;
 
-	struct QuarrelTypeInfo
-	{
-		sf::Color colour;
-		CrossbowBoltEffect effect;
-	};
+	PlayerQuiver quiver;
 
-	static const int MaxEquippedQuarrelTypes = 3;
-
-	using QuarrelSlot = std::experimental::optional<QuarrelTypeInfo>;
-
-	std::array<QuarrelSlot, MaxEquippedQuarrelTypes> quarrelSlots;
-
+	PlayerQuiver& GetQuiver() { return quiver; }
+	
 	struct Quarrel
 	{
 		QuarrelTypeInfo mTypeInfo;

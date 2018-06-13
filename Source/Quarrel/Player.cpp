@@ -12,6 +12,7 @@
 #include <Box2D/Collision/Shapes/b2PolygonShape.h>
 #include <ImGui/imgui.h>
 #include <SFML/Audio.hpp>
+#include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Sprite.hpp>
@@ -438,10 +439,44 @@ void DrawDamage(sf::RenderTarget& target, const DamageCount& counter)
 	target.draw(bar);
 }
 
+void DrawQuiverHud(sf::RenderTarget& target, const PlayerQuiver& quiver) {
+	sf::CircleShape circle;
+	circle.setRadius(target.getSize().x * 0.025f);
+	circle.setFillColor(sf::Color::Transparent);
+	circle.setOutlineColor(sf::Color::Black);
+	circle.setOutlineThickness(2.0f);
+	circle.setOrigin(circle.getRadius(), circle.getRadius());
+	
+	const float buffer = 5.0f;
+
+	circle.setPosition(
+		target.getSize().x 
+			- (((circle.getRadius() * 2.0f) + buffer) * PlayerQuiver::MaxEquippedQuarrelTypes) 
+			+ circle.getRadius()
+			- buffer,
+		circle.getRadius() + buffer);
+	
+	for (const auto& slot : quiver.quarrelSlots) {
+		if (slot.has_value()) {
+			circle.setFillColor(slot->colour);
+		}
+
+		target.draw(circle);
+		
+		circle.setPosition(
+			circle.getPosition() + 
+			sf::Vector2f(
+				circle.getRadius() * 2.0f + buffer,
+				0.0f));
+	}
+}
+
 void Player::RenderHud(sf::RenderTarget& target) const {
 	if (HasTakenDamage(mDamage)) {
 		DrawDamage(target, mDamage);
 	}
+
+	DrawQuiverHud(target, quiver);
 }
 
 namespace {

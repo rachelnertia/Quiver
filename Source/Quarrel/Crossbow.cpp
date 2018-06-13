@@ -211,33 +211,40 @@ void Crossbow::HandleInput(const qvr::RawInputDevices& inputDevices, const float
 	case CockedState::Cocked:
 		if (!mLoadedQuarrel)
 		{
+			// TODO: Refactor here. Lotsa duplication. And this function's really long.
+
 			BinaryInput loadInputs1[] = { qvr::KeyboardKey::Num1, qvr::JoystickButton(xb::Button::B) };
 			BinaryInput loadInputs2[] = { qvr::KeyboardKey::Num2, qvr::JoystickButton(xb::Button::X) };
 			BinaryInput loadInputs3[] = { qvr::KeyboardKey::Num3, qvr::JoystickButton(xb::Button::Y) };
 
-			if (GetQuiver().quarrelSlots[0].has_value() &&
-				AnyActive(inputDevices, loadInputs1)) 
+			if (AnyActive(inputDevices, loadInputs1)) 
 			{
-				LoadQuarrel(*GetQuiver().quarrelSlots[0]);
+				const auto quarrel = TakeQuarrel(GetQuiver(), 0);
+				if (quarrel) {
+					LoadQuarrel(*quarrel);
+				}
 				break;
 			}
-			else if (
-				GetQuiver().quarrelSlots[1].has_value() &&
-				AnyActive(inputDevices, loadInputs2))
+			else if (AnyActive(inputDevices, loadInputs2))
 			{
-				LoadQuarrel(*GetQuiver().quarrelSlots[1]);
+				const auto quarrel = TakeQuarrel(GetQuiver(), 1);
+				if (quarrel) {
+					LoadQuarrel(*quarrel);
+				}
 				break;
 			}
-			else if (
-				GetQuiver().quarrelSlots[2].has_value() &&
-				AnyActive(inputDevices, loadInputs3))
+			else if (AnyActive(inputDevices, loadInputs3))
 			{
-				LoadQuarrel(*GetQuiver().quarrelSlots[2]);
+				const auto quarrel = TakeQuarrel(GetQuiver(), 2);
+				if (quarrel) {
+					LoadQuarrel(*quarrel);
+				}
 				break;
 			}
 		}
 		else if (AnyJustActive(inputDevices, mCockInputs)) {
 			UnloadQuarrel();
+			break;
 		}
 
 		if (AnyJustActive(inputDevices, mTriggerInputs))
@@ -342,6 +349,9 @@ void Crossbow::UnloadQuarrel() {
 	if (!qvrVerify(mLoadedQuarrel)) return;
 
 	mLoadedQuarrel = {};
+
+	// TODO: This should finish the cooldown timer on the slot we took the
+	// quarrel from originally.
 }
 
 using json = nlohmann::json;

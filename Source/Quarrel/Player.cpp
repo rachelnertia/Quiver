@@ -53,19 +53,19 @@ void DebugInitQuiver(PlayerQuiver& quiver) {
 	type.colour = sf::Color::Black;
 	type.effect.immediateDamage = 5;
 
-	quiver.quarrelSlots[0] = type;
+	quiver.quarrelSlots[0] = QuarrelSlot{ type };
 
 	type.colour = sf::Color::Red;
 	type.effect.immediateDamage = 1;
 	type.effect.appliesEffect = ActiveEffectType::Burning;
 
-	quiver.quarrelSlots[1] = type;
+	quiver.quarrelSlots[1] = QuarrelSlot{ type };
 
 	type.colour = sf::Color::White;
 	type.effect.appliesEffect = ActiveEffectType::None;
 	type.effect.specialEffect = SpecialEffectType::Teleport;
 
-	quiver.quarrelSlots[2] = type;
+	quiver.quarrelSlots[2] = QuarrelSlot{ type };
 }
 
 Player::Player(Entity& entity)
@@ -265,6 +265,8 @@ void Player::OnStep(const std::chrono::duration<float> deltaTime)
 	auto log = GetConsoleLogger();
 	const char* logCtx = "Player::OnStep:";
 
+	GetQuiver().OnStep(deltaTime);
+
 	ApplyFires(m_FiresInContact, m_ActiveEffects);
 	
 	for (auto& effect : m_ActiveEffects.container) {
@@ -440,34 +442,48 @@ void DrawDamage(sf::RenderTarget& target, const DamageCount& counter)
 }
 
 void DrawQuiverHud(sf::RenderTarget& target, const PlayerQuiver& quiver) {
-	sf::CircleShape circle;
-	circle.setRadius(target.getSize().x * 0.025f);
-	circle.setFillColor(sf::Color::Transparent);
-	circle.setOutlineColor(sf::Color::Black);
-	circle.setOutlineThickness(2.0f);
-	circle.setOrigin(circle.getRadius(), circle.getRadius());
+	const float circleRadius = target.getSize().x * 0.025f;
 	
+	auto CreateCircle = [&target, circleRadius]() {
+		sf::CircleShape circle;
+		circle.setRadius(circleRadius);
+		circle.setFillColor(sf::Color::Transparent);
+		circle.setOutlineColor(sf::Color::Black);
+		circle.setOutlineThickness(2.0f);
+		circle.setOrigin(circle.getRadius(), circle.getRadius());
+		return circle;
+	};
+
 	const float buffer = 5.0f;
 
-	circle.setPosition(
+	const sf::Vector2f startPosition(
 		target.getSize().x 
-			- (((circle.getRadius() * 2.0f) + buffer) * PlayerQuiver::MaxEquippedQuarrelTypes) 
-			+ circle.getRadius()
+			- (((circleRadius * 2.0f) + buffer) * PlayerQuiver::MaxEquippedQuarrelTypes) 
+			+ circleRadius
 			- buffer,
-		circle.getRadius() + buffer);
+		circleRadius + buffer);
 	
-	for (const auto& slot : quiver.quarrelSlots) {
-		if (slot.has_value()) {
-			circle.setFillColor(slot->colour);
-		}
+	
+	for (int slotIndex = 0; slotIndex < (int)quiver.quarrelSlots.size(); slotIndex++) {
+		const auto& slot = quiver.quarrelSlots[slotIndex];
 
-		target.draw(circle);
+		auto circle = CreateCircle();
+		
+		if (slot.has_value()) {
+			circle.setFillColor(slot->type.colour);
+			
+			const float scale = 1.0f - slot->GetCooldownRatio();
+			
+			circle.setScale(scale, scale);
+		}
 		
 		circle.setPosition(
-			circle.getPosition() + 
+			startPosition + 
 			sf::Vector2f(
-				circle.getRadius() * 2.0f + buffer,
+				(circle.getRadius() * 2.0f + buffer) * slotIndex,
 				0.0f));
+
+		target.draw(circle);
 	}
 }
 

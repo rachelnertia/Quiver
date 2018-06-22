@@ -14,7 +14,7 @@ sf::Vector2i GetHalfSize(const sf::Window& window) {
 namespace qvr
 {
 
-void SfmlMouse::Update() {
+void SfmlMouse::OnStep() {
 	if (m_Mouselook) {
 		const sf::Vector2i windowCentre = GetHalfSize(m_Window);
 
@@ -29,8 +29,6 @@ void SfmlMouse::Update() {
 	m_Position = sf::Mouse::getPosition();
 	m_PositionRelative = sf::Mouse::getPosition(m_Window);
 
-	m_Window.setMouseCursorVisible(!m_Hidden);
-
 	for (Button& button : m_Buttons) {
 		button.wasDown = button.isDown;
 	}
@@ -38,6 +36,10 @@ void SfmlMouse::Update() {
 	for (int i = 0; i < (int)m_Buttons.size(); i++) {
 		m_Buttons[i].isDown = sf::Mouse::isButtonPressed((sf::Mouse::Button)i);
 	}
+}
+
+void SfmlMouse::OnFrame() {
+	m_Window.setMouseCursorVisible(!m_Hidden);
 }
 
 void SfmlMouse::SetMouselook(const bool enableMouselook) {

@@ -95,7 +95,8 @@ void WorldEditor::HandleInput(const float dt)
 {
 	mJoysticks.Update();
 	mKeyboard.Update();
-	mMouse.Update();
+	mMouse.OnStep();
+	mMouse.OnFrame();
 
 	if (mMouse.GetPositionDelta() != sf::Vector2i(0, 0)) {
 		OnMouseMove(

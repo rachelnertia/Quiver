@@ -54,7 +54,7 @@ private:
 
 	sf::Clock mFrameClock;
 
-	std::chrono::duration<float> mFrameTime = std::chrono::seconds(0);
+	std::chrono::duration<float> mTimeSinceLastStep = std::chrono::seconds(0);
 
 	float mFrameTexResolutionModifier = 1.0f;
 

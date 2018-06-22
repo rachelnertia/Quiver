@@ -59,7 +59,7 @@ void Game::ProcessFrame()
 	// Clamp excessively large delta times.
 	const float delta = std::min(mFrameClock.restart().asSeconds(), 1.0f / 30.0f);
 
-	mFrameTime += std::chrono::duration<float>(delta);
+	mTimeSinceLastStep += std::chrono::duration<float>(delta);
 
 	// Use free camera controls if the World doesn't have a 'main' camera currently.
 	if ((mWorld->GetMainCamera() == nullptr) && GetContext().GetWindow().hasFocus())
@@ -76,11 +76,11 @@ void Game::ProcessFrame()
 	const auto timestep = mWorld->GetTimestep();
 
 	// Take a step if 1/60th of a second has passed.
-	if (mFrameTime >= timestep)
+	if (mTimeSinceLastStep >= timestep)
 	{
-		mFrameTime = 0.0s;
+		mTimeSinceLastStep = 0.0s;
 
-		mMouse.Update();
+		mMouse.OnStep();
 		mKeyboard.Update();
 		mJoysticks.Update();
 
@@ -107,6 +107,8 @@ void Game::ProcessFrame()
 			mFrameTex->display();
 		}
 	}
+
+	mMouse.OnFrame();
 
 	GetContext().GetWindow().clear(sf::Color::Black);
 

@@ -13,7 +13,8 @@ class SfmlMouse : public Mouse
 public:
 	SfmlMouse(sf::Window& window) : m_Window(window) {}
 
-	void Update();
+	void OnStep();
+	void OnFrame();
 
 	void SetMouselook(const bool enableMouselook) override;
 	void SetHidden(const bool hidden) override;

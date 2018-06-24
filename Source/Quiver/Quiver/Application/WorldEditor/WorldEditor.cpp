@@ -237,7 +237,7 @@ void WorldEditor::ProcessGUI()
 
 	if (ImGui::Button("New")) {
 		mWorld = std::make_unique<World>(GetContext().GetWorldContext());
-		mCurrentSelection = nullptr;
+		mCurrentSelectionEditor = nullptr;
 		mWorldFilename.clear();
 	}
 
@@ -258,7 +258,7 @@ void WorldEditor::ProcessGUI()
 				log->error("No filename specified.");
 			}
 			else {
-				mCurrentSelection = nullptr;
+				mCurrentSelectionEditor = nullptr;
 
 				if (auto newWorld =
 					LoadWorld(
@@ -396,19 +396,12 @@ void WorldEditor::ProcessGUI()
 	if (ImGui::CollapsingHeader("Selected Entity")) {
 		ImGui::AutoIndent indent;
 
-		if (mCurrentSelection) {
+		if (mCurrentSelectionEditor) {
 			if (ImGui::Button("Delete Entity")) {
-				mWorld->RemoveEntityImmediate(*mCurrentSelection);
-				mCurrentSelection = nullptr;
+				mWorld->RemoveEntityImmediate(mCurrentSelectionEditor->GetTarget());
 				mCurrentSelectionEditor.release();
 			}
 			else {
-				// Make a new EntityEditor if the old one is invalid.
-				if (!mCurrentSelectionEditor ||
-					!mCurrentSelectionEditor->IsTargeting(*mCurrentSelection))
-				{
-					mCurrentSelectionEditor = std::make_unique<EntityEditor>(*mCurrentSelection);
-				}
 				// Edit the Entity!
 				mCurrentSelectionEditor->GuiControls();
 			}
@@ -473,6 +466,24 @@ void WorldEditor::OnMouseMove(const sf::Event::MouseMoveEvent & mouseInfo)
 		// Pass execution down to the tools layer.
 		mTools.at(mCurrentToolIndex)->OnMouseMove(*this, mCamera.Get2D(), mouseInfo);
 	}
+}
+
+void WorldEditor::SetCurrentSelection(Entity* entity) {
+	if (entity) {
+		if (!mCurrentSelectionEditor ||
+			!mCurrentSelectionEditor->IsTargeting(*entity))
+		{
+			mCurrentSelectionEditor = 
+				std::make_unique<EntityEditor>(*entity);
+		}
+	}
+	else {
+		mCurrentSelectionEditor.release();
+	}
+}
+
+auto WorldEditor::GetCurrentSelection() -> Entity* {
+	return mCurrentSelectionEditor ? &mCurrentSelectionEditor->GetTarget() : nullptr;
 }
 
 void WorldEditor::CameraPair::SetPosition(const b2Vec2& pos)

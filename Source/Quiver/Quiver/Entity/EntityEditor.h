@@ -20,9 +20,12 @@ public:
 	
 	void GuiControls();
 	
-	bool IsTargeting(const Entity& entity) const
-	{
+	bool IsTargeting(const Entity& entity) const {
 		return &entity == &m_Entity;
+	}
+
+	auto GetTarget() const -> Entity& {
+		return m_Entity;
 	}
 
 private:

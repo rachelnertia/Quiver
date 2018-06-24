@@ -43,11 +43,11 @@ public:
 
 	void ProcessFrame() override;
 
-	inline World* GetWorld() { return mWorld.get(); }
+	auto GetWorld() -> World* { return mWorld.get(); }
 
-	inline Entity* GetCurrentSelection() { return mCurrentSelection; }
+	auto GetCurrentSelection() -> Entity*;
 
-	inline void SetCurrentSelection(Entity* entity) { mCurrentSelection = entity; }
+	void SetCurrentSelection(Entity* entity);
 
 private:
 	void HandleInput(const float dt);
@@ -63,8 +63,6 @@ private:
 
 	WorldRaycastRenderer mWorldRaycastRenderer;
 
-	// TODO: Can probably do away with mCurrentSelection and just have the EntityEditor.
-	Entity* mCurrentSelection = nullptr;
 	std::unique_ptr<EntityEditor> mCurrentSelectionEditor;
 
 	std::vector<std::unique_ptr<EditorTool>> mTools;

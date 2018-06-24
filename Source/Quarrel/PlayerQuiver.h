@@ -7,6 +7,8 @@
 
 #include <SFML/Graphics/Color.hpp>
 
+#include <Quiver/Graphics/ColourUtils.h>
+
 #include "CrossbowBolt.h"
 
 struct QuarrelTypeInfo
@@ -14,6 +16,9 @@ struct QuarrelTypeInfo
 	sf::Color colour;
 	CrossbowBoltEffect effect;
 };
+
+void to_json(nlohmann::json& j, const QuarrelTypeInfo& quarrelType);
+void from_json(const nlohmann::json& j, QuarrelTypeInfo& quarrelType);
 
 class QuarrelSlot
 {

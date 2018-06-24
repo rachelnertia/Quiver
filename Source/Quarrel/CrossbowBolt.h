@@ -2,6 +2,8 @@
 
 #include <chrono>
 
+#include <json.hpp>
+
 #include <SFML/Graphics/Color.hpp>
 
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
@@ -21,6 +23,9 @@ struct CrossbowBoltEffect
 	ActiveEffectType appliesEffect = ActiveEffectType::None;
 	SpecialEffectType specialEffect = SpecialEffectType::None;
 };
+
+void to_json  (nlohmann::json&,       CrossbowBoltEffect const&);
+void from_json(nlohmann::json const&, CrossbowBoltEffect&);
 
 class CrossbowBolt : public qvr::CustomComponent
 {

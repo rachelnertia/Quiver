@@ -85,6 +85,7 @@ Player::Player(Entity& entity, CameraOwner&& camera, const PlayerDesc& desc)
 	, mDamage(desc.damage)
 	, m_ActiveEffects(desc.activeEffects)
 	, quiver(desc.quiver)
+	, quarrelLibrary(desc.quarrelLibrary)
 	, fovLerper(GetCamera().GetFovRadians(), b2_pi / 2, 0.1f)
 {
 	AddFilterCategories(
@@ -379,6 +380,8 @@ nlohmann::json Player::ToJson() const
 		}
 	}
 
+	j["QuarrelLibrary"] = quarrelLibrary;
+
 	return j;
 }
 
@@ -391,6 +394,10 @@ bool Player::FromJson(const nlohmann::json& j)
 	if (j.find("Camera") != j.end()) {
 		GetCamera().FromJson(j["Camera"], &GetEntity().GetWorld());
 	}
+
+	if (j.find("QuarrelLibrary") != j.end()) {
+		quarrelLibrary = j["QuarrelLibrary"];
+	}
 	
 	return true;
 }
@@ -400,7 +407,8 @@ PlayerDesc Player::GetDesc() {
 		m_ActiveEffects,
 		mDamage,
 		mMoveSpeed,
-		quiver
+		quiver,
+		quarrelLibrary
 	};
 }
 

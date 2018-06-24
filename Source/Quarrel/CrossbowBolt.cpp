@@ -114,3 +114,18 @@ void CrossbowBolt::OnStep(const std::chrono::duration<float> deltaTime)
 		GetEntity().GetWorld().RemoveEntityImmediate(GetEntity());
 	}
 }
+
+void to_json(nlohmann::json & j, const CrossbowBoltEffect & effect) {
+	j = nlohmann::json
+	{
+		{ "immediateDamage", effect.immediateDamage },
+	{ "appliesEffect", (int)effect.appliesEffect },
+	{ "specialEffect", (int)effect.specialEffect }
+	};
+}
+
+void from_json(const nlohmann::json & j, CrossbowBoltEffect & effect) {
+	effect.immediateDamage = j.at("immediateDamage").get<int>();
+	effect.appliesEffect = (ActiveEffectType)j.at("appliesEffect").get<int>();
+	effect.specialEffect = (SpecialEffectType)j.at("specialEffect").get<int>();
+}

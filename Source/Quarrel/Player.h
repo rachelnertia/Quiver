@@ -8,6 +8,7 @@
 #include "FirePropagation.h"
 #include "MovementSpeed.h"
 #include "PlayerQuiver.h"
+#include "Progression.h"
 #include "Utils.h"
 #include "Weapon.h"
 
@@ -27,6 +28,7 @@ struct PlayerDesc {
 	DamageCount damage = DamageCount(50);
 	MovementSpeed moveSpeed = MovementSpeed(1.0f);
 	PlayerQuiver quiver;
+	PlayerQuarrelLibrary quarrelLibrary;
 };
 
 class Player : public qvr::CustomComponent {
@@ -73,6 +75,8 @@ private:
 	void RenderActiveEffects(sf::RenderTarget& target) const;
 
 	PlayerQuiver quiver;
+
+	PlayerQuarrelLibrary quarrelLibrary;
 
 	ActiveEffectSet m_ActiveEffects;
 	

@@ -9,6 +9,8 @@
 #include <Quiver/Misc/Logging.h>
 #include <Quiver/World/World.h>
 
+#include "enum_json.h"
+
 #include "Utils.h"
 
 using namespace qvr;
@@ -117,21 +119,6 @@ void CrossbowBolt::OnStep(const std::chrono::duration<float> deltaTime)
 
 using namespace nlohmann;
 
-void to_json(nlohmann::json & j, const ActiveEffectType & effect) {
-	j = effect._to_string();
-}
-
-void from_json(const nlohmann::json & j, ActiveEffectType & effect) {
-	if (j.is_string()) {
-		auto str = j.get<std::string>();
-		effect = ActiveEffectType::_from_string(str.c_str());
-	}
-	else
-	{
-		effect = ActiveEffectType::_from_integral(j.get<int>());
-	}
-}
-
 void to_json(nlohmann::json & j, const CrossbowBoltEffect & effect) {
 	j = nlohmann::json
 	{
@@ -145,19 +132,4 @@ void from_json(const nlohmann::json & j, CrossbowBoltEffect & effect) {
 	effect.immediateDamage = j.at("immediateDamage").get<int>();
 	effect.appliesEffect = j.at("appliesEffect");
 	effect.specialEffect = j.at("specialEffect");
-}
-
-void to_json(nlohmann::json & j, const SpecialEffectType & effect) {
-	j = effect._to_string();
-}
-
-void from_json(const nlohmann::json & j, SpecialEffectType & effect) {
-	if (j.is_string()) {
-		auto str = j.get<std::string>();
-		effect = SpecialEffectType::_from_string(str.c_str());
-	}
-	else
-	{
-		effect = SpecialEffectType::_from_integral(j.get<int>());
-	}
 }

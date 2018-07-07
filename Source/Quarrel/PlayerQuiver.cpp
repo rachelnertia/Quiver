@@ -1,5 +1,7 @@
 #include "PlayerQuiver.h"
 
+#include "enum_json.h"
+
 using namespace std::chrono_literals;
 
 using json = nlohmann::json;

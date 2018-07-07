@@ -27,9 +27,9 @@ struct CrossbowBoltEffect
 
 void to_json  (nlohmann::json&,       CrossbowBoltEffect const&);
 void from_json(nlohmann::json const&, CrossbowBoltEffect&);
-
-void to_json(nlohmann::json&, SpecialEffectType const&);
-void from_json(nlohmann::json const&, SpecialEffectType&);
+//
+//void to_json(nlohmann::json&, SpecialEffectType const&);
+//void from_json(nlohmann::json const&, SpecialEffectType&);
 
 class CrossbowBolt : public qvr::CustomComponent
 {

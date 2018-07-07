@@ -115,17 +115,34 @@ void CrossbowBolt::OnStep(const std::chrono::duration<float> deltaTime)
 	}
 }
 
+using namespace nlohmann;
+
 void to_json(nlohmann::json & j, const CrossbowBoltEffect & effect) {
 	j = nlohmann::json
 	{
 		{ "immediateDamage", effect.immediateDamage },
-	{ "appliesEffect", (int)effect.appliesEffect },
-	{ "specialEffect", (int)effect.specialEffect }
+		{ "appliesEffect", (int)effect.appliesEffect },
+		{ "specialEffect", effect.specialEffect }
 	};
 }
 
 void from_json(const nlohmann::json & j, CrossbowBoltEffect & effect) {
 	effect.immediateDamage = j.at("immediateDamage").get<int>();
 	effect.appliesEffect = (ActiveEffectType)j.at("appliesEffect").get<int>();
-	effect.specialEffect = (SpecialEffectType)j.at("specialEffect").get<int>();
+	effect.specialEffect = j.at("specialEffect");
+}
+
+void to_json(nlohmann::json & j, const SpecialEffectType & effect) {
+	j = effect._to_string();
+}
+
+void from_json(const nlohmann::json & j, SpecialEffectType & effect) {
+	if (j.is_string()) {
+		auto str = j.get<std::string>();
+		effect._from_string(str.c_str());
+	}
+	else
+	{
+		effect._from_integral(j.get<int>());
+	}
 }

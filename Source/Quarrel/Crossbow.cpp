@@ -512,7 +512,7 @@ void Crossbow::Shoot()
 	const auto direction = mPlayer.GetCamera().GetForwards();
 	const auto speed = 40.0f;
 
-	if (mLoadedQuarrel->mTypeInfo.effect.specialEffect == SpecialEffectType::Teleport)
+	if (mLoadedQuarrel->mTypeInfo.effect.specialEffect == +SpecialEffectType::Teleport)
 	{
 		MakeTeleportBolt(this->mPlayer, speed * direction);
 		

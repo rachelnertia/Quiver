@@ -381,6 +381,7 @@ nlohmann::json Player::ToJson() const
 	}
 
 	j["QuarrelLibrary"] = quarrelLibrary;
+	j["Quiver"] = quiver;
 
 	return j;
 }
@@ -399,6 +400,10 @@ bool Player::FromJson(const nlohmann::json& j)
 		quarrelLibrary = j["QuarrelLibrary"];
 	}
 	
+	if (j.find("Quiver") != j.end()) {
+		quiver = j["Quiver"];
+	}
+
 	return true;
 }
 

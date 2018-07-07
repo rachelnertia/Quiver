@@ -218,3 +218,9 @@ nlohmann::json AnimationToJson(
 qvr::AnimationId AnimationFromJson(
 	const qvr::AnimatorCollection& animators, 
 	const nlohmann::json& j);
+
+template <typename T, std::size_t N>
+constexpr std::size_t countof(T const (&)[N]) noexcept
+{
+	return N;
+}

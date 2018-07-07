@@ -15,5 +15,7 @@ inline void to_json(nlohmann::json& j, PlayerQuarrelLibrary const& library) {
 }
 
 inline void from_json(nlohmann::json const& j, PlayerQuarrelLibrary& library) {
-	library.quarrels = j.get<PlayerQuarrelLibrary::QuarrelMap>();
+	if (j.is_array()) {
+		library.quarrels = j.get<PlayerQuarrelLibrary::QuarrelMap>();
+	}
 }

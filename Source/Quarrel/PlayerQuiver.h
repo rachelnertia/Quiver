@@ -66,3 +66,6 @@ public:
 using OptionalQuarrelType = std::experimental::optional<QuarrelTypeInfo>;
 
 auto TakeQuarrel(PlayerQuiver& quiver, const int slotIndex) -> OptionalQuarrelType;
+
+void to_json  (nlohmann::json& j,       PlayerQuiver const& quiver); 
+void from_json(nlohmann::json const& j, PlayerQuiver & quiver);

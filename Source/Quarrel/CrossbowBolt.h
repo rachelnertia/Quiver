@@ -8,14 +8,19 @@
 
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
 
+#define BETTER_ENUMS_DEFAULT_CONSTRUCTOR(Enum) \
+  public:                                      \
+    Enum() = default;
+
+#include "enum.h"
+
 #include "Effects.h"
 #include "Utils.h"
 
-enum class SpecialEffectType
-{
+BETTER_ENUM(
+	SpecialEffectType, int,
 	None,
-	Teleport
-};
+	Teleport);
 
 struct CrossbowBoltEffect
 {
@@ -26,6 +31,9 @@ struct CrossbowBoltEffect
 
 void to_json  (nlohmann::json&,       CrossbowBoltEffect const&);
 void from_json(nlohmann::json const&, CrossbowBoltEffect&);
+
+void to_json(nlohmann::json&, SpecialEffectType const&);
+void from_json(nlohmann::json const&, SpecialEffectType&);
 
 class CrossbowBolt : public qvr::CustomComponent
 {

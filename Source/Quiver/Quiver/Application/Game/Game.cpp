@@ -10,6 +10,7 @@
 #include <spdlog/spdlog.h>
 
 #include "Quiver/Application/WorldEditor/WorldEditor.h"
+#include "Quiver/Graphics/FrameTexture.h"
 #include "Quiver/Input/RawInput.h"
 #include "Quiver/Input/InputDebug.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
@@ -37,9 +38,10 @@ Game::Game(ApplicationStateContext& context, std::unique_ptr<World> world)
 
 	const sf::Vector2u windowSize = GetContext().GetWindow().getSize();
 
-	mFrameTex->create(
-		unsigned(windowSize.x * GetContext().GetFrameTextureResolutionRatio()),
-		unsigned(windowSize.y * GetContext().GetFrameTextureResolutionRatio()));
+	UpdateFrameTexture(
+		*mFrameTex,
+		GetContext().GetWindow().getSize(),
+		GetContext().GetFrameTextureResolutionRatio());
 
 	mFrameClock.restart();
 
@@ -225,10 +227,10 @@ void Game::ProcessGui()
 		ImGui::AutoIndent indent;
 		{
 			if (ImGui::SliderFloat("Horizontal Resolution", &GetContext().GetFrameTextureResolutionRatio(), 0.2f, 1.0f)) {
-				sf::Vector2u windowSize = GetContext().GetWindow().getSize();
-				mFrameTex->create(
-					unsigned(windowSize.x * GetContext().GetFrameTextureResolutionRatio()), 
-					unsigned(windowSize.y * GetContext().GetFrameTextureResolutionRatio()));
+				UpdateFrameTexture(
+					*mFrameTex, 
+					GetContext().GetWindow().getSize(), 
+					GetContext().GetFrameTextureResolutionRatio());
 			}
 		}
 		{

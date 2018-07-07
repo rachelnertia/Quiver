@@ -24,6 +24,7 @@
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponent.h"
 #include "Quiver/Entity/RenderComponent/RenderComponent.h"
 #include "Quiver/Graphics/ColourUtils.h"
+#include "Quiver/Graphics/FrameTexture.h"
 #include "Quiver/Graphics/TextureLibrary.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
 #include "Quiver/World/World.h"
@@ -61,9 +62,10 @@ WorldEditor::WorldEditor(ApplicationStateContext& context, std::unique_ptr<World
 
 	const sf::Vector2u windowSize = GetContext().GetWindow().getSize();
 
-	mFrameTex->create(
-		unsigned(windowSize.x * GetContext().GetFrameTextureResolutionRatio()),
-		unsigned(windowSize.y * GetContext().GetFrameTextureResolutionRatio()));
+	UpdateFrameTexture(
+		*mFrameTex,
+		GetContext().GetWindow().getSize(),
+		GetContext().GetFrameTextureResolutionRatio());
 }
 
 WorldEditor::~WorldEditor() {}
@@ -248,10 +250,10 @@ void WorldEditor::ProcessGUI()
 		ImGui::AutoIndent indent;
 		
 		if (ImGui::SliderFloat("Resolution Thing", &GetContext().GetFrameTextureResolutionRatio(), 0.2f, 1.0f)) {
-			sf::Vector2u windowSize = GetContext().GetWindow().getSize();
-			mFrameTex->create(
-				unsigned(windowSize.x * GetContext().GetFrameTextureResolutionRatio()), 
-				unsigned(windowSize.y * GetContext().GetFrameTextureResolutionRatio()));
+			UpdateFrameTexture(
+				*mFrameTex,
+				GetContext().GetWindow().getSize(),
+				GetContext().GetFrameTextureResolutionRatio());
 		}
 	}
 

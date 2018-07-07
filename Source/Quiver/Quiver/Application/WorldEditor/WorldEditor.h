@@ -92,8 +92,6 @@ private:
 
 	std::unique_ptr<sf::RenderTexture> mFrameTex;
 
-	float mFrameTexResolutionModifier = 1.0f;
-
 	AnimationEditor mAnimationEditor;
 
 	AnimationLibraryEditorData mAnimationLibraryEditorData;

@@ -56,8 +56,6 @@ private:
 
 	std::chrono::duration<float> mTimeSinceLastStep = std::chrono::seconds(0);
 
-	float mFrameTexResolutionModifier = 1.0f;
-
 	std::unique_ptr<sf::RenderTexture> mFrameTex;
 
 	bool mPaused = false;

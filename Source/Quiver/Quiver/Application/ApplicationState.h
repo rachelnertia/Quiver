@@ -17,6 +17,7 @@ class CustomComponentTypeLibrary;
 class ApplicationStateContext {
 	sf::RenderWindow& mWindow;
 	bool mWindowResized = false;
+	float mFrameTextureResolutionRatio = 1.0f;
 	
 	WorldContext mWorldContext;
 
@@ -35,9 +36,10 @@ public:
 			filterBitNames)
 	{}
 
-	sf::RenderWindow&      GetWindow() { return mWindow; }
-	bool                   WindowResized() { return mWindowResized; }
-	WorldContext&          GetWorldContext() { return mWorldContext; }
+	auto GetWindow() -> sf::RenderWindow& { return mWindow; }
+	bool WindowResized() { return mWindowResized; }
+	auto GetWorldContext() -> WorldContext& { return mWorldContext; }
+	auto GetFrameTextureResolutionRatio() -> float& { return mFrameTextureResolutionRatio; }
 };
 
 class ApplicationState {

@@ -37,7 +37,9 @@ Game::Game(ApplicationStateContext& context, std::unique_ptr<World> world)
 
 	const sf::Vector2u windowSize = GetContext().GetWindow().getSize();
 
-	mFrameTex->create(unsigned(windowSize.x * mFrameTexResolutionModifier), unsigned(windowSize.y * mFrameTexResolutionModifier));
+	mFrameTex->create(
+		unsigned(windowSize.x * GetContext().GetFrameTextureResolutionRatio()),
+		unsigned(windowSize.y * GetContext().GetFrameTextureResolutionRatio()));
 
 	mFrameClock.restart();
 
@@ -222,9 +224,11 @@ void Game::ProcessGui()
 	if (ImGui::CollapsingHeader("Options")) {
 		ImGui::AutoIndent indent;
 		{
-			if (ImGui::SliderFloat("Horizontal Resolution", &mFrameTexResolutionModifier, 0.2f, 1.0f)) {
+			if (ImGui::SliderFloat("Horizontal Resolution", &GetContext().GetFrameTextureResolutionRatio(), 0.2f, 1.0f)) {
 				sf::Vector2u windowSize = GetContext().GetWindow().getSize();
-				mFrameTex->create(unsigned(windowSize.x * mFrameTexResolutionModifier), unsigned(windowSize.y * mFrameTexResolutionModifier));
+				mFrameTex->create(
+					unsigned(windowSize.x * GetContext().GetFrameTextureResolutionRatio()), 
+					unsigned(windowSize.y * GetContext().GetFrameTextureResolutionRatio()));
 			}
 		}
 		{

@@ -62,8 +62,8 @@ WorldEditor::WorldEditor(ApplicationStateContext& context, std::unique_ptr<World
 	const sf::Vector2u windowSize = GetContext().GetWindow().getSize();
 
 	mFrameTex->create(
-		unsigned(windowSize.x * mFrameTexResolutionModifier),
-		unsigned(windowSize.y * mFrameTexResolutionModifier));
+		unsigned(windowSize.x * GetContext().GetFrameTextureResolutionRatio()),
+		unsigned(windowSize.y * GetContext().GetFrameTextureResolutionRatio()));
 }
 
 WorldEditor::~WorldEditor() {}
@@ -247,9 +247,11 @@ void WorldEditor::ProcessGUI()
 	if (ImGui::CollapsingHeader("Options")) {
 		ImGui::AutoIndent indent;
 		
-		if (ImGui::SliderFloat("Resolution Thing", &mFrameTexResolutionModifier, 0.2f, 1.0f)) {
+		if (ImGui::SliderFloat("Resolution Thing", &GetContext().GetFrameTextureResolutionRatio(), 0.2f, 1.0f)) {
 			sf::Vector2u windowSize = GetContext().GetWindow().getSize();
-			mFrameTex->create(unsigned(windowSize.x * mFrameTexResolutionModifier), unsigned(windowSize.y * mFrameTexResolutionModifier));
+			mFrameTex->create(
+				unsigned(windowSize.x * GetContext().GetFrameTextureResolutionRatio()), 
+				unsigned(windowSize.y * GetContext().GetFrameTextureResolutionRatio()));
 		}
 	}
 

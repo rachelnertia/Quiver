@@ -129,47 +129,10 @@ void WorldEditor::HandleInput(const float dt)
 
 	}
 	else {
-		float movespeed = 125.0f / mCamera.Get2D().mPixelsPerMetre;
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-			b2Vec2 dir = b2Mul(mCamera.Get2D().mTransform.q, b2Vec2(0.0f, -1.0f));
-			mCamera.Get2D().MoveBy(movespeed * dt * dir);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-			b2Vec2 dir = b2Mul(mCamera.Get2D().mTransform.q, b2Vec2(0.0f, 1.0f));
-			mCamera.Get2D().MoveBy(movespeed * dt * dir);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-			b2Vec2 dir = b2Mul(mCamera.Get2D().mTransform.q, b2Vec2(-1.0f, 0.0f));
-			mCamera.Get2D().MoveBy(movespeed * dt * dir);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-			b2Vec2 dir = b2Mul(mCamera.Get2D().mTransform.q, b2Vec2(1.0f, 0.0f));
-			mCamera.Get2D().MoveBy(movespeed * dt * dir);
-		}
-
-		float turnspeed = 1.5f;
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) {
-			mCamera.Get2D().RotateBy(-turnspeed * dt);
-		}
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) {
-			mCamera.Get2D().RotateBy(turnspeed * dt);
-		}
+		FreeControl(mCamera.Get2D(), dt);
 
 		mCamera.Get3D().SetPosition(mCamera.Get2D().GetPosition());
 		mCamera.Get3D().SetRotation(mCamera.Get2D().GetRotation() + b2_pi);
-
-		float zoomspeed = 10.0f;
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::R)) {
-			mCamera.Get2D().mPixelsPerMetre += zoomspeed * dt;
-		}
-
-		if (sf::Keyboard::isKeyPressed(sf::Keyboard::F)) {
-			mCamera.Get2D().mPixelsPerMetre -= zoomspeed * dt;
-			mCamera.Get2D().mPixelsPerMetre = std::max(mCamera.Get2D().mPixelsPerMetre, 0.0f);
-		}
 	}
 }
 
@@ -308,6 +271,10 @@ void WorldEditor::ProcessGUI()
 			}
 		}
 
+		if (ImGui::Button("Return to Origin")) {
+			mCamera.SetPosition(b2Vec2(0.0f, 0.0f));
+		}
+
 		if (mInPreviewMode) {
 			float height = mCamera.Get3D().GetHeight();
 			if (ImGui::SliderFloat("Camera Height", &height, 0.0f, 4.0f)) {
@@ -331,6 +298,8 @@ void WorldEditor::ProcessGUI()
 				mCamera.Get2D().mPixelsPerMetre = pixelsPerMetre;
 			}
 		}
+
+		ImGui::Text("Controls:\n%s", mInPreviewMode ? GetFreeControlCamera3DInstructions() : GetFreeControlCamera2DInstructions());
 	}
 
 	if (ImGui::CollapsingHeader("Performance Info")) {

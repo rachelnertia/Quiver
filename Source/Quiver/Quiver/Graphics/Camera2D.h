@@ -75,4 +75,8 @@ public:
 	}
 };
 
+void FreeControl(Camera2D& camera, float const dt);
+
+auto GetFreeControlCamera2DInstructions() -> const char*;
+
 }

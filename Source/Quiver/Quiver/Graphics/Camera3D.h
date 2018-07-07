@@ -96,6 +96,8 @@ void FreeControl(
 	const bool mouselook = false,
 	const sf::Window* windowForMouselook = nullptr);
 
+auto GetFreeControlCamera3DInstructions() -> const char*;
+
 inline int GetPitchOffsetInPixels(const Camera3D& camera, const int targetHeightinPixels) {
 	return (int)(tan(camera.GetPitchRadians()) * targetHeightinPixels);
 }

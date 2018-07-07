@@ -69,8 +69,6 @@ void FreeControl(
 	auto log = spdlog::get("console");
 	assert(log);
 
-	namespace xbc = Xbox360Controller;
-
 	{
 		const float speed = 1.0f; // speed in metres per second.
 
@@ -214,6 +212,14 @@ void FreeControl(
 
 		camera.SetHeight(camera.GetHeight() + (up * dt));
 	}
+}
+
+auto GetFreeControlCamera3DInstructions() -> const char*
+{
+	return
+		"Move Horizontally: WASD \n"
+		"Move Vertically:   RF \n"
+		"Yaw & Pitch:       Arrow Keys \n";
 }
 
 }

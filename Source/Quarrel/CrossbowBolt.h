@@ -8,10 +8,6 @@
 
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
 
-#define BETTER_ENUMS_DEFAULT_CONSTRUCTOR(Enum) \
-  public:                                      \
-    Enum() = default;
-
 #include "enum.h"
 
 #include "Effects.h"

@@ -1049,7 +1049,7 @@ operator >>(std::basic_istream<Char, Traits>& stream, Enum &value)             \
 
 #ifndef BETTER_ENUMS_DEFAULT_CONSTRUCTOR
 #   define BETTER_ENUMS_DEFAULT_CONSTRUCTOR(Enum)                              \
-      private:                                                                 \
+      public:                                                                 \
         Enum() : _value(0) { }
 #endif
 

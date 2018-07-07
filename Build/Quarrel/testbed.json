@@ -4,18 +4,18 @@
     },
     "Animations": [
         {
-            "File": "animations/darkmage_anims.json",
-            "Name": "awaken"
-        },
-        {
             "File": "animations/evil_knight_attack.json"
         },
         {
             "File": "animations/darkmage_anims.json",
-            "Name": "attack"
+            "Name": "awaken"
         },
         {
             "File": "animations/flyghelm_fly_impo.json"
+        },
+        {
+            "File": "animations/darkmage_anims.json",
+            "Name": "attack"
         },
         {
             "File": "animations/darkmage_anims.json",
@@ -34,6 +34,50 @@
         "Color": "450a1d00"
     },
     "Entities": [
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    -5.45141363143921,
+                    -1.09316396713257
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            1.09375,
+                            -4.875
+                        ],
+                        [
+                            1.09375,
+                            4.875
+                        ],
+                        [
+                            -1.09375,
+                            4.875
+                        ],
+                        [
+                            -1.09375,
+                            -4.875
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "b62d38ff",
+                "Detached": false,
+                "GroundOffset": 0.0,
+                "Height": 8.0,
+                "SpriteRadius": 0.5
+            }
+        },
         {
             "PhysicsComponent": {
                 "Angle": -0.500160276889801,
@@ -499,50 +543,6 @@
                 "Detached": false,
                 "GroundOffset": 0.0,
                 "Height": 5.25600004196167,
-                "SpriteRadius": 0.5
-            }
-        },
-        {
-            "PhysicsComponent": {
-                "Angle": 0.0,
-                "AngularDamping": 0.0,
-                "BodyType": "Static",
-                "FixedRotation": false,
-                "Friction": 0.200000002980232,
-                "IsBullet": false,
-                "LinearDamping": 0.0,
-                "Position": [
-                    -5.45141363143921,
-                    -1.09316396713257
-                ],
-                "Restitution": 0.0,
-                "Shape": {
-                    "Type": "Polygon",
-                    "Vertices": [
-                        [
-                            1.09375,
-                            -4.875
-                        ],
-                        [
-                            1.09375,
-                            4.875
-                        ],
-                        [
-                            -1.09375,
-                            4.875
-                        ],
-                        [
-                            -1.09375,
-                            -4.875
-                        ]
-                    ]
-                }
-            },
-            "RenderComponent": {
-                "Colour": "b62d38ff",
-                "Detached": false,
-                "GroundOffset": 0.0,
-                "Height": 8.0,
                 "SpriteRadius": 0.5
             }
         },
@@ -2191,7 +2191,7 @@
                             "quarrelType": {
                                 "colour": "000000ff",
                                 "effect": {
-                                    "appliesEffect": 0,
+                                    "appliesEffect": "None",
                                     "immediateDamage": 5,
                                     "specialEffect": "None"
                                 }
@@ -2201,7 +2201,7 @@
                             "quarrelType": {
                                 "colour": "ff0000ff",
                                 "effect": {
-                                    "appliesEffect": 1,
+                                    "appliesEffect": "Burning",
                                     "immediateDamage": 1,
                                     "specialEffect": "None"
                                 }
@@ -2211,8 +2211,8 @@
                             "quarrelType": {
                                 "colour": "ffffffff",
                                 "effect": {
-                                    "appliesEffect": 0,
-                                    "immediateDamage": 1,
+                                    "appliesEffect": "None",
+                                    "immediateDamage": 0,
                                     "specialEffect": "Teleport"
                                 }
                             }

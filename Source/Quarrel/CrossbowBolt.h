@@ -21,7 +21,7 @@ BETTER_ENUM(
 struct CrossbowBoltEffect
 {
 	int immediateDamage = 0;
-	ActiveEffectType appliesEffect = ActiveEffectType::None;
+	ActiveEffectType appliesEffect = +ActiveEffectType::None;
 	SpecialEffectType specialEffect = SpecialEffectType::None;
 };
 

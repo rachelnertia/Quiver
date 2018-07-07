@@ -48,21 +48,21 @@ void AddActiveEffect(const ActiveEffectType effectType, ActiveEffectSet& activeE
 {
 	switch (effectType)
 	{
-	case ActiveEffectType::None: return;
-	case ActiveEffectType::Poisoned:
+	case +ActiveEffectType::None: return;
+	case +ActiveEffectType::Poisoned:
 	{
 		const auto poisonDuration = 10s;
 		AddOrResetDuration(effectType, poisonDuration, activeEffects);
 		break;
 	}
-	case ActiveEffectType::Burning:
+	case +ActiveEffectType::Burning:
 	{
-		if (RemoveActiveEffect(ActiveEffectType::Frozen, activeEffects))
+		if (RemoveActiveEffect(+ActiveEffectType::Frozen, activeEffects))
 		{
 			const auto chilledDuration = 5s;
-			AddOrResetDuration(ActiveEffectType::Chilled, chilledDuration, activeEffects);
+			AddOrResetDuration(+ActiveEffectType::Chilled, chilledDuration, activeEffects);
 		}
-		else if (RemoveActiveEffect(ActiveEffectType::Chilled, activeEffects) == false)
+		else if (RemoveActiveEffect(+ActiveEffectType::Chilled, activeEffects) == false)
 		{
 			const auto burningDuration = 10s;
 			AddOrResetDuration(effectType, burningDuration, activeEffects);
@@ -70,16 +70,16 @@ void AddActiveEffect(const ActiveEffectType effectType, ActiveEffectSet& activeE
 
 		break;
 	}
-	case ActiveEffectType::Frozen:
+	case +ActiveEffectType::Frozen:
 	{
-		if (RemoveActiveEffect(ActiveEffectType::Burning, activeEffects))
+		if (RemoveActiveEffect(+ActiveEffectType::Burning, activeEffects))
 		{
 			const auto chilledDuration = 5s;
-			AddOrResetDuration(ActiveEffectType::Chilled, chilledDuration, activeEffects);
+			AddOrResetDuration(+ActiveEffectType::Chilled, chilledDuration, activeEffects);
 		}
 		else
 		{
-			RemoveActiveEffect(ActiveEffectType::Chilled, activeEffects);
+			RemoveActiveEffect(+ActiveEffectType::Chilled, activeEffects);
 
 			const auto frozenDuration = 10s;
 			AddOrResetDuration(effectType, frozenDuration, activeEffects);
@@ -104,11 +104,11 @@ void ApplyEffect(const ActiveEffect & activeEffect, DamageCount & damage)
 {
 	switch (activeEffect.type)
 	{
-	case ActiveEffectType::None: assert(false); break;
-	case ActiveEffectType::Burning:
+	case +ActiveEffectType::None: assert(false); break;
+	case +ActiveEffectType::Burning:
 		AddDamage(damage, 1);
 		break;
-	case ActiveEffectType::Poisoned:
+	case +ActiveEffectType::Poisoned:
 		AddDamage(damage, 1);
 		break;
 	}
@@ -116,12 +116,12 @@ void ApplyEffect(const ActiveEffect & activeEffect, DamageCount & damage)
 
 void ApplyEffect(const ActiveEffect& effect, MovementSpeed& speed)
 {
-	assert(effect.type != ActiveEffectType::None);
+	assert(effect.type != +ActiveEffectType::None);
 
-	if (effect.type == ActiveEffectType::Chilled) {
+	if (effect.type == +ActiveEffectType::Chilled) {
 		speed.SetMultiplier(0.5f);
 	}
-	else if (effect.type == ActiveEffectType::Frozen) {
+	else if (effect.type == +ActiveEffectType::Frozen) {
 		speed.SetMultiplier(0.0f);
 	}
 }
@@ -157,8 +157,8 @@ void ApplyEffect(const ActiveEffect & effect, qvr::RenderComponent & renderCompo
 
 	switch (effect.type)
 	{
-	case ActiveEffectType::None: assert(false); break;
-	case ActiveEffectType::Burning:
+	case +ActiveEffectType::None: assert(false); break;
+	case +ActiveEffectType::Burning:
 	{
 		renderComponent.SetColor(
 			CalculatePulseColour(
@@ -166,7 +166,7 @@ void ApplyEffect(const ActiveEffect & effect, qvr::RenderComponent & renderCompo
 				sf::Color::Red));
 		break;
 	}
-	case ActiveEffectType::Poisoned:
+	case +ActiveEffectType::Poisoned:
 	{
 		renderComponent.SetColor(
 			CalculatePulseColour(
@@ -174,7 +174,7 @@ void ApplyEffect(const ActiveEffect & effect, qvr::RenderComponent & renderCompo
 				sf::Color::Green));
 		break;
 	}
-	case ActiveEffectType::Frozen:
+	case +ActiveEffectType::Frozen:
 		renderComponent.SetColor(
 			CalculatePulseColour(
 				effect.remainingDuration,

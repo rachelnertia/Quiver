@@ -57,12 +57,12 @@ void DebugInitQuiver(PlayerQuiver& quiver) {
 
 	type.colour = sf::Color::Red;
 	type.effect.immediateDamage = 1;
-	type.effect.appliesEffect = ActiveEffectType::Burning;
+	type.effect.appliesEffect = +ActiveEffectType::Burning;
 
 	quiver.quarrelSlots[1] = QuarrelSlot{ type };
 
 	type.colour = sf::Color::White;
-	type.effect.appliesEffect = ActiveEffectType::None;
+	type.effect.appliesEffect = +ActiveEffectType::None;
 	type.effect.specialEffect = SpecialEffectType::Teleport;
 
 	quiver.quarrelSlots[2] = QuarrelSlot{ type };
@@ -521,7 +521,7 @@ void RenderActiveEffects(
 		std::end(effects), 
 		[](const ActiveEffect& effect)
 		{
-			return effect.type == ActiveEffectType::Burning;
+			return effect.type == +ActiveEffectType::Burning;
 		});
 
 	if (it == std::end(effects)) return;

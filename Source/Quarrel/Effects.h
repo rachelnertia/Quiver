@@ -3,6 +3,8 @@
 #include <chrono>
 #include <vector>
 
+#include "enum.h"
+
 namespace qvr
 {
 class RenderComponent;
@@ -12,14 +14,14 @@ struct DamageCount;
 
 class MovementSpeed;
 
-enum class ActiveEffectType
-{
+BETTER_ENUM(
+	ActiveEffectType, int,
 	None,
 	Burning,
 	Poisoned,
 	Chilled,
 	Frozen
-};
+);
 
 struct ActiveEffect
 {

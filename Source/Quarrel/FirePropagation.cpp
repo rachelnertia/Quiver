@@ -38,5 +38,5 @@ void ApplyFires(FiresInContact & fires, ActiveEffectSet & effects)
 {
 	if (fires.container.empty()) return;
 
-	AddActiveEffect(ActiveEffectType::Burning, effects);
+	AddActiveEffect(+ActiveEffectType::Burning, effects);
 }

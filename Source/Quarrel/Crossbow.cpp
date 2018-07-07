@@ -348,10 +348,9 @@ void Crossbow::UnloadQuarrel() {
 	if (!qvrVerify(mCockedState == CockedState::Cocked)) return;
 	if (!qvrVerify(mLoadedQuarrel)) return;
 
+	PutQuarrelBack(GetQuiver(), mLoadedQuarrel->mTypeInfo);
+	
 	mLoadedQuarrel = {};
-
-	// TODO: This should finish the cooldown timer on the slot we took the
-	// quarrel from originally.
 }
 
 using json = nlohmann::json;

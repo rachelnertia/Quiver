@@ -22,19 +22,29 @@ void from_json(const nlohmann::json& j, QuarrelTypeInfo& quarrelType);
 
 class QuarrelSlot
 {
-	std::chrono::duration<float> cooldownRemaining;
-	std::chrono::duration<float> cooldownTime;
+	using duration = std::chrono::duration<float>;
 	
+	duration cooldownRemaining;
+	duration cooldownTime;
+
 public:
 	auto GetCooldownRatio() const -> float {
-		return cooldownRemaining / cooldownTime;
+		return 
+			cooldownTime != duration(0) ?
+				cooldownRemaining / cooldownTime :
+				0.0f;
 	}
 
-	auto TakeQuarrel(const std::chrono::duration<float> cooldown)
+	auto TakeQuarrel(const duration cooldown)
 		-> std::experimental::optional<QuarrelTypeInfo>;
 
+	void ResetCooldown() {
+		cooldownRemaining = duration(0);
+		//cooldownTime = duration(0);
+	}
+
 	void OnStep(const std::chrono::duration<float> deltaTime) {
-		cooldownRemaining = std::max(cooldownRemaining - deltaTime, std::chrono::duration<float>(0));
+		cooldownRemaining = std::max(cooldownRemaining - deltaTime, duration(0));
 	}
 
 	QuarrelTypeInfo type;
@@ -65,7 +75,8 @@ public:
 
 using OptionalQuarrelType = std::experimental::optional<QuarrelTypeInfo>;
 
-auto TakeQuarrel(PlayerQuiver& quiver, const int slotIndex) -> OptionalQuarrelType;
+auto TakeQuarrel   (PlayerQuiver& quiver, const int slotIndex) -> OptionalQuarrelType;
+void PutQuarrelBack(PlayerQuiver& quiver, const QuarrelTypeInfo& quarrel);
 
 void to_json  (nlohmann::json& j,       PlayerQuiver const& quiver); 
 void from_json(nlohmann::json const& j, PlayerQuiver & quiver);

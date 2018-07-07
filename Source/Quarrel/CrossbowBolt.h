@@ -21,15 +21,23 @@ BETTER_ENUM(
 struct CrossbowBoltEffect
 {
 	int immediateDamage = 0;
-	ActiveEffectType appliesEffect = +ActiveEffectType::None;
+	ActiveEffectType appliesEffect = ActiveEffectType::None;
 	SpecialEffectType specialEffect = SpecialEffectType::None;
 };
 
+inline bool operator==(CrossbowBoltEffect const& a, CrossbowBoltEffect const& b) {
+	return
+		a.immediateDamage == b.immediateDamage &&
+		a.appliesEffect == b.appliesEffect &&
+		a.specialEffect == b.specialEffect;
+}
+
+inline bool operator!=(CrossbowBoltEffect const& a, CrossbowBoltEffect const& b) {
+	return !(a == b);
+}
+
 void to_json  (nlohmann::json&,       CrossbowBoltEffect const&);
 void from_json(nlohmann::json const&, CrossbowBoltEffect&);
-//
-//void to_json(nlohmann::json&, SpecialEffectType const&);
-//void from_json(nlohmann::json const&, SpecialEffectType&);
 
 class CrossbowBolt : public qvr::CustomComponent
 {

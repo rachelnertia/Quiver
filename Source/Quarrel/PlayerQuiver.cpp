@@ -42,9 +42,22 @@ auto TakeQuarrel(PlayerQuiver& quiver, const int slotIndex) -> OptionalQuarrelTy
 	}
 
 	// TODO: Smarter cooldown system.
-	const auto basicCooldown = 0.5s;
+	const auto basicCooldown = 2.0s;
 
 	return quiver.quarrelSlots[slotIndex]->TakeQuarrel(basicCooldown);
+}
+
+void PutQuarrelBack(PlayerQuiver& quiver, const QuarrelTypeInfo& quarrel)
+{
+	for (auto& slot : quiver.quarrelSlots)
+	{
+		if (!slot.has_value()) continue;
+		if (slot->type.effect != quarrel.effect) continue;
+
+		slot->ResetCooldown();
+
+		return;
+	}
 }
 
 void to_json(json& j, PlayerQuiver const& quiver) {

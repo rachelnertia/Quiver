@@ -1,6 +1,6 @@
 {
 	"initialState":"Editor",
-	"worldFile":"testbed.json",
+	"worldFile":"curious_gorge.json",
 	"ImGuiConfig": {
 		"FontGlobalScale": 2
 	},

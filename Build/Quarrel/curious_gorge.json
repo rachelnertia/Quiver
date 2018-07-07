@@ -1,0 +1,73 @@
+{
+    "AmbientLight": {
+        "Colour": "ffffffff"
+    },
+    "Animations": null,
+    "DirectionalLight": {
+        "Angle": 0.0,
+        "Color": "a52b1000"
+    },
+    "Entities": [
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.200000002980232,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    -0.979229927062988,
+                    -5.34580087661743
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            1.03125,
+                            -2.546875
+                        ],
+                        [
+                            1.03125,
+                            2.546875
+                        ],
+                        [
+                            -1.03125,
+                            2.546875
+                        ],
+                        [
+                            -1.03125,
+                            -2.546875
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "8c3600ff",
+                "Detached": false,
+                "GroundOffset": 0.0,
+                "Height": 8.0,
+                "SpriteRadius": 0.5
+            }
+        }
+    ],
+    "Fog": {
+        "Color": "b07ddf00",
+        "MaxDistance": 15.2750005722046,
+        "MaxIntensity": 0.0,
+        "MinDistance": 7.39400053024292
+    },
+    "Gravity": [
+        0.0,
+        0.0
+    ],
+    "GroundColour": "92525eff",
+    "Prefabs": {},
+    "RenderSettings": {
+        "RayLength": 50.0
+    },
+    "Sky": null,
+    "SkyColour": "708be0ff"
+}

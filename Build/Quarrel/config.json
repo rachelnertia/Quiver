@@ -1,6 +1,6 @@
 {
 	"initialState":"Editor",
-	"worldFile":"curious_gorge.json",
+	"worldFile":"testbed.json",
 	"ImGuiConfig": {
 		"FontGlobalScale": 2
 	},
@@ -8,5 +8,8 @@
 		"width": 1600,
 		"height": 900,
 		"name": "Quarrel"
+	},
+	"graphicsConfig": {
+		"frameTextureResolutionRatio": 0.2
 	}
 }

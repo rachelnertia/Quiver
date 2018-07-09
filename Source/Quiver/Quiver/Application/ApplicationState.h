@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include "GraphicsSettings.h"
 #include "Quiver/World/WorldContext.h"
 
 namespace sf {
@@ -17,6 +18,7 @@ class CustomComponentTypeLibrary;
 class ApplicationStateContext {
 	sf::RenderWindow& mWindow;
 	bool mWindowResized = false;
+
 	float mFrameTextureResolutionRatio = 1.0f;
 	
 	WorldContext mWorldContext;
@@ -29,11 +31,13 @@ public:
 	ApplicationStateContext(
 		sf::RenderWindow& window,
 		CustomComponentTypeLibrary& customComponentTypes,
-		FixtureFilterBitNames& filterBitNames)
+		FixtureFilterBitNames& filterBitNames,
+		GraphicsSettings const& graphicsSettings)
 		: mWindow(window)
 		, mWorldContext(
 			customComponentTypes, 
 			filterBitNames)
+		, mFrameTextureResolutionRatio(graphicsSettings.frameTextureResolutionRatio)
 	{}
 
 	auto GetWindow() -> sf::RenderWindow& { return mWindow; }

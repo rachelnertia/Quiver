@@ -26,8 +26,13 @@ TEST_CASE("ApplicationState", "[Application]")
 	sf::RenderWindow window;
 	qvr::CustomComponentTypeLibrary customComponentTypes;
 	qvr::FixtureFilterBitNames filterBitNames;
+	qvr::GraphicsSettings graphicsSettings;
 
-	qvr::ApplicationStateContext context(window, customComponentTypes, filterBitNames);
+	qvr::ApplicationStateContext context(
+		window, 
+		customComponentTypes, 
+		filterBitNames, 
+		graphicsSettings);
 
 	std::unique_ptr<qvr::ApplicationState> applicationState =
 		std::make_unique<TestApplicationState>(context);

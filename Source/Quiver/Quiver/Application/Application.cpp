@@ -108,6 +108,12 @@ void TakeScreenshot(const sf::Window& window)
 	}
 }
 
+void from_json(const nlohmann::json& j, GraphicsSettings& g) {
+	if (!j.is_object()) return;
+
+	g.frameTextureResolutionRatio = j.value("frameTextureResolutionRatio", 1.0f);
+}
+
 int RunApplication(
 	CustomComponentTypeLibrary& customComponentTypes,
 	FixtureFilterBitNames& filterBitNames)
@@ -128,10 +134,13 @@ int RunApplication(
 	
 	ConfigureImGui(JsonHelp::GetValue(config, "ImGuiConfig", ImGuiConfig()));
 
+	GraphicsSettings graphicsSettings = config.value("graphicsConfig", json{});
+
 	ApplicationStateContext applicationStateContext(
 		window,
 		customComponentTypes,
-		filterBitNames);
+		filterBitNames,
+		graphicsSettings);
 
 	consoleLog->info("Ready.");
 

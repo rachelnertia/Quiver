@@ -14,7 +14,7 @@
 #include "Quiver/Entity/RenderComponent/RenderComponent.h"
 #include "Quiver/World/World.h"
 
-#include "Utils.h"
+#include "Misc/Utils.h"
 
 using namespace qvr;
 

@@ -13,9 +13,9 @@
 #include <Quiver/Misc/Logging.h>
 #include <Quiver/World/World.h>
 
-#include "CrossbowBolt.h"
 #include "Damage.h"
 #include "Effects.h"
+#include "Player/CrossbowBolt.h"
 
 using json = nlohmann::json;
 

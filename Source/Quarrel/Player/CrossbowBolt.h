@@ -8,10 +8,10 @@
 
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
 
-#include "enum.h"
+#include "External/enum.h"
 
 #include "Effects.h"
-#include "Utils.h"
+#include "Misc/Utils.h"
 
 BETTER_ENUM(
 	SpecialEffectType, int,

@@ -16,9 +16,9 @@
 #include <Quiver/Input/Keyboard.h>
 #include <Quiver/Input/RawInput.h>
 
-#include "CrossbowBolt.h"
-#include "PlayerQuiver.h"
-#include "Utils.h"
+#include "Misc/Utils.h"
+#include "Player/CrossbowBolt.h"
+#include "Player/PlayerQuiver.h"
 
 class Crossbow : public Weapon {
 public:

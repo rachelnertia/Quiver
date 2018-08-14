@@ -26,7 +26,7 @@
 
 #include "CrossbowBolt.h"
 #include "Player.h"
-#include "Utils.h"
+#include "Misc/Utils.h"
 
 using namespace qvr;
 

@@ -1,7 +1,7 @@
 #include "FirePropagation.h"
 
 #include "Effects.h"
-#include "Utils.h"
+#include "Misc/Utils.h"
 
 void OnBeginContact(FiresInContact & fires, const b2Fixture & fixture)
 {

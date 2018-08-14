@@ -14,10 +14,10 @@
 #include "Damage.h"
 #include "Effects.h"
 #include "FirePropagation.h"
-#include "GuiUtils.h"
 #include "Gravity.h"
 #include "MovementSpeed.h"
-#include "Utils.h"
+#include "Misc/GuiUtils.h"
+#include "Misc/Utils.h"
 
 using namespace std::chrono_literals;
 

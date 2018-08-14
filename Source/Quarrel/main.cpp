@@ -1,12 +1,12 @@
 #include "Quiver/Application/Application.h"
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 
-#include "Enemy.h"
-#include "EnemyMelee.h"
-#include "Player.h"
-#include "Wanderer.h"
-#include "WorldExit.h"
-#include "Utils.h"
+#include "Enemy/Enemy.h"
+#include "Enemy/EnemyMelee.h"
+#include "Misc/Utils.h"
+#include "Player/Player.h"
+#include "Wanderer/Wanderer.h"
+#include "WorldExit/WorldExit.h"
 
 qvr::CustomComponentTypeLibrary CreateQuarrelTypes()
 {

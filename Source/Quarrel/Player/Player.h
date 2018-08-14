@@ -2,15 +2,15 @@
 
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
 
-#include "CameraHelpers.h"
+#include "CameraOwner.h"
 #include "Damage.h"
 #include "Effects.h"
 #include "FirePropagation.h"
 #include "MovementSpeed.h"
 #include "PlayerQuiver.h"
 #include "Progression.h"
-#include "Utils.h"
 #include "Weapon.h"
+#include "Misc/Utils.h"
 
 namespace sf {
 class RenderTarget;

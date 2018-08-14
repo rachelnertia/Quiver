@@ -9,9 +9,9 @@
 #include <Quiver/Misc/Logging.h>
 #include <Quiver/World/World.h>
 
-#include "enum_json.h"
+#include "External/enum_json.h"
 
-#include "Utils.h"
+#include "Misc/Utils.h"
 
 using namespace qvr;
 

@@ -3,7 +3,7 @@
 #include <chrono>
 #include <vector>
 
-#include "enum.h"
+#include "External/enum.h"
 
 namespace qvr
 {

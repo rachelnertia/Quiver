@@ -24,12 +24,12 @@
 #include "Quiver/Misc/Logging.h"
 #include "Quiver/World/World.h"
 
-#include "CrossbowBolt.h"
 #include "Damage.h"
 #include "Effects.h"
-#include "GuiUtils.h"
 #include "FirePropagation.h"
-#include "Utils.h"
+#include "Misc/GuiUtils.h"
+#include "Misc/Utils.h"
+#include "Player/CrossbowBolt.h"
 
 using namespace qvr;
 

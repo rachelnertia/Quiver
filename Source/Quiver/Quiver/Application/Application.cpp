@@ -21,6 +21,7 @@
 #include "Quiver/Physics/PhysicsUtils.h"
 #include "Quiver/World/World.h"
 
+#include "ApplicationStateLibrary.h"
 #include "Config.h"
 #include "Game/Game.h"
 #include "MainMenu/MainMenu.h"
@@ -32,7 +33,8 @@ using json = nlohmann::json;
 
 std::unique_ptr<ApplicationState> GetInitialState(
 	const InitialStateConfig& config, 
-	ApplicationStateContext& ctx);
+	ApplicationStateContext& ctx,
+	ApplicationStateLibrary& availableStates);
 
 void ConfigureImGui(const ImGuiConfig& config) {
 	ImGuiIO& io = ImGui::GetIO();
@@ -83,6 +85,71 @@ void TakeScreenshot(const sf::Window& window)
 	}
 }
 
+auto GetWorldFromParams(
+	const json& stateParameters,
+	WorldContext& worldContext)
+	-> std::unique_ptr<World>
+{
+	if (stateParameters.empty()) {
+		return nullptr;
+	}
+
+	const auto filename = stateParameters.value<std::string>("worldFile", {});
+
+	if (filename.empty()) {
+		return nullptr;
+	}
+
+	return LoadWorld(filename, worldContext);
+};
+
+auto CreateEditor(ApplicationStateContext& context, const json& params) 
+-> std::unique_ptr<ApplicationState>
+{
+	auto world = GetWorldFromParams(
+		params,
+		context.GetWorldContext());
+
+	if (world) {
+		return std::make_unique<WorldEditor>(
+			context,
+			std::move(world));
+	}
+
+	return std::make_unique<WorldEditor>(context);
+}
+
+auto CreateGame(ApplicationStateContext& context, const json& params)
+-> std::unique_ptr<ApplicationState>
+{
+	auto world = GetWorldFromParams(
+		params,
+		context.GetWorldContext());
+
+	if (world) {
+		return std::make_unique<Game>(
+			context,
+			std::move(world));
+	}
+
+	return std::make_unique<Game>(context);
+}
+
+ApplicationStateLibrary GetQuiverStates() {
+	ApplicationStateLibrary lib;
+
+	lib.AddStateCreator(
+		"MainMenu",
+		[](ApplicationStateContext& ctx, const json&) {
+			return std::make_unique<MainMenu>(ctx);
+		});
+	
+	lib.AddStateCreator("Editor", CreateEditor);
+	lib.AddStateCreator("Game", CreateGame);
+
+	return lib;
+}
+
 int RunApplication(ApplicationParams params)
 {
 	InitLoggers(spdlog::level::debug);
@@ -103,9 +170,14 @@ int RunApplication(ApplicationParams params)
 		params.fixtureFilterBitNames,
 		params.config.graphicsSettings);
 
+	ApplicationStateLibrary availableStates = GetQuiverStates();	
+
 	consoleLog->info("Ready.");
 
-	auto currentState = GetInitialState(params.config.initialState, applicationStateContext);
+	auto currentState = GetInitialState(
+		params.config.initialState, 
+		applicationStateContext, 
+		availableStates);
 
 	// Main loop
 	sf::Clock deltaClock;
@@ -300,70 +372,30 @@ ApplicationConfig LoadConfig(const char* filename) {
 
 std::unique_ptr<ApplicationState> GetInitialState(
 	const InitialStateConfig& config,
-	ApplicationStateContext& applicationStateContext)
+	ApplicationStateContext& applicationStateContext,
+	ApplicationStateLibrary& stateFactories)
 {
 	auto consoleLog = spdlog::get("console");
 	assert(consoleLog.get() != nullptr);
 
-	auto GetWorldFromParams = [](
-		const json& stateParameters, 
-		WorldContext& worldContext) 
-		-> std::unique_ptr<World>
-	{
-		if (stateParameters.empty()) {
-			return nullptr;
-		}
+	consoleLog->info("Launching {}...", config.stateName);
 
-		const auto filename = stateParameters.value<std::string>("worldFile", {});
-
-		if (filename.empty()) {
-			return nullptr;
-		}
-
-		return LoadWorld(filename, worldContext);
-	};
-
-	if (config.stateName == "Editor")
-	{
-		consoleLog->info("Launching World Editor...");
-
-		auto world = GetWorldFromParams(
-			config.stateParameters, 
-			applicationStateContext.GetWorldContext());
-
-		if (world) {
-			return std::make_unique<WorldEditor>(
-				applicationStateContext,
-				std::move(world));
-		}
-
-		return std::make_unique<WorldEditor>(applicationStateContext);
-	}
-	else if (config.stateName == "Game")
-	{
-		consoleLog->info("Launching Game...");
-
-		auto world = GetWorldFromParams(
+	auto newState =
+		stateFactories.CreateState(
+			config.stateName.c_str(),
 			config.stateParameters,
-			applicationStateContext.GetWorldContext());
+			applicationStateContext);
 
-		if (world) {
-			return std::make_unique<Game>(applicationStateContext, std::move(world));
-		}
-
-		return std::make_unique<Game>(applicationStateContext);
-	}
-	else if (!config.stateName.empty())
+	if (!newState)
 	{
 		consoleLog->warn(
-			"'{}' is an unrecognised value for imguiConfig variable 'initialState'.\n"
-			"Options are 'Editor' and 'Game'.", 
+			"Failed to launch application state '{}'", 
 			config.stateName);
+		consoleLog->info("Launching Main Menu...");
+		return std::make_unique<MainMenu>(applicationStateContext);
 	}
 
-	consoleLog->info("Launching Main Menu...");
-
-	return std::make_unique<MainMenu>(applicationStateContext);
+	return newState;
 }
 
 int RunApplication(
@@ -388,6 +420,31 @@ int RunApplication(CustomComponentTypeLibrary& customComponents)
 int RunApplication() {
 	CustomComponentTypeLibrary empty;
 	return RunApplication(empty);
+}
+
+bool ApplicationStateLibrary::AddStateCreator(std::string name, Factory factory) 
+{
+	if (map.count(name) != 0) {
+		return false;
+	}
+
+	map[name] = factory;
+	return true;
+}
+
+auto ApplicationStateLibrary::CreateState(
+	const char* stateName,
+	const nlohmann::json& stateParams,
+	ApplicationStateContext& context)
+		-> std::unique_ptr<ApplicationState>
+{
+	if (map.count(stateName) == 0) {
+		return nullptr;
+	}
+
+	const auto& factory = map.at(stateName);
+	
+	return factory(context, stateParams);
 }
 
 }

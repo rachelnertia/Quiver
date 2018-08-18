@@ -1,4 +1,5 @@
 #include "Quiver/Application/Application.h"
+#include "Quiver/Application/Config.h"
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 
 #include "Enemy/Enemy.h"
@@ -48,6 +49,13 @@ int main()
 {
 	qvr::CustomComponentTypeLibrary quarrelTypes = CreateQuarrelTypes();
 	qvr::FixtureFilterBitNames quarrelFilterBitNames = CreateFilterBitNames();
+	qvr::ApplicationConfig qvrConfig = qvr::LoadConfig("config.json");
 
-	return qvr::RunApplication(quarrelTypes, quarrelFilterBitNames);
+	qvr::ApplicationParams params{
+		quarrelTypes,
+		quarrelFilterBitNames,
+		qvrConfig
+	};
+
+	return qvr::RunApplication(params);
 }

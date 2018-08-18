@@ -13,6 +13,7 @@ class Event;
 namespace qvr {
 
 class CustomComponentTypeLibrary;
+struct ApplicationParams;
 
 // Contains data shared by multiple ApplicationStates.
 class ApplicationStateContext {
@@ -24,8 +25,7 @@ class ApplicationStateContext {
 	WorldContext mWorldContext;
 
 	friend int RunApplication(
-		CustomComponentTypeLibrary&, 
-		FixtureFilterBitNames&);
+		ApplicationParams params);
 
 public:
 	ApplicationStateContext(

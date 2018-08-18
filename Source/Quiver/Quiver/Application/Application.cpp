@@ -21,6 +21,7 @@
 #include "Quiver/Physics/PhysicsUtils.h"
 #include "Quiver/World/World.h"
 
+#include "Config.h"
 #include "Game/Game.h"
 #include "MainMenu/MainMenu.h"
 #include "WorldEditor/WorldEditor.h"
@@ -29,35 +30,9 @@ namespace qvr {
 
 using json = nlohmann::json;
 
-json GetConfig();
-
 std::unique_ptr<ApplicationState> GetInitialState(
-	const json& config, 
+	const InitialStateConfig& config, 
 	ApplicationStateContext& ctx);
-
-struct WindowConfig {
-	int width = 1024;
-	int height = 576;
-	std::string name = "Quiver Window";
-
-	static WindowConfig Default;
-};
-
-WindowConfig WindowConfig::Default;
-
-void from_json(const json& j, WindowConfig& config) {
-	config.width = JsonHelp::GetValue(j, "width", WindowConfig::Default.width);
-	config.height = JsonHelp::GetValue(j, "height", WindowConfig::Default.height);
-	config.name = JsonHelp::GetValue(j, "name", WindowConfig::Default.name);
-}
-
-struct ImGuiConfig {
-	float FontGlobalScale = 1.0f;
-};
-
-void from_json(const json& j, ImGuiConfig& config) {
-	config.FontGlobalScale = JsonHelp::GetValue<float>(j, "FontGlobalScale", 1.0f);
-}
 
 void ConfigureImGui(const ImGuiConfig& config) {
 	ImGuiIO& io = ImGui::GetIO();
@@ -108,43 +83,29 @@ void TakeScreenshot(const sf::Window& window)
 	}
 }
 
-void from_json(const nlohmann::json& j, GraphicsSettings& g) {
-	if (!j.is_object()) return;
-
-	g.frameTextureResolutionRatio = j.value("frameTextureResolutionRatio", 1.0f);
-}
-
-int RunApplication(
-	CustomComponentTypeLibrary& customComponentTypes,
-	FixtureFilterBitNames& filterBitNames)
+int RunApplication(ApplicationParams params)
 {
 	InitLoggers(spdlog::level::debug);
 
 	auto consoleLog = spdlog::get("console");
 
-	const json config = GetConfig();
-
 	// Open Window
 	sf::RenderWindow window;
-	CreateSFMLWindow(
-		window, 
-		JsonHelp::GetValue(config, "windowConfig", WindowConfig::Default));
+	CreateSFMLWindow(window, params.config.windowConfig);
 
 	ImGui::SFML::Init(window);
 	
-	ConfigureImGui(JsonHelp::GetValue(config, "ImGuiConfig", ImGuiConfig()));
-
-	GraphicsSettings graphicsSettings = config.value("graphicsConfig", json{});
+	ConfigureImGui(params.config.imGuiConfig);
 
 	ApplicationStateContext applicationStateContext(
 		window,
-		customComponentTypes,
-		filterBitNames,
-		graphicsSettings);
+		params.customComponentTypes,
+		params.fixtureFilterBitNames,
+		params.config.graphicsSettings);
 
 	consoleLog->info("Ready.");
 
-	auto currentState = GetInitialState(config, applicationStateContext);
+	auto currentState = GetInitialState(params.config.initialState, applicationStateContext);
 
 	// Main loop
 	sf::Clock deltaClock;
@@ -225,94 +186,197 @@ int RunApplication(
 	return 0;
 }
 
-json GetConfig()
+
+void from_json(const json& j, WindowConfig& config) {
+	config.width = j.value("width", config.width);
+	config.height = j.value("height", config.height);
+	config.name = j.value("name", config.name);
+}
+
+void from_json(const json& j, ImGuiConfig& config) {
+	config.FontGlobalScale = j.value("FontGlobalScale", config.FontGlobalScale);
+}
+
+void from_json(const nlohmann::json& j, GraphicsSettings& g) {
+	if (!j.is_object()) return;
+
+	g.frameTextureResolutionRatio = j.value("frameTextureResolutionRatio", 1.0f);
+}
+
+void from_json(const json& j, InitialStateConfig& config) {
+	config.stateName = j.value("name", config.stateName);
+	config.stateParameters = j.value("params", config.stateParameters);
+}
+
+template <typename T, std::size_t N>
+constexpr std::size_t countof(T const (&)[N]) noexcept
 {
+	return N;
+}
+
+bool GetLogLevel(const json& j, spdlog::level::level_enum& level) {
+	using namespace spdlog::level;
+	
+	if (j.is_number_unsigned()) {
+		const unsigned u = j.get<unsigned>();
+
+		if (u > (unsigned)level_enum::off) {
+			return false;
+		}
+
+		return (level_enum)u;
+	}
+
+	if (j.is_string()) {
+		const auto s = j.get<std::string>();
+
+		for (unsigned index = 0; index < countof(level_names); index++) {
+			if (level_names[index] == s) {
+				level = (level_enum)index;
+				return true;
+			}
+
+			if (short_level_names[index] == s) {
+				level = (level_enum)index;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+void from_json(const json& j, LoggingConfig config) {
+	GetLogLevel(j.value<json>("level", {}), config.level);
+}
+
+void from_json(const json& j, ApplicationConfig& config) {
+	config.windowConfig = j.value("windowConfig", config.windowConfig);
+	config.imGuiConfig = j.value("ImGuiConfig", config.imGuiConfig);
+	config.graphicsSettings = j.value("graphicsSettings", config.graphicsSettings);
+	config.initialState = j.value("initialState", config.initialState);
+}
+
+ApplicationConfig LoadConfig(const char* filename) {
+	InitLoggers(spdlog::level::debug);
+	
 	auto log = spdlog::get("console");
 	assert(log.get() != nullptr);
 
-	const char* configFileName = "config.json";
+	log->info("Attempting to load configuration variables from {}...", filename);
 
-	log->info("Attempting to load configuration variables from {}...", configFileName);
-
-	std::ifstream configFile(configFileName);
-
+	std::ifstream configFile(filename);
+	
 	if (!configFile.is_open()) {
 		log->info(
 			"Couldn't load {}! Will just go with all the hard-coded defaults.",
-			configFileName);
+			filename);
 
-		return {};
+		return ApplicationConfig();
 	}
 
-	json config;
+	json configJson;
 
 	try {
-		config << configFile;
+		configJson << configFile;
 	}
 	catch (std::invalid_argument e) {
 		log->error(
-			"Oh dear! There was an error parsing {}. "
+			"Oh dear! There was an error parsing {} as JSON. "
 			"Will just go with all the hard-coded defaults.",
-			configFileName);
+			filename);
 
-		return {};
+		return ApplicationConfig();
 	}
 
-	log->info("Loaded configuration parameters from {}!", configFileName);
+	log->info("Loaded configuration parameters from {}!", filename);
 
-	log->debug("{}:\n{}", configFileName, config.dump(4));
+	log->debug("{}:\n{}", filename, configJson.dump(4));
+
+	ApplicationConfig config = configJson;
 
 	return config;
 }
 
 std::unique_ptr<ApplicationState> GetInitialState(
-	const nlohmann::json& config,
+	const InitialStateConfig& config,
 	ApplicationStateContext& applicationStateContext)
 {
 	auto consoleLog = spdlog::get("console");
 	assert(consoleLog.get() != nullptr);
 
-	const auto initialState = JsonHelp::GetValue<std::string>(config, "initialState", {});
+	auto GetWorldFromParams = [](
+		const json& stateParameters, 
+		WorldContext& worldContext) 
+		-> std::unique_ptr<World>
+	{
+		if (stateParameters.empty()) {
+			return nullptr;
+		}
 
-	if (initialState == "Editor")
+		const auto filename = stateParameters.value<std::string>("worldFile", {});
+
+		if (filename.empty()) {
+			return nullptr;
+		}
+
+		return LoadWorld(filename, worldContext);
+	};
+
+	if (config.stateName == "Editor")
 	{
 		consoleLog->info("Launching World Editor...");
 
-		const auto worldFile = JsonHelp::GetValue<std::string>(config, "worldFile", {});
+		auto world = GetWorldFromParams(
+			config.stateParameters, 
+			applicationStateContext.GetWorldContext());
 
-		if (!worldFile.empty()) {
+		if (world) {
 			return std::make_unique<WorldEditor>(
 				applicationStateContext,
-				LoadWorld(worldFile, applicationStateContext.GetWorldContext()));
+				std::move(world));
 		}
 
 		return std::make_unique<WorldEditor>(applicationStateContext);
 	}
-	else if (initialState == "Game")
+	else if (config.stateName == "Game")
 	{
 		consoleLog->info("Launching Game...");
 
-		const auto worldFile = JsonHelp::GetValue<std::string>(config, "worldFile", {});
+		auto world = GetWorldFromParams(
+			config.stateParameters,
+			applicationStateContext.GetWorldContext());
 
-		if (!worldFile.empty()) {
-			return std::make_unique<Game>(
-				applicationStateContext,
-				LoadWorld(worldFile, applicationStateContext.GetWorldContext()));
+		if (world) {
+			return std::make_unique<Game>(applicationStateContext, std::move(world));
 		}
 
 		return std::make_unique<Game>(applicationStateContext);
 	}
-	else if (!initialState.empty())
+	else if (!config.stateName.empty())
 	{
 		consoleLog->warn(
-			"'{}' is an unrecognised value for imguiConfig variable 'initialState'.", 
-			initialState);
-		consoleLog->info("Options are 'Editor' and 'Game'.");
+			"'{}' is an unrecognised value for imguiConfig variable 'initialState'.\n"
+			"Options are 'Editor' and 'Game'.", 
+			config.stateName);
 	}
 
 	consoleLog->info("Launching Main Menu...");
 
 	return std::make_unique<MainMenu>(applicationStateContext);
+}
+
+int RunApplication(
+	CustomComponentTypeLibrary& customComponentTypes,
+	FixtureFilterBitNames& fixtureFilterBitNames)
+{
+	ApplicationConfig config;
+	return RunApplication(
+		ApplicationParams{
+			customComponentTypes,
+			fixtureFilterBitNames,
+			config
+		});
 }
 
 int RunApplication(CustomComponentTypeLibrary& customComponents)

@@ -172,5 +172,9 @@ workspace "Quiver"
 		{ 
 			"Source/Quarrel/**" 
 		}
+		includedirs
+		{
+			"Source/Quarrel"
+		}
 		IncludeQuiver()
 		LinkQuiver()

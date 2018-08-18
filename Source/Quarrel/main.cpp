@@ -1,4 +1,5 @@
 #include "Quiver/Application/Application.h"
+#include "Quiver/Application/ApplicationStateLibrary.h"
 #include "Quiver/Application/Config.h"
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 
@@ -45,16 +46,23 @@ qvr::CustomComponentTypeLibrary CreateQuarrelTypes()
 	return library;
 }
 
+qvr::ApplicationStateLibrary CreateQuarrelApplicationStates()
+{
+	return qvr::ApplicationStateLibrary();
+}
+
 int main()
 {
 	qvr::CustomComponentTypeLibrary quarrelTypes = CreateQuarrelTypes();
+	qvr::ApplicationStateLibrary applicationStates = CreateQuarrelApplicationStates();
 	qvr::FixtureFilterBitNames quarrelFilterBitNames = CreateFilterBitNames();
 	qvr::ApplicationConfig qvrConfig = qvr::LoadConfig("config.json");
 
 	qvr::ApplicationParams params{
 		quarrelTypes,
 		quarrelFilterBitNames,
-		qvrConfig
+		qvrConfig,
+		applicationStates
 	};
 
 	return qvr::RunApplication(params);

@@ -170,14 +170,21 @@ int RunApplication(ApplicationParams params)
 		params.fixtureFilterBitNames,
 		params.config.graphicsSettings);
 
-	ApplicationStateLibrary availableStates = GetQuiverStates();	
-
 	consoleLog->info("Ready.");
 
-	auto currentState = GetInitialState(
-		params.config.initialState, 
-		applicationStateContext, 
-		availableStates);
+	auto currentState =
+		params.userStates.CreateState(
+			params.config.initialState.stateName.c_str(),
+			params.config.initialState.stateParameters,
+			applicationStateContext);
+
+	if (currentState == nullptr) {
+		ApplicationStateLibrary quiverStates = GetQuiverStates();
+		currentState = GetInitialState(
+			params.config.initialState,
+			applicationStateContext,
+			quiverStates);
+	}
 
 	// Main loop
 	sf::Clock deltaClock;
@@ -402,12 +409,14 @@ int RunApplication(
 	CustomComponentTypeLibrary& customComponentTypes,
 	FixtureFilterBitNames& fixtureFilterBitNames)
 {
+	ApplicationStateLibrary noUserStates;
 	ApplicationConfig config;
 	return RunApplication(
 		ApplicationParams{
 			customComponentTypes,
 			fixtureFilterBitNames,
-			config
+			config,
+			noUserStates
 		});
 }
 

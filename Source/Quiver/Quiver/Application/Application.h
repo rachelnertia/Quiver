@@ -10,6 +10,7 @@ namespace sf {
 
 namespace qvr {
 
+class ApplicationStateLibrary;
 class CustomComponentTypeLibrary;
 struct ApplicationConfig;
 struct ApplicationParams;
@@ -18,6 +19,7 @@ struct ApplicationParams {
 	CustomComponentTypeLibrary& customComponentTypes;
 	FixtureFilterBitNames& fixtureFilterBitNames;
 	ApplicationConfig& config;
+	ApplicationStateLibrary& userStates;
 };
 
 int RunApplication(ApplicationParams params);

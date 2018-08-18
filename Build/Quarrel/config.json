@@ -13,7 +13,7 @@
 		"height": 900,
 		"name": "Quarrel"
 	},
-	"graphicsConfig": {
+	"graphicsSettings": {
 		"frameTextureResolutionRatio": 0.2
 	}
 }

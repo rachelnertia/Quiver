@@ -1,6 +1,29 @@
-#include "PlayerEditor.h"
-
 #include <Quiver/Misc/ImGuiHelpers.h>
+#include <Quiver/Entity/CustomComponent/CustomComponent.h>
+
+#include "Player.h"
+
+using namespace qvr;
+
+struct PlayerQuiverEditorState {
+	int selectedSlot = -1;
+};
+
+class PlayerEditor : public CustomComponentEditorType<Player>
+{
+public:
+	PlayerEditor(Player& player) : CustomComponentEditorType(player) {}
+
+	void GuiControls() override;
+
+private:
+	PlayerQuiverEditorState quiverEditorState;
+
+};
+
+std::unique_ptr<CustomComponentEditor> Player::CreateEditor() {
+	return std::make_unique<PlayerEditor>(*this);
+}
 
 void ImGuiControls(DamageCount& damageCounter, const int damageMaximumLimit) {
 	ImGui::SliderInt("Damage Taken",   &damageCounter.damage, 0, damageCounter.max);

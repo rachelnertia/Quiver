@@ -351,10 +351,6 @@ void Player::OnEndContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherF
 	::OnEndContact(m_FiresInContact, otherFixture);
 }
 
-std::unique_ptr<CustomComponentEditor> Player::CreateEditor() {
-	return std::make_unique<PlayerEditor>(*this);
-}
-
 nlohmann::json Player::ToJson() const
 {
 	nlohmann::json j;

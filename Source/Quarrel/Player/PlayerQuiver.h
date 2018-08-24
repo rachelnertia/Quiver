@@ -61,8 +61,9 @@ public:
 	static const int MaxEquippedQuarrelTypes = 3;
 
 	using OptionalQuarrelSlot = std::experimental::optional<QuarrelSlot>;
+	using Slots = std::array<OptionalQuarrelSlot, MaxEquippedQuarrelTypes>;
 
-	std::array<OptionalQuarrelSlot, MaxEquippedQuarrelTypes> quarrelSlots;
+	Slots quarrelSlots;
 
 	void OnStep(const std::chrono::duration<float> deltaTime) {
 		for (auto& quarrelSlot : quarrelSlots) {

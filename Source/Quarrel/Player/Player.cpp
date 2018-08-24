@@ -34,6 +34,7 @@
 #include <Quiver/World/World.h>
 
 #include "Crossbow.h"
+#include "PlayerEditor.h"
 #include "PlayerInput.h"
 #include "Misc/Utils.h"
 
@@ -351,16 +352,6 @@ void Player::OnEndContact(Entity& other, b2Fixture& myFixture, b2Fixture& otherF
 
 	::OnEndContact(m_FiresInContact, otherFixture);
 }
-
-class PlayerEditor : public CustomComponentEditorType<Player>
-{
-public:
-	PlayerEditor(Player& player) : CustomComponentEditorType(player) {}
-	
-	void GuiControls() override {
-		ImGui::SliderFloat("Move Speed", Target().mMoveSpeed, &MovementSpeed::GetBase, &MovementSpeed::SetBase, 0.0f, 20.0f);
-	}
-};
 
 std::unique_ptr<CustomComponentEditor> Player::CreateEditor() {
 	return std::make_unique<PlayerEditor>(*this);

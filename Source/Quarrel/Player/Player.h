@@ -20,7 +20,6 @@ namespace qvr {
 class Entity;
 }
 
-class PlayerEditor;
 class Weapon;
 
 struct PlayerDesc {

@@ -254,8 +254,6 @@ void Player::HandleInput(
 
 namespace {
 
-const int PlayerDamageMax = 100;
-
 const int EnemyProjectileDamage = 20;
 
 const int EnemyAttackDamage = 30;

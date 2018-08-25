@@ -1,3 +1,4 @@
+#include <Quiver/Graphics/ColourUtils.h>
 #include <Quiver/Misc/ImGuiHelpers.h>
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
 
@@ -58,6 +59,35 @@ void ImGuiControls(
 	}
 }
 
+void ImGuiControls(ActiveEffectType& activeEffect) {
+	ImGui::ListBox(
+		"Active Effect to Apply",
+		&activeEffect._value,
+		ActiveEffectType::_names().begin(),
+		ActiveEffectType::_names().size());
+}
+
+void ImGuiControls(SpecialEffectType& specialEffect) {
+	ImGui::ListBox(
+		"Special Effect",
+		&specialEffect._value,
+		SpecialEffectType::_names().begin(),
+		SpecialEffectType::_names().size());
+}
+
+void ImGuiControls(CrossbowBoltEffect& boltEffect) {
+	ImGui::AutoID id(&boltEffect);
+
+	ImGui::InputInt("Immediate Damage", &boltEffect.immediateDamage);
+	ImGuiControls(boltEffect.appliesEffect);
+	ImGuiControls(boltEffect.specialEffect);
+}
+
+void ImGuiControls(QuarrelTypeInfo& quarrelType) {
+	ColourUtils::ImGuiColourEditRGB("Colour##QuarrelType", quarrelType.colour);
+	ImGuiControls(quarrelType.effect);
+}
+
 void ImGuiControls(PlayerQuiver& quiver, PlayerQuiverEditorState& state) {
 	
 	auto itemsGetter = [](void* data, int index, const char** itemText) -> bool
@@ -83,6 +113,21 @@ void ImGuiControls(PlayerQuiver& quiver, PlayerQuiverEditorState& state) {
 		itemsGetter, 
 		(void*)&quiver.quarrelSlots, 
 		PlayerQuiver::MaxEquippedQuarrelTypes);
+
+	if (state.selectedSlot >= 0) {
+		if (quiver.quarrelSlots[state.selectedSlot]) {
+			if (ImGui::Button("Clear Slot")) {
+				quiver.quarrelSlots[state.selectedSlot].reset();
+			}
+			else {
+				auto& quarrelType = (*quiver.quarrelSlots[state.selectedSlot]).type;
+				ImGuiControls(quarrelType);
+			}
+		}
+		else {
+			ImGui::Text("This slot is empty");
+		}
+	}
 }
 
 void PlayerEditor::GuiControls() {

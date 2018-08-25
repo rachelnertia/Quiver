@@ -13,6 +13,7 @@
 
 struct QuarrelTypeInfo
 {
+	std::string name;
 	sf::Color colour;
 	CrossbowBoltEffect effect;
 };

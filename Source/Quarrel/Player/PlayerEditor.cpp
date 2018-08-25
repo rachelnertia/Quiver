@@ -84,12 +84,16 @@ void ImGuiControls(CrossbowBoltEffect& boltEffect) {
 }
 
 void ImGuiControls(QuarrelTypeInfo& quarrelType) {
+	ImGui::InputText<64>("Name", quarrelType.name);
 	ColourUtils::ImGuiColourEditRGB("Colour##QuarrelType", quarrelType.colour);
 	ImGuiControls(quarrelType.effect);
 }
 
-void ImGuiControls(PlayerQuiver& quiver, PlayerQuiverEditorState& state) {
-	
+void ImGuiControls(
+	PlayerQuiver& quiver, 
+	PlayerQuiverEditorState& state, 
+	PlayerQuarrelLibrary& library) 
+{	
 	auto itemsGetter = [](void* data, int index, const char** itemText) -> bool
 	{
 		auto slots = (PlayerQuiver::Slots*)data;
@@ -161,6 +165,6 @@ void PlayerEditor::GuiControls() {
 	}
 
 	if (ImGui::CollapsingHeader("Quiver##PlayerEditor")) {
-		ImGuiControls(Target().quiver, quiverEditorState);
+		ImGuiControls(Target().quiver, quiverEditorState, Target().quarrelLibrary);
 	}
 }

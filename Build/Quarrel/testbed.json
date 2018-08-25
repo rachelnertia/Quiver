@@ -2189,6 +2189,7 @@
                     "Quiver": [
                         {
                             "quarrelType": {
+                                "name": "Iron",
                                 "colour": "000000ff",
                                 "effect": {
                                     "appliesEffect": "None",
@@ -2199,6 +2200,7 @@
                         },
                         {
                             "quarrelType": {
+                                "name": "Fire",
                                 "colour": "ff0000ff",
                                 "effect": {
                                     "appliesEffect": "Burning",
@@ -2209,6 +2211,7 @@
                         },
                         {
                             "quarrelType": {
+                                "name": "Warp",
                                 "colour": "ffffffff",
                                 "effect": {
                                     "appliesEffect": "None",

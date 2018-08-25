@@ -22,12 +22,14 @@ auto QuarrelSlot::TakeQuarrel(const std::chrono::duration<float> cooldown)
 void to_json(json & j, const QuarrelTypeInfo & quarrelType) {
 	j = json
 	{
+		{ "name", quarrelType.name },
 		{ "colour", quarrelType.colour },
 		{ "effect", quarrelType.effect }
 	};
 }
 
 void from_json(const json & j, QuarrelTypeInfo & quarrelType) {
+	quarrelType.name = j.at("name").get<std::string>();
 	quarrelType.colour = j.at("colour").get<sf::Color>();
 	quarrelType.effect = j.at("effect").get<CrossbowBoltEffect>();
 }

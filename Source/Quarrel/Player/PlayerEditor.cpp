@@ -11,6 +11,10 @@ struct PlayerQuiverEditorState {
 	int selectedSlot = -1;
 };
 
+struct PlayerQuarrelLibraryEditorState {
+	int selectedSlot = -1;
+};
+
 class PlayerEditor : public CustomComponentEditorType<Player>
 {
 public:
@@ -20,7 +24,7 @@ public:
 
 private:
 	PlayerQuiverEditorState quiverEditorState;
-
+	PlayerQuarrelLibraryEditorState quarrelLibraryEditorState;
 };
 
 std::unique_ptr<CustomComponentEditor> Player::CreateEditor() {
@@ -116,6 +120,8 @@ void ImGuiControls(
 	PlayerQuiverEditorState& state, 
 	PlayerQuarrelLibrary& library) 
 {	
+	ImGui::AutoID id(&quiver);
+
 	auto itemsGetter = [](void* data, int index, const char** itemText) -> bool
 	{
 		auto slots = (PlayerQuiver::Slots*)data;
@@ -200,6 +206,25 @@ void ImGuiControls(
 	}
 }
 
+void ImGuiControls(
+	PlayerQuarrelLibrary& library, 
+	PlayerQuarrelLibraryEditorState& editorState)
+{
+	ImGui::AutoID id(&library);
+
+	QuarrelLibraryListBox(library, editorState.selectedSlot);
+
+	if (editorState.selectedSlot < 0 ||
+		editorState.selectedSlot > (int)library.quarrels.size())
+	{
+		return;
+	}
+
+	auto& quarrelType = library.quarrels[editorState.selectedSlot];
+
+	ImGuiControls(quarrelType);
+}
+
 void PlayerEditor::GuiControls() {
 	if (ImGui::CollapsingHeader("Movement##PlayerEditor")) {
 		ImGuiControls(Target().mMoveSpeed, 20.0f, 3.0f);
@@ -212,5 +237,6 @@ void PlayerEditor::GuiControls() {
 
 	if (ImGui::CollapsingHeader("Quiver##PlayerEditor")) {
 		ImGuiControls(Target().quiver, quiverEditorState, Target().quarrelLibrary);
+		ImGuiControls(Target().quarrelLibrary, quarrelLibraryEditorState);
 	}
 }

@@ -224,3 +224,18 @@ constexpr std::size_t countof(T const (&)[N]) noexcept
 {
 	return N;
 }
+
+template<class T, class UnaryPredicate>
+void AddOrUpdate(std::vector<T>& vec, const T& t, UnaryPredicate predicate) {
+	auto foundIt = std::find_if(
+		begin(vec),
+		end(vec),
+		predicate);
+
+	if (foundIt != end(vec)) {
+		*foundIt = t;
+	}
+	else {
+		vec.push_back(t);
+	}
+}

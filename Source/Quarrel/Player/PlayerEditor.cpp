@@ -3,6 +3,7 @@
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
 
 #include "Player.h"
+#include "Misc/Utils.h"
 
 using namespace qvr;
 
@@ -108,21 +109,6 @@ bool QuarrelLibraryListBox(const PlayerQuarrelLibrary& library, int& selection) 
 		itemsGetter, 
 		(void*)&library.quarrels, 
 		library.quarrels.size());
-}
-
-template<class T, class UnaryPredicate>
-void AddOrUpdate(std::vector<T>& vec, const T& t, UnaryPredicate predicate) {
-	auto foundIt = std::find_if(
-		begin(vec),
-		end(vec),
-		predicate);
-
-	if (foundIt != end(vec)) {
-		*foundIt = t;
-	}
-	else {
-		vec.push_back(t);
-	}
 }
 
 void ImGuiControls(

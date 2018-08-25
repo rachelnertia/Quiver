@@ -115,8 +115,28 @@ void ImGuiControls(PlayerQuiver& quiver, PlayerQuiverEditorState& state) {
 		PlayerQuiver::MaxEquippedQuarrelTypes);
 
 	if (state.selectedSlot >= 0) {
+		if (state.selectedSlot > 0 &&
+			ImGui::Button("Move Up"))
+		{
+			std::swap(
+				quiver.quarrelSlots[state.selectedSlot - 1],
+				quiver.quarrelSlots[state.selectedSlot]);
+		}
+
+		const bool shouldSameLine = state.selectedSlot > 0;
+
+		auto doNothing = [](){};
+
+		if (state.selectedSlot < PlayerQuiver::MaxEquippedQuarrelTypes - 1 &&
+			(shouldSameLine ? ImGui::SameLine() : doNothing(), ImGui::Button("Move Down")))
+		{
+			std::swap(
+				quiver.quarrelSlots[state.selectedSlot + 1],
+				quiver.quarrelSlots[state.selectedSlot]);
+		}
+
 		if (quiver.quarrelSlots[state.selectedSlot]) {
-			if (ImGui::Button("Clear Slot")) {
+			if (ImGui::SameLine(), ImGui::Button("Clear Slot")) {
 				quiver.quarrelSlots[state.selectedSlot].reset();
 			}
 			else {

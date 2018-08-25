@@ -34,7 +34,6 @@
 #include <Quiver/World/World.h>
 
 #include "Crossbow.h"
-#include "PlayerEditor.h"
 #include "PlayerInput.h"
 #include "Misc/Utils.h"
 

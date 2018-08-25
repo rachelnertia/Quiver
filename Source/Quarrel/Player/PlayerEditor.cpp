@@ -91,7 +91,10 @@ void ImGuiControls(CrossbowBoltEffect& boltEffect) {
 void ImGuiControls(QuarrelTypeInfo& quarrelType) {
 	ImGui::InputText<64>("Name", quarrelType.name);
 	ColourUtils::ImGuiColourEditRGB("Colour##QuarrelType", quarrelType.colour);
-	ImGuiControls(quarrelType.effect);
+	if (ImGui::CollapsingHeader("Effects")) {
+		ImGui::AutoIndent indent;
+		ImGuiControls(quarrelType.effect);
+	}
 }
 
 bool QuarrelLibraryListBox(const PlayerQuarrelLibrary& library, int& selection) {
@@ -226,6 +229,8 @@ void ImGuiControls(
 }
 
 void PlayerEditor::GuiControls() {
+	ImGui::AutoID id(this);
+
 	if (ImGui::CollapsingHeader("Movement##PlayerEditor")) {
 		ImGuiControls(Target().mMoveSpeed, 20.0f, 3.0f);
 	}
@@ -237,6 +242,9 @@ void PlayerEditor::GuiControls() {
 
 	if (ImGui::CollapsingHeader("Quiver##PlayerEditor")) {
 		ImGuiControls(Target().quiver, quiverEditorState, Target().quarrelLibrary);
+	}
+
+	if (ImGui::CollapsingHeader("Quarrel Library")) {
 		ImGuiControls(Target().quarrelLibrary, quarrelLibraryEditorState);
 	}
 }

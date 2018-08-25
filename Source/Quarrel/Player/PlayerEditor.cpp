@@ -91,6 +91,11 @@ void ImGuiControls(CrossbowBoltEffect& boltEffect) {
 void ImGuiControls(QuarrelTypeInfo& quarrelType) {
 	ImGui::InputText<64>("Name", quarrelType.name);
 	ColourUtils::ImGuiColourEditRGB("Colour##QuarrelType", quarrelType.colour);
+	
+	float seconds = quarrelType.cooldownTime.count();
+	ImGui::InputFloat("Cooldown Time", &seconds);
+	quarrelType.cooldownTime = std::chrono::duration<float>(seconds);
+	
 	if (ImGui::CollapsingHeader("Effects")) {
 		ImGui::AutoIndent indent;
 		ImGuiControls(quarrelType.effect);

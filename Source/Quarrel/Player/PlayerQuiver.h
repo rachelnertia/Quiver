@@ -14,6 +14,7 @@
 struct QuarrelTypeInfo
 {
 	std::string name;
+	std::chrono::duration<float> cooldownTime;
 	sf::Color colour;
 	CrossbowBoltEffect effect;
 };
@@ -36,6 +37,8 @@ public:
 				0.0f;
 	}
 
+	auto TakeQuarrel()
+		-> std::experimental::optional<QuarrelTypeInfo>;
 	auto TakeQuarrel(const duration cooldown)
 		-> std::experimental::optional<QuarrelTypeInfo>;
 

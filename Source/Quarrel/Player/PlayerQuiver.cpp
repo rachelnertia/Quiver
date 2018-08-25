@@ -6,6 +6,21 @@ using namespace std::chrono_literals;
 
 using json = nlohmann::json;
 
+auto QuarrelSlot::TakeQuarrel()
+	-> std::experimental::optional<QuarrelTypeInfo>
+{
+	if (!CanTakeQuarrel(*this)) {
+		return {};
+	}
+
+	auto cooldown = type.cooldownTime;
+
+	cooldownTime = cooldown;
+	cooldownRemaining = cooldown;
+
+	return type;
+}
+
 auto QuarrelSlot::TakeQuarrel(const std::chrono::duration<float> cooldown) 
 	-> std::experimental::optional<QuarrelTypeInfo>
 {
@@ -23,6 +38,7 @@ void to_json(json & j, const QuarrelTypeInfo & quarrelType) {
 	j = json
 	{
 		{ "name", quarrelType.name },
+		{ "cooldownTime", quarrelType.cooldownTime.count() },
 		{ "colour", quarrelType.colour },
 		{ "effect", quarrelType.effect }
 	};
@@ -30,6 +46,7 @@ void to_json(json & j, const QuarrelTypeInfo & quarrelType) {
 
 void from_json(const json & j, QuarrelTypeInfo & quarrelType) {
 	quarrelType.name = j.at("name").get<std::string>();
+	quarrelType.cooldownTime = std::chrono::duration<float>(j.value<float>("cooldownTime", 0.5f));
 	quarrelType.colour = j.at("colour").get<sf::Color>();
 	quarrelType.effect = j.at("effect").get<CrossbowBoltEffect>();
 }
@@ -43,10 +60,7 @@ auto TakeQuarrel(PlayerQuiver& quiver, const int slotIndex) -> OptionalQuarrelTy
 		return {};
 	}
 
-	// TODO: Smarter cooldown system.
-	const auto basicCooldown = 2.0s;
-
-	return quiver.quarrelSlots[slotIndex]->TakeQuarrel(basicCooldown);
+	return quiver.quarrelSlots[slotIndex]->TakeQuarrel();
 }
 
 void PutQuarrelBack(PlayerQuiver& quiver, const QuarrelTypeInfo& quarrel)

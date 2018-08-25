@@ -89,6 +89,42 @@ void ImGuiControls(QuarrelTypeInfo& quarrelType) {
 	ImGuiControls(quarrelType.effect);
 }
 
+bool QuarrelLibraryListBox(const PlayerQuarrelLibrary& library, int& selection) {
+	auto itemsGetter = [](void* data, int index, const char** itemText)->bool
+	{
+		auto list = (PlayerQuarrelLibrary::QuarrelList*)data;
+
+		if (index >= (int)list->size()) return false;
+		if (index < 0) return false;
+
+		*itemText = list->at(index).name.c_str();
+
+		return true;
+	};
+
+	return ImGui::ListBox(
+		"Library", 
+		&selection, 
+		itemsGetter, 
+		(void*)&library.quarrels, 
+		library.quarrels.size());
+}
+
+template<class T, class UnaryPredicate>
+void AddOrUpdate(std::vector<T>& vec, const T& t, UnaryPredicate predicate) {
+	auto foundIt = std::find_if(
+		begin(vec),
+		end(vec),
+		predicate);
+
+	if (foundIt != end(vec)) {
+		*foundIt = t;
+	}
+	else {
+		vec.push_back(t);
+	}
+}
+
 void ImGuiControls(
 	PlayerQuiver& quiver, 
 	PlayerQuiverEditorState& state, 
@@ -102,7 +138,7 @@ void ImGuiControls(
 		if (index < 0) return false;
 
 		if (slots->at(index).has_value()) {
-			*itemText = "Quarrel";
+			*itemText = slots->at(index)->type.name.c_str();
 		}
 		else {
 			*itemText = "Empty";
@@ -145,11 +181,35 @@ void ImGuiControls(
 			}
 			else {
 				auto& quarrelType = (*quiver.quarrelSlots[state.selectedSlot]).type;
+				
 				ImGuiControls(quarrelType);
+				
+				if (!quarrelType.name.empty() &&
+					ImGui::Button("Put Type in Library"))
+				{
+					auto& name = quarrelType.name;
+
+					AddOrUpdate(
+						library.quarrels, 
+						quarrelType, 
+						[&name](auto& quarrelType)
+						{
+							return quarrelType.name == name;
+						});
+				}
 			}
 		}
 		else {
 			ImGui::Text("This slot is empty");
+
+			if (ImGui::CollapsingHeader("Take Type from Library")) {
+				int selection = -1;
+
+				if (QuarrelLibraryListBox(library, selection)) {
+					quiver.quarrelSlots[state.selectedSlot].emplace(
+						library.quarrels[selection]);
+				}
+			}
 		}
 	}
 }

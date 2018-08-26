@@ -435,6 +435,8 @@ int RunApplication() {
 
 bool ApplicationStateLibrary::AddStateCreator(std::string name, Factory factory) 
 {
+	// This means that user-provided states will override the engine-provided ones.
+	// We should probably warn them about this. Or figure out a better way.
 	if (map.count(name) != 0) {
 		return false;
 	}

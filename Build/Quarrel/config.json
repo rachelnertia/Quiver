@@ -1,9 +1,6 @@
 {
 	"initialState": {
-		"name": "Editor",
-		"params": {
-			"worldFile":"testbed.json"
-		}
+		"name": "LevelSelect"
 	},
 	"ImGuiConfig": {
 		"FontGlobalScale": 2,

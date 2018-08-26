@@ -5,6 +5,7 @@
 
 #include "Enemy/Enemy.h"
 #include "Enemy/EnemyMelee.h"
+#include "LevelSelect/LevelSelectFactory.h"
 #include "Misc/Utils.h"
 #include "Player/Player.h"
 #include "Wanderer/Wanderer.h"
@@ -48,7 +49,11 @@ qvr::CustomComponentTypeLibrary CreateQuarrelTypes()
 
 qvr::ApplicationStateLibrary CreateQuarrelApplicationStates()
 {
-	return qvr::ApplicationStateLibrary();
+	qvr::ApplicationStateLibrary library;
+
+	library.AddStateCreator("LevelSelect", CreateLevelSelectState);
+
+	return library;
 }
 
 int main()

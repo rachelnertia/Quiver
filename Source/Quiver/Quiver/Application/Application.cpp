@@ -39,6 +39,7 @@ std::unique_ptr<ApplicationState> GetInitialState(
 void ConfigureImGui(const ImGuiConfig& config) {
 	ImGuiIO& io = ImGui::GetIO();
 	io.FontGlobalScale = config.FontGlobalScale;
+	io.FontAllowUserScaling = config.FontAllowUserScaling;
 }
 
 void CreateSFMLWindow(sf::RenderWindow& window, const WindowConfig& config) {
@@ -274,6 +275,7 @@ void from_json(const json& j, WindowConfig& config) {
 
 void from_json(const json& j, ImGuiConfig& config) {
 	config.FontGlobalScale = j.value("FontGlobalScale", config.FontGlobalScale);
+	config.FontAllowUserScaling = j.value("FontAllowUserScaling", config.FontAllowUserScaling);
 }
 
 void from_json(const nlohmann::json& j, GraphicsSettings& g) {

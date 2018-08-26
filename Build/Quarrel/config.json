@@ -6,7 +6,8 @@
 		}
 	},
 	"ImGuiConfig": {
-		"FontGlobalScale": 2
+		"FontGlobalScale": 2,
+		"FontAllowUserScaling": true
 	},
 	"windowConfig": {
 		"width": 1600,

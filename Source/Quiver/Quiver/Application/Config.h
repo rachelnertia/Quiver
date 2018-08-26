@@ -14,6 +14,7 @@ struct WindowConfig {
 
 struct ImGuiConfig {
 	float FontGlobalScale = 1.0f;
+	bool FontAllowUserScaling = false;
 };
 
 struct InitialStateConfig {

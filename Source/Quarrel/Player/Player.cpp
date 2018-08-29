@@ -17,6 +17,7 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <SFML/Graphics/Text.hpp>
 
 #include <Quiver/Audio/Listener.h>
 #include <Quiver/Animation/Animators.h>
@@ -87,6 +88,7 @@ Player::Player(Entity& entity, CameraOwner&& camera, const PlayerDesc& desc)
 	, quiver(desc.quiver)
 	, quarrelLibrary(desc.quarrelLibrary)
 	, fovLerper(GetCamera().GetFovRadians(), b2_pi / 2, 0.1f)
+	, hudRenderer(entity.GetWorld(), [this](sf::RenderTarget& t) { this->RenderHud(t); })
 {
 	AddFilterCategories(
 		*GetEntity().GetPhysics()->GetBody().GetFixtureList(),
@@ -95,8 +97,14 @@ Player::Player(Entity& entity, CameraOwner&& camera, const PlayerDesc& desc)
 	GetCamera().SetOverlayDrawer([this](sf::RenderTarget& target) {
 		this->RenderCurrentWeapon(target);
 		this->RenderActiveEffects(target);
-		this->RenderHud(target);
 	});
+
+	const char* fontFilename = "fonts/november.ttf";
+
+	if (!hudFont.loadFromFile(fontFilename)) {
+		auto log = qvr::GetConsoleLogger();
+		log->warn("Couldn't load {}", fontFilename);
+	}
 }
 
 class DeadPlayer : public CustomComponent
@@ -407,7 +415,9 @@ void Player::RenderCurrentWeapon(sf::RenderTarget& target) const {
 	}
 }
 
-void DrawDamage(sf::RenderTarget& target, const DamageCount& counter)
+void DrawDamageBar(
+	sf::RenderTarget& target,
+	const DamageCount& counter)
 {
 	sf::RectangleShape background;
 	const float scale = 0.8f;
@@ -438,6 +448,19 @@ void DrawDamage(sf::RenderTarget& target, const DamageCount& counter)
 	target.draw(bar);
 }
 
+void DrawDamageCounter(
+	sf::RenderTarget& target,
+	const DamageCount& counter,
+	const sf::Font& font)
+{
+	sf::Text text;
+	text.setFont(font);
+	text.setString(fmt::format("{} / {}", counter.damage, counter.max));
+	text.setOrigin(text.getLocalBounds().width, text.getLocalBounds().height);
+	text.setPosition((float)target.getSize().x, (float)target.getSize().y);
+	target.draw(text);
+}
+
 void DrawQuiverHud(sf::RenderTarget& target, const PlayerQuiver& quiver) {
 	const float circleRadius = target.getSize().x * 0.025f;
 	
@@ -459,7 +482,6 @@ void DrawQuiverHud(sf::RenderTarget& target, const PlayerQuiver& quiver) {
 			+ circleRadius
 			- buffer,
 		circleRadius + buffer);
-	
 	
 	for (int slotIndex = 0; slotIndex < (int)quiver.quarrelSlots.size(); slotIndex++) {
 		const auto& slot = quiver.quarrelSlots[slotIndex];
@@ -486,7 +508,7 @@ void DrawQuiverHud(sf::RenderTarget& target, const PlayerQuiver& quiver) {
 
 void Player::RenderHud(sf::RenderTarget& target) const {
 	if (HasTakenDamage(mDamage)) {
-		DrawDamage(target, mDamage);
+		DrawDamageCounter(target, mDamage, hudFont);
 	}
 
 	DrawQuiverHud(target, quiver);

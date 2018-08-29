@@ -1,6 +1,9 @@
 #pragma once
 
+#include <SFML/Graphics/Font.hpp>
+
 #include <Quiver/Entity/CustomComponent/CustomComponent.h>
+#include <Quiver/Graphics/WorldUiRenderer.h>
 
 #include "CameraOwner.h"
 #include "Damage.h"
@@ -70,8 +73,8 @@ public:
 
 private:
 	void RenderCurrentWeapon(sf::RenderTarget& target) const;
-	void RenderHud          (sf::RenderTarget& target) const;
 	void RenderActiveEffects(sf::RenderTarget& target) const;
+	void RenderHud          (sf::RenderTarget& target) const;
 
 	PlayerQuiver quiver;
 
@@ -90,4 +93,8 @@ private:
 	bool mCannotDie = false;
 
 	TimeLerper<float> fovLerper;
+
+	sf::Font hudFont;
+
+	qvr::WorldUiRenderer hudRenderer;
 };

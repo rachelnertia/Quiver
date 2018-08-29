@@ -18,7 +18,6 @@
 #include "Quiver/Graphics/Light.h"
 #include "Quiver/Graphics/RenderSettings.h"
 #include "Quiver/Graphics/Sky.h"
-#include "Quiver/Graphics/WorldRaycastRenderer.h"
 #include "Quiver/World/WorldContext.h"
 
 struct b2Transform;
@@ -49,6 +48,8 @@ class RenderComponent;
 class TextureLibrary;
 class World;
 class WorldContext;
+class WorldRaycastRenderer;
+class WorldUiRenderer;
 
 bool SaveWorld(
 	const World & world, 
@@ -87,6 +88,8 @@ public:
 		sf::RenderTarget& target, 
 		const Camera3D& camera,
 		WorldRaycastRenderer& raycastRenderer);
+
+	void RenderUI(sf::RenderTarget& target);
 
 	Entity* CreateEntity(const b2Shape & shape, const b2Vec2 & position, const float angle = 0.0f);
 	Entity* CreateEntity(const nlohmann::json & json, const b2Transform* transform = nullptr);
@@ -127,6 +130,9 @@ public:
 
 	bool RegisterCustomComponent(const CustomComponent& customComponent);
 	bool UnregisterCustomComponent(const CustomComponent& customComponent);
+
+	bool RegisterUiRenderer(WorldUiRenderer& renderer);
+	bool UnregisterUiRenderer(WorldUiRenderer& renderer);
 
 	inline std::chrono::duration<float> GetTimestep() const { return mTimestep; }
 
@@ -213,6 +219,7 @@ private:
 	std::vector<std::reference_wrapper<Camera3D>>        mCameras;
 	std::vector<std::reference_wrapper<RenderComponent>> mDetachedRenderComponents;
 	std::vector<std::reference_wrapper<AudioComponent>>  mAudioComponents;
+	std::vector<std::reference_wrapper<WorldUiRenderer>>      mUiRenderers;
 
 	std::unordered_map<EntityId, std::unique_ptr<Entity>> mEntities;
 

@@ -126,6 +126,8 @@ void Game::ProcessFrame()
 		window.draw(frameSprite);
 	}
 
+	mWorld->RenderUI(GetContext().GetWindow());
+
 	// Draw the overhead overlay here so its resolution is the same as the Window, not the 
 	// Render3D target texture.
 	if (mDrawOverhead) {

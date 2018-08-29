@@ -36,6 +36,8 @@
 #include "Quiver/Graphics/Camera3D.h"
 #include "Quiver/Graphics/ColourUtils.h"
 #include "Quiver/Graphics/TextureLibrary.h"
+#include "Quiver/Graphics/WorldRaycastRenderer.h"
+#include "Quiver/Graphics/WorldUiRenderer.h"
 #include "Quiver/Input/RawInput.h"
 #include "Quiver/Misc/FindByAddress.h"
 #include "Quiver/Misc/ImGuiHelpers.h"
@@ -335,6 +337,40 @@ void World::Render3D(
 
 	// Render stuff that goes on top of the 3D image (effects, HUD, weapons...)
 	camera.DrawOverlay(target);
+}
+
+bool World::RegisterUiRenderer(WorldUiRenderer& renderer)
+{
+	const auto it = FindByAddress(mUiRenderers, renderer);
+
+	if (it != mUiRenderers.end())
+	{
+		return false; // Double-registry is an error.
+	}
+
+	mUiRenderers.push_back(renderer);
+
+	return true;
+}
+
+bool World::UnregisterUiRenderer(WorldUiRenderer& renderer)
+{
+	const auto it = FindByAddress(mUiRenderers, renderer);
+
+	if (it == mUiRenderers.end())
+	{
+		return false; 
+	}
+
+	mUiRenderers.erase(it);
+
+	return true;
+}
+
+void World::RenderUI(sf::RenderTarget& target) {
+	for (WorldUiRenderer& renderer : mUiRenderers) {
+		renderer.Render(target);
+	}
 }
 
 Entity* World::CreateEntity(const b2Shape & shape, const b2Vec2 & position, const float angle)

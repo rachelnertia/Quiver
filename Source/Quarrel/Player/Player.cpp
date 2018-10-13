@@ -456,8 +456,11 @@ void DrawDamageCounter(
 	sf::Text text;
 	text.setFont(font);
 	text.setString(fmt::format("{} / {}", counter.damage, counter.max));
+	text.setCharacterSize(40);
+	text.setScale(1.5, 1.5);
 	text.setOrigin(text.getLocalBounds().width, text.getLocalBounds().height);
-	text.setPosition((float)target.getSize().x, (float)target.getSize().y);
+	float const pad = 10.0f;
+	text.setPosition((float)target.getSize().x - pad, (float)target.getSize().y - pad);
 	target.draw(text);
 }
 
@@ -508,6 +511,7 @@ void DrawQuiverHud(sf::RenderTarget& target, const PlayerQuiver& quiver) {
 
 void Player::RenderHud(sf::RenderTarget& target) const {
 	if (HasTakenDamage(mDamage)) {
+		//DrawDamageBar(target, mDamage);
 		DrawDamageCounter(target, mDamage, hudFont);
 	}
 

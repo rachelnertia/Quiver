@@ -99,7 +99,7 @@ Player::Player(Entity& entity, CameraOwner&& camera, const PlayerDesc& desc)
 		this->RenderActiveEffects(target);
 	});
 
-	const char* fontFilename = "fonts/november.ttf";
+	const char* fontFilename = "fonts/charybdis.ttf";
 
 	if (!hudFont.loadFromFile(fontFilename)) {
 		auto log = qvr::GetConsoleLogger();
@@ -448,19 +448,56 @@ void DrawDamageBar(
 	target.draw(bar);
 }
 
+struct CreateTextParams {
+	sf::String const string;
+	sf::Font const& font;
+	int characterSize;
+	sf::Color color;
+	sf::Color outlineColor;
+	float outlineThickness;
+
+	CreateTextParams(sf::String const& string, sf::Font const& font) 
+		: string(string)
+		, font(font) 
+	{}
+};
+
+sf::Text CreateText(CreateTextParams const& params) {
+	sf::Text text;
+	text.setFont(params.font);
+	text.setString(params.string);
+	text.setCharacterSize(params.characterSize);
+	text.setOutlineColor(params.outlineColor);
+	text.setFillColor(params.color);
+	text.setOutlineThickness(params.outlineThickness);
+	return text;
+}
+
+void AlignTextBottomRight(sf::Text& text, sf::Vector2i const position, sf::Vector2i const padding)
+{
+	float const alignRight = (float)position.x - padding.x;
+	float const alignBottom = (float)position.y - padding.y;
+	sf::FloatRect const bounds = text.getLocalBounds();
+	text.setPosition(
+		alignRight - bounds.width - bounds.left,
+		alignBottom - bounds.height - bounds.top);
+}
+
 void DrawDamageCounter(
 	sf::RenderTarget& target,
 	const DamageCount& counter,
 	const sf::Font& font)
 {
-	sf::Text text;
-	text.setFont(font);
-	text.setString(fmt::format("{} / {}", counter.damage, counter.max));
-	text.setCharacterSize(40);
-	text.setScale(1.5, 1.5);
-	text.setOrigin(text.getLocalBounds().width, text.getLocalBounds().height);
-	float const pad = 10.0f;
-	text.setPosition((float)target.getSize().x - pad, (float)target.getSize().y - pad);
+	CreateTextParams params(fmt::format("DAMAGE: {} / {}", counter.damage, counter.max), font);
+	params.characterSize = 40;
+	params.color = sf::Color::White;
+	params.outlineColor = sf::Color::Blue;
+	params.outlineThickness = 2.0f;
+
+	sf::Text text = CreateText(params);
+
+	AlignTextBottomRight(text, sf::Vector2i(target.getSize().x, target.getSize().y), sf::Vector2i(0, 0));
+
 	target.draw(text);
 }
 

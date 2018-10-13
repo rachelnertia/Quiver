@@ -88,6 +88,7 @@ void Game::ProcessFrame()
 		mKeyboard.Update();
 		mJoysticks.Update();
 
+		// This should be coded at the game level, shouldn't it.
 		if (mKeyboard.JustDown(qvr::KeyboardKey::Escape)) {
 			mPaused = !mPaused;
 			OnTogglePause();

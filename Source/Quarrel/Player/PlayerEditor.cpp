@@ -237,19 +237,23 @@ void PlayerEditor::GuiControls() {
 	ImGui::AutoID id(this);
 
 	if (ImGui::CollapsingHeader("Movement##PlayerEditor")) {
+		ImGui::AutoIndent indent;
 		ImGuiControls(Target().mMoveSpeed, 20.0f, 3.0f);
 	}
 
 	if (ImGui::CollapsingHeader("Damage##PlayerEditor")) {
+		ImGui::AutoIndent indent;
 		ImGui::Checkbox("Cannot Die", &Target().mCannotDie);
 		ImGuiControls(Target().mDamage, 100);
 	}
 
 	if (ImGui::CollapsingHeader("Quiver##PlayerEditor")) {
+		ImGui::AutoIndent indent;
 		ImGuiControls(Target().quiver, quiverEditorState, Target().quarrelLibrary);
 	}
 
 	if (ImGui::CollapsingHeader("Quarrel Library")) {
+		ImGui::AutoIndent indent;
 		ImGuiControls(Target().quarrelLibrary, quarrelLibraryEditorState);
 	}
 }

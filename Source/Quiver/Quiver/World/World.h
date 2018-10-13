@@ -79,6 +79,7 @@ public:
 
 	// While paused is true, TakeStep will do nothing.
 	void SetPaused(const bool paused);
+	bool IsPaused() const { return mPaused; }
 
 	void RenderDebug(
 		sf::RenderTarget& target, 

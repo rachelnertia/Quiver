@@ -36,6 +36,7 @@
 
 #include "Crossbow.h"
 #include "PlayerInput.h"
+#include "Gui/Gui.h"
 #include "Misc/Utils.h"
 
 using namespace std::chrono_literals;
@@ -448,41 +449,6 @@ void DrawDamageBar(
 	target.draw(bar);
 }
 
-struct CreateTextParams {
-	sf::String const string;
-	sf::Font const& font;
-	int characterSize;
-	sf::Color color;
-	sf::Color outlineColor;
-	float outlineThickness;
-
-	CreateTextParams(sf::String const& string, sf::Font const& font) 
-		: string(string)
-		, font(font) 
-	{}
-};
-
-sf::Text CreateText(CreateTextParams const& params) {
-	sf::Text text;
-	text.setFont(params.font);
-	text.setString(params.string);
-	text.setCharacterSize(params.characterSize);
-	text.setOutlineColor(params.outlineColor);
-	text.setFillColor(params.color);
-	text.setOutlineThickness(params.outlineThickness);
-	return text;
-}
-
-void AlignTextBottomRight(sf::Text& text, sf::Vector2i const position, sf::Vector2i const padding)
-{
-	float const alignRight = (float)position.x - padding.x;
-	float const alignBottom = (float)position.y - padding.y;
-	sf::FloatRect const bounds = text.getLocalBounds();
-	text.setPosition(
-		alignRight - bounds.width - bounds.left,
-		alignBottom - bounds.height - bounds.top);
-}
-
 void DrawDamageCounter(
 	sf::RenderTarget& target,
 	const DamageCount& counter,
@@ -546,6 +512,14 @@ void DrawQuiverHud(sf::RenderTarget& target, const PlayerQuiver& quiver) {
 	}
 }
 
+void DrawPausedUi(sf::RenderTarget& target, sf::Font const& font) {
+	CreateTextParams params("PAUSED", font);
+	params.characterSize = 50;
+	sf::Text text = CreateText(params);
+	AlignTextCentre(text, sf::Vector2i(target.getSize().x / 2, target.getSize().y / 2));
+	target.draw(text);
+}
+
 void Player::RenderHud(sf::RenderTarget& target) const {
 	if (HasTakenDamage(mDamage)) {
 		//DrawDamageBar(target, mDamage);
@@ -553,6 +527,10 @@ void Player::RenderHud(sf::RenderTarget& target) const {
 	}
 
 	DrawQuiverHud(target, quiver);
+
+	if (GetEntity().GetWorld().IsPaused()) {
+		DrawPausedUi(target, hudFont);
+	}
 }
 
 namespace {

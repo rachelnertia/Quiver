@@ -1,3 +1,30 @@
+function GetSFMLOptions()
+	newoption {
+		trigger = "sfmlinc",
+		value = "path",
+		description = "Specify SFML include directory"
+	}
+
+	newoption {
+		trigger = "sfmllib",
+		value = "path",
+		description = "Specify SFML lib directory"
+	}
+
+	newoption {
+		trigger = "sfml-link-dynamic",
+		description = "Choose to dynamically link SFML libraries with the executables"
+	}
+
+	if not _OPTIONS["sfmlinc"] then
+		print("Warning: The path to SFML include directory must be specified using --sfmlinc=<path>")
+	end
+
+	if not _OPTIONS["sfmllib"] then
+		print("Warning: The path to SFML include directory must be specified using --sfmllib=<path>")
+	end
+end
+
 function IncludeSFML()
 	includedirs { _OPTIONS["sfmlinc"] }
 	if not _OPTIONS["sfml-link-dynamic"] then

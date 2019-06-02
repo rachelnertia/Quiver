@@ -52,17 +52,23 @@ function SetupQuiverWorkspace()
 	filter()
 end
 
+QuiverDirectory = ""
+
+function SetQuiverDirectory(directory)
+   QuiverDirectory = directory  
+end
+
 function Box2dProject()
     project "Box2D"
         kind "StaticLib"
         files 
         { 
-            "External/Box2D/Box2D/**.h", 
-            "External/Box2D/Box2D/**.cpp" 
+            QuiverDirectory .. "External/Box2D/Box2D/**.h", 
+            QuiverDirectory .. "External/Box2D/Box2D/**.cpp" 
         }
         includedirs 
         { 
-            "External/Box2D" 
+            QuiverDirectory .. "External/Box2D" 
         }
 end
 
@@ -71,12 +77,12 @@ function ImGuiSFMLProject()
         kind "StaticLib"
         files
         {
-            "External/ImGui/**.h", 
-            "External/ImGui/**.cpp" 
+            QuiverDirectory .. "External/ImGui/**.h", 
+            QuiverDirectory .. "External/ImGui/**.cpp" 
         }
         includedirs
         {
-            "External/ImGui/ImGui"
+            QuiverDirectory .. "External/ImGui/ImGui"
         }
         IncludeSFML()
 end
@@ -84,16 +90,16 @@ end
 function IncludeQuiver()
     includedirs 
     { 
-        "Source/Quiver",
-        "External/ImGui",
-        "External/json", 
-        "External/spdlog/include",
-        "External/Box2D",
-        "External/Optional",
-        "External/gsl",
-        "External/cxxopts",
-        "External/function2",
-        "External/NamedType"
+        QuiverDirectory .. "Source/Quiver",
+        QuiverDirectory .. "External/ImGui",
+        QuiverDirectory .. "External/json", 
+        QuiverDirectory .. "External/spdlog/include",
+        QuiverDirectory .. "External/Box2D",
+        QuiverDirectory .. "External/Optional",
+        QuiverDirectory .. "External/gsl",
+        QuiverDirectory .. "External/cxxopts",
+        QuiverDirectory .. "External/function2",
+        QuiverDirectory .. "External/NamedType"
     }
     IncludeSFML()
 end
@@ -117,8 +123,8 @@ function QuiverProject()
         kind "StaticLib"
         files 
         { 
-            "Source/Quiver/**.h", 
-            "Source/Quiver/**.cpp"
+            QuiverDirectory .. "Source/Quiver/**.h", 
+            QuiverDirectory .. "Source/Quiver/**.cpp"
         }
         IncludeQuiver()
         IncludeSFML()
@@ -131,12 +137,12 @@ function QuiverTestsProject()
         kind "ConsoleApp"
         files 
         { 
-            "Source/QuiverTests/**.cpp", 
-            "Source/QuiverTests/**.h" 
+            QuiverDirectory .. "Source/QuiverTests/**.cpp", 
+            QuiverDirectory .. "Source/QuiverTests/**.h" 
         }
         includedirs
         {
-            "External/Catch",
+            QuiverDirectory .. "External/Catch",
         }
         IncludeQuiver()
         LinkQuiver()
@@ -148,7 +154,7 @@ function QuiverAppProject()
 		kind "ConsoleApp"
 		files
 		{
-			"Source/QuiverApp/**"
+			QuiverDirectory .. "Source/QuiverApp/**"
 		}
 		IncludeQuiver()
 		LinkQuiver()

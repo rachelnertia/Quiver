@@ -37,8 +37,6 @@ Generated PremakeGenerated/QuiverTests.vcxproj...
 Generated PremakeGenerated/QuiverTests.vcxproj.user...
 Generated PremakeGenerated/QuiverApp.vcxproj...
 Generated PremakeGenerated/QuiverApp.vcxproj.user...
-Generated PremakeGenerated/Quarrel.vcxproj...
-Generated PremakeGenerated/Quarrel.vcxproj.user...
 ```
 
 You should now be able to build Quiver using Visual Studio. Hopefully it's possible to adapt these instructions to different build systems and platforms!
@@ -52,8 +50,11 @@ The workspace is divided into a few projects:
 - **Quiver** - The core of Quiver, containing all the engine code. Compiled as a static library.
 - **QuiverTests** - A suite of [Catch](https://github.com/philsquared/Catch) unit tests for the Quiver library.
 - **QuiverApp** - The most basic possible Quiver executable, provided as a starting point for new games. 
-- **Quarrel** - A live-at-head example of what is possible with Quiver. New engine features will be driven by what I want them for in Quarrel, and the game will act as a suitably complex testbed when I am making changes.
 
 ## Contributing
 
 As mentioned before, attempting to make a game with Quiver would be folly. That doesn't mean you shouldn't muck about with it. Feel free to poke me with questions, feature requests or bugs using [issues](https://github.com/rachelnertia/Quiver/issues).
+
+## Projects
+
+- **Quarrel** - An abandoned(?) first-person shooter, available [here](https://github.com/rachelnertia/Quarrel).

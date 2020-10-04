@@ -13,7 +13,6 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/bundled/time.h>
 #include <cxxopts/cxxopts.hpp>
-#include <optional.hpp>
 
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 #include "Quiver/Misc/JsonHelpers.h"
@@ -359,7 +358,7 @@ ApplicationConfig LoadConfig(const char* filename) {
 	json configJson;
 
 	try {
-		configJson << configFile;
+		configFile >> configJson;
 	}
 	catch (std::invalid_argument e) {
 		log->error(

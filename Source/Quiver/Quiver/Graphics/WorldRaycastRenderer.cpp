@@ -186,10 +186,19 @@ public:
 	{
 		LoadShader();
 	}
-	void Render(const World& world, const Camera3D& camera, const RenderSettings& settings, sf::RenderTarget& target);
+
+	void Render(
+		const World& world, 
+		const Camera3D& camera, 
+		const RenderSettings& settings, 
+		sf::RenderTarget& target);
 };
 
-void WorldRaycastRendererImpl::Render(const World & world, const Camera3D & camera, const RenderSettings& settings, sf::RenderTarget & target)
+void WorldRaycastRendererImpl::Render(
+	const World & world, 
+	const Camera3D & camera, 
+	const RenderSettings& settings, 
+	sf::RenderTarget & target)
 {
 	assert(world.GetPhysicsWorld());
 
@@ -384,10 +393,10 @@ void WorldRaycastRendererImpl::Render(const World & world, const Camera3D & came
 			glCheck(glEnableClientState(GL_TEXTURE_COORD_ARRAY));
 			glCheck(glEnableClientState(GL_NORMAL_ARRAY));
 
-			glCheck(glVertexPointer(3, GL_FLOAT, sizeof(Vertex), &line[0].position));
-			glCheck(glNormalPointer(GL_FLOAT, sizeof(Vertex), &line[0].normal));
-			glCheck(glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), &line[0].color));
-			glCheck(glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), &line[0].texCoords));
+			glCheck(glVertexPointer(3, GL_FLOAT, sizeof(Vertex), &m_Line[0].position));
+			glCheck(glNormalPointer(GL_FLOAT, sizeof(Vertex), &m_Line[0].normal));
+			glCheck(glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(Vertex), &m_Line[0].color));
+			glCheck(glTexCoordPointer(2, GL_FLOAT, sizeof(Vertex), &m_Line[0].texCoords));
 		}
 
 		void operator()(const Column& column) {
@@ -409,23 +418,23 @@ void WorldRaycastRendererImpl::Render(const World & world, const Camera3D & came
 				m_Shader.setUniform("texture", sf::Shader::CurrentTexture);
 			}
 
-			line[0].position.x = column.m_X;
-			line[1].position.x = column.m_X;
-			line[0].position.y = column.m_Top;
-			line[1].position.y = column.m_Bottom;
-			line[0].position.z = column.m_Distance;
-			line[1].position.z = column.m_Distance;
+			m_Line[0].position.x = column.m_X;
+			m_Line[1].position.x = column.m_X;
+			m_Line[0].position.y = column.m_Top;
+			m_Line[1].position.y = column.m_Bottom;
+			m_Line[0].position.z = column.m_Distance;
+			m_Line[1].position.z = column.m_Distance;
 
-			line[0].normal = column.m_Normal;
-			line[1].normal = column.m_Normal;
+			m_Line[0].normal = column.m_Normal;
+			m_Line[1].normal = column.m_Normal;
 
-			line[0].color = column.m_BlendColor;
-			line[1].color = column.m_BlendColor;
+			m_Line[0].color = column.m_BlendColor;
+			m_Line[1].color = column.m_BlendColor;
 
-			line[0].texCoords.x = column.m_U;
-			line[0].texCoords.y = column.m_VTop;
-			line[1].texCoords.x = column.m_U;
-			line[1].texCoords.y = column.m_VBottom;
+			m_Line[0].texCoords.x = column.m_U;
+			m_Line[0].texCoords.y = column.m_VTop;
+			m_Line[1].texCoords.x = column.m_U;
+			m_Line[1].texCoords.y = column.m_VBottom;
 
 			// Draw the line.
 			glCheck(glDrawArrays(GL_LINES, 0, 2));
@@ -433,6 +442,11 @@ void WorldRaycastRendererImpl::Render(const World & world, const Camera3D & came
 
 		~ColumnDrawer()
 		{
+			glCheck(glDisableClientState(GL_VERTEX_ARRAY));
+			glCheck(glDisableClientState(GL_COLOR_ARRAY));
+			glCheck(glDisableClientState(GL_TEXTURE_COORD_ARRAY));
+			glCheck(glDisableClientState(GL_NORMAL_ARRAY));
+
 			m_Target.resetGLStates();
 		}
 
@@ -452,8 +466,7 @@ void WorldRaycastRendererImpl::Render(const World & world, const Camera3D & came
 			sf::Color color;
 		};
 
-		// Maybe use a custom vertex type in future.
-		Vertex line[2];
+		Vertex m_Line[2];
 	};
 
 	std::for_each(
@@ -462,7 +475,11 @@ void WorldRaycastRendererImpl::Render(const World & world, const Camera3D & came
 		ColumnDrawer(target, mShader, world));
 }
 
-float32 WorldRaycastRendererImpl::RaycastCallback::ReportFixture(b2Fixture * fixture, const b2Vec2 & point, const b2Vec2 & normal, float32 fraction)
+float32 WorldRaycastRendererImpl::RaycastCallback::ReportFixture(
+	b2Fixture* fixture, 
+	b2Vec2 const& point, 
+	b2Vec2 const& normal, 
+	float32 fraction)
 {
 	if (fixture->GetUserData() == nullptr)
 	{

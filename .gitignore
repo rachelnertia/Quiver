@@ -32,3 +32,4 @@ PremakeGenerated/
 Screenshots
 *.d
 *.o
+*.recipe

@@ -22,7 +22,7 @@ json JsonHelp::LoadJsonFromFile(const std::string filename)
 	try
 	{
 		json j;
-		j << file;
+		file >> j;
 		return j;
 	}
 	catch (std::invalid_argument exception)

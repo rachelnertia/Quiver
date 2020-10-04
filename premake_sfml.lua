@@ -79,8 +79,7 @@ function LinkSFML()
 					"vorbisfile", 
 					"vorbis",
 					"ogg",
-					"freetype",
-					"jpeg" 
+					"freetype"
 				}
 
 		filter()

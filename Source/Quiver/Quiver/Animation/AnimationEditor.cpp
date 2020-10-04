@@ -221,7 +221,7 @@ void AnimationEditor::ProcessGui() {
 				std::ifstream file(mAnimationToLoadFilename);
 				if (file.is_open()) {
 					nlohmann::json j;
-					j << file;
+					file >> j;
 					mCurrentAnim.Clear();
 					if (const auto newAnim = AnimationData::FromJson(j)) {
 						// Success!
@@ -254,7 +254,7 @@ void AnimationEditor::ProcessGui() {
 					std::ifstream file(mAnimationCollectionFilename);
 					if (file.is_open()) {
 						nlohmann::json j;
-						j << file;
+						file >> j;
 
 						mAnimationCollection.clear();
 

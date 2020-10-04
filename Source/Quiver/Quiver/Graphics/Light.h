@@ -33,7 +33,7 @@ public:
 	}
 
 	void SetColor(const sf::Color color) {
-		mColor = sf::Color(color.r, color.g, color.b, 0);
+		mColor = sf::Color(color.r, color.g, color.b, mColor.a);
 	}
 
 	bool ToJson(nlohmann::json& j) const;
@@ -44,7 +44,7 @@ public:
 private:
 	b2Vec2 mDirection = b2Vec2(1.0f, 0.0f);
 
-	sf::Color mColor = sf::Color(64, 64, 64, 0);
+	sf::Color mColor = sf::Color(64, 64, 64, 255);
 };
 
 }

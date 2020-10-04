@@ -1,11 +1,11 @@
 #pragma once
 
 #include <unordered_map>
+#include <optional>
 #include <vector>
 
 #include <gsl/span>
 #include <json.hpp>
-#include <optional.hpp>
 
 #include "Quiver/Animation/AnimationData.h"
 #include "Quiver/Animation/AnimationId.h"
@@ -43,7 +43,7 @@ public:
 		const -> AnimationId;
 
 	auto GetSourceInfo(const AnimationId anim) 
-		const -> std::experimental::optional<AnimationSourceInfo>;
+		const -> std::optional<AnimationSourceInfo>;
 
 	auto GetFrameCount(const AnimationId anim) const -> int;
 	auto GetViewCount(const AnimationId anim) const -> int;
@@ -88,7 +88,7 @@ private:
 
 		unsigned NumFrames() const { return mNumRects / mNumRectsPerFrame; }
 
-		std::experimental::optional<AnimationSourceInfo> mSourceInfo;
+		std::optional<AnimationSourceInfo> mSourceInfo;
 	
 		unsigned mIndexOfFirstRect = 0;
 		unsigned mIndexOfFirstTime = 0;

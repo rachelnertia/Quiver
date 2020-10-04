@@ -146,7 +146,7 @@ AnimationId AnimationLibrary::GetAnimation(const AnimationSourceInfo& sourceInfo
 	return AnimationId::Invalid;
 }
 
-auto AnimationLibrary::GetSourceInfo(const AnimationId anim) const -> std::experimental::optional<AnimationSourceInfo>
+auto AnimationLibrary::GetSourceInfo(const AnimationId anim) const -> std::optional<AnimationSourceInfo>
 {
 	if (Contains(anim)) {
 		const auto it = infos.find(anim);

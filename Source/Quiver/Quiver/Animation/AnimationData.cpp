@@ -2,8 +2,6 @@
 
 #include <fstream>
 
-#include <optional.hpp>
-
 using namespace std::literals::chrono_literals;
 
 namespace
@@ -14,9 +12,6 @@ const char* FieldName_FrameRects = "frameRects";
 const char* FieldName_FrameTimes = "frameTimes";
 
 }
-
-template <typename T>
-using optional = std::experimental::optional<T>;
 
 namespace qvr {
 
@@ -43,7 +38,7 @@ AnimationId GenerateAnimationId(const AnimationData & animation)
 	return AnimationId(id);
 }
 
-optional<AnimationData> AnimationData::FromJson(const nlohmann::json & j) {
+std::optional<AnimationData> AnimationData::FromJson(const nlohmann::json & j) {
 	if (!j.is_object())	return {};
 
 	if (j.count(FieldName_FrameRects) == 0) return {};
@@ -82,7 +77,7 @@ optional<AnimationData> AnimationData::FromJson(const nlohmann::json & j) {
 	return anim;
 }
 
-std::experimental::optional<AnimationData> AnimationData::FromJsonFile(const std::string filename)
+std::optional<AnimationData> AnimationData::FromJsonFile(const std::string filename)
 {
 	std::ifstream file(filename);
 
@@ -93,7 +88,7 @@ std::experimental::optional<AnimationData> AnimationData::FromJsonFile(const std
 
 	try
 	{
-		j << file;
+		file >> j;
 	}
 	catch (std::invalid_argument exception)
 	{
@@ -175,7 +170,7 @@ int GetRectIndex(const AnimationData& animation, const int frameIndex, const int
 	return (frameIndex * (animation.GetAltViewsPerFrame() + 1)) + viewIndex;
 }
 
-std::experimental::optional<Animation::Frame> AnimationData::GetFrame(const int frameIndex) const
+std::optional<Animation::Frame> AnimationData::GetFrame(const int frameIndex) const
 {
 	if (!FrameIndexIsValid(*this, frameIndex)) return {};
 
@@ -197,7 +192,7 @@ std::experimental::optional<Animation::Frame> AnimationData::GetFrame(const int 
 	};
 }
 
-std::experimental::optional<Animation::Rect> AnimationData::GetRect(const int frameIndex, const int viewIndex) const
+std::optional<Animation::Rect> AnimationData::GetRect(const int frameIndex, const int viewIndex) const
 {
 	if (!FrameIndexIsValid(*this, frameIndex)) return {};
 	if (!ViewIndexIsValid(*this, viewIndex)) return {};
@@ -207,7 +202,7 @@ std::experimental::optional<Animation::Rect> AnimationData::GetRect(const int fr
 	return mFrameRects[realIndex];
 }
 
-std::experimental::optional<Animation::TimeUnit> AnimationData::GetTime(const int frameIndex) const
+std::optional<Animation::TimeUnit> AnimationData::GetTime(const int frameIndex) const
 {
 	if (!FrameIndexIsValid(*this, frameIndex)) return {};
 

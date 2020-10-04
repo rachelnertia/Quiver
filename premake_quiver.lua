@@ -16,7 +16,7 @@ function SetupQuiverWorkspace()
 
 	debugformat "c7"
 
-	cppdialect "C++14"
+	cppdialect "C++17"
 
 	flags { "MultiProcessorCompile" }
 

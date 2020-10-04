@@ -10,6 +10,7 @@
 #include <Box2D/Dynamics/b2World.h>
 #include <Box2D/Dynamics/b2WorldCallbacks.h>
 #include <ImGui/imgui.h>
+#include <ImGui/imgui-SFML.h>
 #include <SFML/Graphics/CircleShape.hpp>
 #include <SFML/Graphics/RectangleShape.hpp>
 #include <SFML/Graphics/RenderTexture.hpp>
@@ -178,7 +179,7 @@ void WorldEditor::Render()
 		window.draw(r);
 	}
 
-	ImGui::Render();
+	ImGui::SFML::Render(window);
 
 	window.display();
 }
@@ -392,7 +393,7 @@ void WorldEditor::OnMouseClick(const sf::Event::MouseButtonEvent & mouseInfo)
 	}
 
 	// Reject mouse click if it's over an ImGui window.
-	if (ImGui::IsMouseHoveringAnyWindow()) {
+	if (ImGui::GetIO().WantCaptureMouse) {
 		return;
 	}
 
@@ -421,7 +422,7 @@ void WorldEditor::OnMouseClick(const sf::Event::MouseButtonEvent & mouseInfo)
 void WorldEditor::OnMouseMove(const sf::Event::MouseMoveEvent & mouseInfo)
 {
 	// Reject mouse move if it's over an ImGui window.
-	if (ImGui::IsMouseHoveringAnyWindow()) {
+	if (ImGui::GetIO().WantCaptureMouse) {
 		return;
 	}
 

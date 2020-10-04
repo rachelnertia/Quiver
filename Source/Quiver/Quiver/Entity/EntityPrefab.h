@@ -1,10 +1,10 @@
 #pragma once
 
 #include <vector>
+#include <optional>
 #include <unordered_map>
 
 #include <json.hpp>
-#include <optional.hpp>
 
 namespace qvr
 {
@@ -22,7 +22,7 @@ public:
 		const Entity& entity,
 		const CustomComponentTypeLibrary& customComponentTypes);
 
-	const std::experimental::optional<nlohmann::json> GetPrefab(std::string prefabName) const;
+	const std::optional<nlohmann::json> GetPrefab(std::string prefabName) const;
 
 	bool FromJson(const nlohmann::json& j);
 	bool ToJson(nlohmann::json& j) const;

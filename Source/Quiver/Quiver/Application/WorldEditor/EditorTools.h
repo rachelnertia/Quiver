@@ -1,13 +1,12 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <vector>
 
 #include <Box2D/Common/b2Math.h>
 #include <SFML/Window/Event.hpp>
 #include <SFML/System/Vector2.hpp>
-
-#include "optional.hpp"
 
 namespace sf {
 class RenderTarget;
@@ -159,7 +158,7 @@ private:
 
 	std::vector<b2Vec2> mVertices;
 
-	std::experimental::optional<int> mGrabbedVertex;
+	std::optional<int> mGrabbedVertex;
 };
 
 class CreateInstanceOfPrefabTool : public EditorTool {

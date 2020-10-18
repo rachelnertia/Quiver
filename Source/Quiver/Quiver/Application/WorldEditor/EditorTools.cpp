@@ -450,10 +450,7 @@ void CreateInstanceOfPrefabTool::OnMouseClick(WorldEditor & editor, const Camera
 	}
 }
 
-template <typename T>
-using optional = std::experimental::optional<T>;
-
-optional<int> GetIndexOfClosestPoint(
+std::optional<int> GetIndexOfClosestPoint(
 	const std::vector<b2Vec2>& points,
 	const b2Vec2 testPoint,
 	const float radius)

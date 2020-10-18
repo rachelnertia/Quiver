@@ -7,7 +7,7 @@
 namespace qvr {
 
 struct AmbientLight {
-	sf::Color mColor = sf::Color::White;
+	sf::Color mColor = sf::Color(64, 64, 64, 255);
 };
 
 nlohmann::json ToJson(const AmbientLight& light);
@@ -44,7 +44,7 @@ public:
 private:
 	b2Vec2 mDirection = b2Vec2(1.0f, 0.0f);
 
-	sf::Color mColor = sf::Color(64, 64, 64, 255);
+	sf::Color mColor = sf::Color(128, 128, 128, 255);
 };
 
 }

@@ -137,7 +137,8 @@ class WorldRaycastRendererImpl {
 		b2Fixture* m_fixture;
 		b2Vec2 m_point;
 		b2Vec2 m_normal;
-		b2Vec2 m_backPoint;
+		std::array<b2Vec2, 5> m_backPoints;
+		int m_numBackPoints = 0;
 		float32 m_fraction;
 		int m_screenX;
 		enum class Facing
@@ -204,11 +205,18 @@ class WorldRaycastRendererImpl {
 		sf::Color m_BlendColor;
 		sf::Vector3f m_Normal;
 		const sf::Texture* m_Texture;
+		/*enum class Type
+		{
+			Front,
+			Top,
+			Bottom
+		};*/
+		bool m_DrawFront;
 		bool m_DrawTop;
 		bool m_DrawBottom;
 	};
 
-	std::vector<Drawable> m_AllColumns;
+	std::vector<Drawable> m_Drawables;
 
 	sf::Shader mShader;
 
@@ -246,11 +254,11 @@ void WorldRaycastRendererImpl::Render(
 
 		m_AllIntersections.reserve(targetWidth * IntersectionCollection::sm_MaxNumIntersections);
 
-		m_AllColumns.reserve(m_AllIntersections.size());
+		m_Drawables.reserve(m_AllIntersections.size());
 	}
 
 	m_AllIntersections.resize(0);
-	m_AllColumns.resize(0);
+	m_Drawables.resize(0);
 
 	for (unsigned i = 0; i < targetWidth; ++i)
 	{
@@ -349,6 +357,12 @@ void WorldRaycastRendererImpl::Render(
 				{
 					b2Vec2 point = thisIntersection.m_point;
 
+					std::array<b2Vec2, 10> points;
+					int numPoints = 0;
+
+					points[numPoints] = point;
+					numPoints++;
+
 					// Get the corresponding front face.
 					for (int followingIndex = index + 1; followingIndex < collection.m_IntersectionCount; followingIndex++)
 					{
@@ -356,12 +370,16 @@ void WorldRaycastRendererImpl::Render(
 
 						if (thatIntersection.m_fixture == thisIntersection.m_fixture)
 						{
-							thatIntersection.m_backPoint = point;
+							std::copy(std::begin(points), std::begin(points) + numPoints, std::begin(thatIntersection.m_backPoints));
+							thatIntersection.m_numBackPoints = numPoints;
 							break;
 						}
 						else 
 						{
 							point = thatIntersection.m_point;
+
+							points[numPoints] = point;
+							numPoints++;
 						}
 					}
 				}
@@ -401,106 +419,135 @@ void WorldRaycastRendererImpl::Render(
 	});
 
 	const auto targetSize = target.getSize();
+	auto& drawables = m_Drawables;
 
-	auto Prepare = [targetSize, &camera](const RayIntersection& intersection) -> Drawable
+	auto Prepare = [targetSize, &camera, &drawables](const RayIntersection& intersection)
 	{
+		const auto screenX = intersection.m_screenX;
+		const auto& normal = intersection.m_normal;
 		const auto& renderData =
 			*(qvr::FixtureRenderData*)(intersection.m_fixture->GetUserData());
-
-		const b2Vec2 displacementNear = intersection.m_point - camera.GetPosition();
-		const float  distanceNear = b2Dot(displacementNear, camera.GetForwards());
-
-		const b2Vec2 displacementFar = intersection.m_backPoint - camera.GetPosition();
-		const float  distanceFar = b2Dot(displacementFar, camera.GetForwards());
-
-		const bool drawTopOrBottom = distanceFar != distanceNear;
-
-		// At a distance of 1 metre, a vertical metre is enough pixels in height to fill the screen.
-		const float oneMetreInPixelsNear = abs(targetSize.y / distanceNear);
-		const float oneMetreInPixelsFar = abs(targetSize.y / distanceFar);
-
-		auto CalculateLineOffset = [&renderData, &camera](float const oneMetreInPixels)
+		
+		auto CreateDrawable = [normal, screenX, targetSize, &camera, &drawables, &renderData](b2Vec2 const& nearPoint, b2Vec2 const& farPoint, bool frontFace)
 		{
-			const float groundOffset = renderData.GetGroundOffset() * oneMetreInPixels;
-			const float heightOffset = (renderData.GetHeight() - 1.0f) * oneMetreInPixels;
-			const float cameraHeightOffset = camera.GetHeightOffset() * 2.0f * oneMetreInPixels;
+			const b2Vec2 displacementNear = nearPoint - camera.GetPosition();
+			const float  distanceNear = b2Dot(displacementNear, camera.GetForwards());
 
-			return -groundOffset - heightOffset - cameraHeightOffset;
+			const b2Vec2 displacementFar = farPoint - camera.GetPosition();
+			const float  distanceFar = b2Dot(displacementFar, camera.GetForwards());
+
+			const bool drawTopOrBottom = /*distanceFar != distanceNear*/ /*frontFace*/ true;
+
+			// At a distance of 1 metre, a vertical metre is enough pixels in height to fill the screen.
+			const float oneMetreInPixelsNear = abs(targetSize.y / distanceNear);
+			const float oneMetreInPixelsFar = abs(targetSize.y / distanceFar);
+
+			auto CalculateLineOffset = [&renderData, &camera](float const oneMetreInPixels)
+			{
+				const float groundOffset = renderData.GetGroundOffset() * oneMetreInPixels;
+				const float heightOffset = (renderData.GetHeight() - 1.0f) * oneMetreInPixels;
+				const float cameraHeightOffset = camera.GetHeightOffset() * 2.0f * oneMetreInPixels;
+
+				return -groundOffset - heightOffset - cameraHeightOffset;
+			};
+
+			const float lineOffsetNear = CalculateLineOffset(oneMetreInPixelsNear);
+
+			const float cameraPitchOffset = (float)GetPitchOffsetInPixels(camera, targetSize.y);
+
+			const float lineHeightNear = renderData.GetHeight() * oneMetreInPixelsNear;
+			const float lineStartYNear = ((targetSize.y - lineHeightNear + lineOffsetNear) / 2) + cameraPitchOffset;
+			const float lineEndYNear = ((targetSize.y + lineHeightNear + lineOffsetNear) / 2) + cameraPitchOffset;
+
+			const float lineOffsetFar = CalculateLineOffset(oneMetreInPixelsFar);
+
+			const float lineHeightFar = renderData.GetHeight() * oneMetreInPixelsFar;
+			const float lineStartYFar = ((targetSize.y - lineHeightFar + lineOffsetFar) / 2) + cameraPitchOffset;
+			const float lineEndYFar = ((targetSize.y + lineHeightFar + lineOffsetFar) / 2) + cameraPitchOffset;
+
+			const Animation::Rect textureRect =
+				renderData.GetViews().viewCount <= 1 ?
+				renderData.GetViews().views[0] :
+				CalculateView(
+					renderData.GetViews(),
+					renderData.GetObjectAngle(),
+					[&camera, &renderData]() {
+						const b2Vec2 disp = renderData.GetSpritePosition() - camera.GetPosition();
+						return b2Atan2(disp.y, disp.x) + b2_pi;
+					}());
+
+			auto CalculateU = [&camera](
+				const b2Vec2& hitPoint,
+				const b2Vec2& flatSpritePos,
+				const float flatSpriteRadius,
+				const Animation::Rect& textureRect)
+			{
+				const b2Vec2 perp(-camera.GetForwards().y, camera.GetForwards().x);
+
+				const b2Vec2 left = flatSpritePos - (flatSpriteRadius * perp);
+
+				float u = (hitPoint - left).Length() / (flatSpriteRadius * 2);
+
+				// Convert to texels.
+				u *= textureRect.right - textureRect.left;
+				u += textureRect.left;
+
+				return u;
+			};
+
+			const float u = CalculateU(
+				nearPoint,
+				renderData.GetSpritePosition(),
+				renderData.GetSpriteRadius(),
+				textureRect);
+
+			Drawable output;
+			output.m_BlendColor = renderData.GetColor();
+			output.m_Texture = renderData.GetTexture();
+			output.m_X = (float)screenX;
+			output.m_Top = lineStartYNear;
+			output.m_Bottom = lineEndYNear;
+			output.m_DistanceNear = distanceNear;
+			output.m_DistanceFar = distanceFar;
+			output.m_U = u;
+			output.m_VTop = (float)textureRect.top;
+			output.m_VBottom = (float)textureRect.bottom;
+			output.m_Normal = sf::Vector3f(normal.x, normal.y, 0.0f);
+			output.m_DrawFront = frontFace;
+			output.m_DrawTop = drawTopOrBottom && lineStartYFar < lineStartYNear;
+			output.m_DrawBottom = drawTopOrBottom && lineEndYFar > lineEndYNear;
+
+			output.m_FarY = output.m_DrawTop ? lineStartYFar : output.m_DrawBottom ? lineEndYFar : output.m_Top;
+
+			drawables.push_back(output);
 		};
 
-		const float lineOffsetNear = CalculateLineOffset(oneMetreInPixelsNear);
-
-		const float cameraPitchOffset = (float)GetPitchOffsetInPixels(camera, targetSize.y);
-
-		const float lineHeightNear = renderData.GetHeight() * oneMetreInPixelsNear;
-		const float lineStartYNear = ((targetSize.y - lineHeightNear + lineOffsetNear) / 2) + cameraPitchOffset;
-		const float lineEndYNear = ((targetSize.y + lineHeightNear + lineOffsetNear) / 2) + cameraPitchOffset;
-
-		const float lineOffsetFar = CalculateLineOffset(oneMetreInPixelsFar);
-
-		const float lineHeightFar = renderData.GetHeight() * oneMetreInPixelsFar;
-		const float lineStartYFar = ((targetSize.y - lineHeightFar + lineOffsetFar) / 2) + cameraPitchOffset;
-		const float lineEndYFar = ((targetSize.y + lineHeightFar + lineOffsetFar) / 2) + cameraPitchOffset;
-
-		const Animation::Rect textureRect = 
-			renderData.GetViews().viewCount <= 1 ?
-			renderData.GetViews().views[0] :
-			CalculateView(
-				renderData.GetViews(),
-				renderData.GetObjectAngle(),
-				[&camera, &renderData]() {
-					const b2Vec2 disp = renderData.GetSpritePosition() - camera.GetPosition();
-					return b2Atan2(disp.y, disp.x) + b2_pi;
-				}());
-
-		auto CalculateU = [&camera](
-			const b2Vec2& hitPoint,
-			const b2Vec2& flatSpritePos,
-			const float flatSpriteRadius,
-			const Animation::Rect& textureRect)
+		for (int pointIndex = 0; pointIndex < intersection.m_numBackPoints - 1; pointIndex++)
 		{
-			const b2Vec2 perp(-camera.GetForwards().y, camera.GetForwards().x);
+			CreateDrawable(intersection.m_backPoints[pointIndex + 1], intersection.m_backPoints[pointIndex], false);
+		}
 
-			const b2Vec2 left = flatSpritePos - (flatSpriteRadius * perp);
-
-			float u = (hitPoint - left).Length() / (flatSpriteRadius * 2);
-
-			// Convert to texels.
-			u *= textureRect.right - textureRect.left;
-			u += textureRect.left;
-
-			return u;
-		};
-
-		const float u = CalculateU(
-			intersection.m_point,
-			renderData.GetSpritePosition(),
-			renderData.GetSpriteRadius(),
-			textureRect);
-
-		Drawable output;
-		output.m_BlendColor = renderData.GetColor();
-		output.m_Texture = renderData.GetTexture();
-		output.m_X = (float)intersection.m_screenX;
-		output.m_Top = lineStartYNear;
-		output.m_Bottom = lineEndYNear;
-		output.m_DistanceNear = distanceNear;
-		output.m_DistanceFar = distanceNear;
-		output.m_U = u;
-		output.m_VTop = (float)textureRect.top;
-		output.m_VBottom = (float)textureRect.bottom;
-		output.m_Normal = sf::Vector3f(intersection.m_normal.x, intersection.m_normal.y, 0.0f);
-		output.m_DrawTop = drawTopOrBottom && lineStartYFar < lineStartYNear;
-		output.m_DrawBottom = drawTopOrBottom && lineEndYFar > lineEndYNear;
-		output.m_FarY = output.m_DrawTop ? lineStartYFar : output.m_DrawBottom ? lineEndYFar : output.m_Top;
-		return output;
+		CreateDrawable(intersection.m_point, intersection.m_backPoints[intersection.m_numBackPoints - 1], true);
 	};
 
-	std::transform(
+	std::for_each(
 		m_AllIntersections.begin(),
 		m_AllIntersections.end(),
-		std::back_inserter(m_AllColumns),
 		Prepare);
+
+	// sort by distance such that further away intersections come first
+	std::sort(
+		m_Drawables.begin(),
+		m_Drawables.end(),
+		[](const Drawable& a, const Drawable& b)
+		{
+			if (a.m_DistanceFar != b.m_DistanceFar)
+			{
+				return (a.m_DistanceFar > b.m_DistanceFar);
+			}
+			
+			return (a.m_FarY > b.m_FarY);
+		});
 
 	class Drawer {
 	public:
@@ -588,6 +635,11 @@ void WorldRaycastRendererImpl::Render(
 
 		void DrawFront(const Drawable& drawable)
 		{
+			if (!drawable.m_DrawFront)
+			{
+				return;
+			}
+
 			m_Line[0].position.y = drawable.m_Top;
 			m_Line[1].position.y = drawable.m_Bottom;
 			m_Line[0].position.z = drawable.m_DistanceNear;
@@ -659,8 +711,8 @@ void WorldRaycastRendererImpl::Render(
 	};
 
 	std::for_each(
-		m_AllColumns.begin(),
-		m_AllColumns.end(),
+		m_Drawables.begin(),
+		m_Drawables.end(),
 		Drawer(target, mShader, world));
 }
 

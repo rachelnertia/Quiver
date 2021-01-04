@@ -106,6 +106,8 @@ auto GetWorldFromParams(
 auto CreateEditor(ApplicationStateContext& context, const json& params) 
 -> std::unique_ptr<ApplicationState>
 {
+	// TODO: Move GetWorldFromParams down into the WorldEditor constructor, probably. It should handle its own parameters.
+	// Alternatively, move this factory function into the WorldEditor code.
 	auto world = GetWorldFromParams(
 		params,
 		context.GetWorldContext());
@@ -122,6 +124,9 @@ auto CreateEditor(ApplicationStateContext& context, const json& params)
 auto CreateGame(ApplicationStateContext& context, const json& params)
 -> std::unique_ptr<ApplicationState>
 {
+	// TODO: As with WorldEditor, move GetWorldFromParams down into the Game constructor, probably. 
+	// It should handle its own parameters.
+	// Alternatively, move this factory function into the Game state code.
 	auto world = GetWorldFromParams(
 		params,
 		context.GetWorldContext());
@@ -425,6 +430,20 @@ int RunApplication(CustomComponentTypeLibrary& customComponents)
 {
 	FixtureFilterBitNames bitNames{};
 	return RunApplication(customComponents, bitNames);
+}
+
+int RunApplication(ApplicationConfig& config)
+{
+	ApplicationStateLibrary noUserStates;
+	FixtureFilterBitNames noBitNames{};
+	CustomComponentTypeLibrary noCustomComponents;
+	return RunApplication(
+		ApplicationParams{
+			noCustomComponents,
+			noBitNames,
+			config,
+			noUserStates
+		});
 }
 
 int RunApplication() {

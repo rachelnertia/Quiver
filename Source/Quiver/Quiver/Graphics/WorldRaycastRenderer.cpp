@@ -126,6 +126,10 @@ inline sf::Vector2f B2VecToSFVec(const b2Vec2& b2vec) {
 	return sf::Vector2f(b2vec.x, b2vec.y);
 }
 
+inline sf::Vector3f B2VecToSFVec(const b2Vec3& b2vec) {
+	return sf::Vector3f(b2vec.x, b2vec.y, b2vec.z);
+}
+
 }
 
 namespace qvr {
@@ -780,7 +784,7 @@ void WorldRaycastRendererImpl::LoadShader() {
 	uniform vec4 ambientLightColor;
 
 	uniform vec4 directionalLightColor;
-	uniform vec2 directionalLightDirection;
+	uniform vec3 directionalLightDirection;
 
 	uniform vec4 fogColor;
 	uniform float fogMaxIntensity;
@@ -805,7 +809,7 @@ void WorldRaycastRendererImpl::LoadShader() {
 
 		appliedDirectionalLightColor = 
 			directionalLightColor * 
-			clamp(dot(vec2(gl_Normal), -directionalLightDirection), 0.0f, 1.0f);
+			clamp(dot(gl_Normal, -directionalLightDirection), 0.0f, 1.0f);
 
 		gl_Position = ftransform();
 		gl_Position.z = 0.0f;

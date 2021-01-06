@@ -157,7 +157,7 @@ ApplicationStateLibrary GetQuiverStates() {
 
 int RunApplication(ApplicationParams params)
 {
-	InitLoggers(spdlog::level::debug);
+	InitLoggers(params.config.logging.level);
 
 	auto consoleLog = spdlog::get("console");
 
@@ -331,7 +331,7 @@ bool GetLogLevel(const json& j, spdlog::level::level_enum& level) {
 	return false;
 }
 
-void from_json(const json& j, LoggingConfig config) {
+void from_json(const json& j, LoggingConfig& config) {
 	GetLogLevel(j.value<json>("level", {}), config.level);
 }
 
@@ -340,6 +340,7 @@ void from_json(const json& j, ApplicationConfig& config) {
 	config.imGuiConfig = j.value("ImGuiConfig", config.imGuiConfig);
 	config.graphicsSettings = j.value("graphicsSettings", config.graphicsSettings);
 	config.initialState = j.value("initialState", config.initialState);
+	config.logging = j.value("logging", config.logging);
 }
 
 ApplicationConfig LoadConfig(const char* filename) {

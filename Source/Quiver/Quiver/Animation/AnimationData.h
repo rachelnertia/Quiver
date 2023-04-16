@@ -1,9 +1,9 @@
 #pragma once
 
 #include <chrono>
+#include <optional>
 
 #include <json.hpp>
-#include <optional.hpp>
 
 #include "Quiver/Animation/AnimationId.h"
 #include "Quiver/Animation/Rect.h"
@@ -23,8 +23,8 @@ public:
 
 	AnimationData() = default;
 
-	static std::experimental::optional<AnimationData> FromJson(const nlohmann::json& j);
-	static std::experimental::optional<AnimationData> FromJsonFile(const std::string filename);
+	static std::optional<AnimationData> FromJson(const nlohmann::json& j);
+	static std::optional<AnimationData> FromJsonFile(const std::string filename);
 
 	nlohmann::json ToJson() const;
 
@@ -36,9 +36,9 @@ public:
 	int GetRectCount()        const { return mFrameRects.size(); }
 	int GetAltViewsPerFrame() const { return mAltViewsPerFrame; }
 
-	std::experimental::optional<Animation::Frame>    GetFrame(const int frameIndex)                         const;
-	std::experimental::optional<Animation::Rect>     GetRect(const int frameIndex, const int viewIndex = 0) const;
-	std::experimental::optional<Animation::TimeUnit> GetTime(const int frameIndex)                          const;
+	std::optional<Animation::Frame>    GetFrame(const int frameIndex)                         const;
+	std::optional<Animation::Rect>     GetRect(const int frameIndex, const int viewIndex = 0) const;
+	std::optional<Animation::TimeUnit> GetTime(const int frameIndex)                          const;
 
 	std::vector<Animation::TimeUnit> GetTimes() const;
 	std::vector<Animation::Rect>     GetRects() const;

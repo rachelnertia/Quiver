@@ -27,6 +27,7 @@ int RunApplication(
 	CustomComponentTypeLibrary& customComponentTypes,
 	FixtureFilterBitNames& fixtureFilterBitNames);
 int RunApplication(CustomComponentTypeLibrary& customComponentTypes);
+int RunApplication(ApplicationConfig& config);
 int RunApplication();
 
 }

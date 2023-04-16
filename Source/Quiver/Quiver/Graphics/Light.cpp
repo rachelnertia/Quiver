@@ -29,6 +29,18 @@ AmbientLight FromJson(const json& j)
 	return d;
 }
 
+void DirectionalLight::SetAngleHorizontal(const float lightAngleRadians) {
+	mDirection.x = cosf(lightAngleRadians) * (1.0f - mDirection.z);
+	mDirection.y = sinf(lightAngleRadians) * (1.0f - mDirection.z);
+	mDirection.Normalize();
+}
+
+void DirectionalLight::SetAngleVertical(const float lightAngleRadians) {
+	mDirection.x = cosf(lightAngleRadians) * (1.0f - mDirection.y);
+	mDirection.z = sinf(lightAngleRadians) * (1.0f - mDirection.y);
+	mDirection.Normalize();
+}
+
 bool DirectionalLight::ToJson(nlohmann::json & j) const
 {
 	if (!j.empty()) {
@@ -36,7 +48,8 @@ bool DirectionalLight::ToJson(nlohmann::json & j) const
 	}
 
 	// Store direction as an angle.
-	j["Angle"] = atan2f(mDirection.y, mDirection.x);
+	j["AngleHorizontal"] = atan2f(mDirection.y, mDirection.x);
+	j["AngleVertical"] = atan2f(mDirection.z, mDirection.x);
 
 	return ColourUtils::SerializeSFColorToJson(mColor, j["Color"]);
 }
@@ -48,7 +61,16 @@ bool DirectionalLight::FromJson(const nlohmann::json & j)
 	}
 
 	if (j.find("Angle") != j.end()) {
-		SetDirection(j["Angle"].get<float>());
+		SetAngleHorizontal(j["Angle"].get<float>());
+	}
+
+	if (j.find("AngleHorizontal") != j.end()) {
+		SetAngleHorizontal(j["AngleHorizontal"].get<float>());
+	}
+	
+	if (j.find("AngleVertical") != j.end())
+	{
+		SetAngleVertical(j["AngleVertical"].get<float>());
 	}
 
 	if (j.find("Color") != j.end()) {
@@ -63,12 +85,16 @@ bool DirectionalLight::FromJson(const nlohmann::json & j)
 
 void DirectionalLight::GuiControls()
 {
-	float angle = atan2f(mDirection.y, mDirection.x);
-	if (ImGui::SliderAngle("Angle", &angle, -180.0f, 180.0f)) {
-		SetDirection(angle);
+	ImGui::PushID(this);
+
+	if (ImGui::SliderFloat3("Direction (XYZ)", &mDirection.x, -1.0f, 1.0f))
+	{
+		mDirection.Normalize();
 	}
 
 	ColourUtils::ImGuiColourEditRGB("Colour##DirectionalLight", mColor);
+
+	ImGui::PopID();
 }
 
 }

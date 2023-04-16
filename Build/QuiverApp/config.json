@@ -1,0 +1,9 @@
+{
+  "initialState": {
+    "name": "Editor",
+    "params": {
+      "worldFile": "testbed.json"
+    }
+  },
+  "logging": { "level": "debug" }
+}

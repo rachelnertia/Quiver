@@ -6,7 +6,6 @@
 #include <Box2D/Common/b2Math.h>
 #include <function2.hpp>
 #include <json.hpp>
-#include <optional.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
@@ -84,6 +83,10 @@ public:
 	void RenderDebug(
 		sf::RenderTarget& target, 
 		const Camera2D& camera);
+
+	void Render2D(
+		sf::RenderTarget& target,
+		const Camera2D& camera);
 	
 	void Render3D(
 		sf::RenderTarget& target, 
@@ -153,7 +156,7 @@ public:
 
 	EntityPrefabContainer mEntityPrefabs;
 
-	sf::Color groundColor = sf::Color::Yellow;
+	sf::Color groundColor = sf::Color(0, 100, 0, 255);
 	sf::Color skyColor = sf::Color::Transparent;
 
 	// TODO: Some kind of World clock thing with time_point

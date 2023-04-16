@@ -2,8 +2,6 @@
 
 #include <SFML/System/Vector2.hpp>
 
-#include <optional.hpp>
-
 #include "JoystickProvider.h"
 
 namespace qvr

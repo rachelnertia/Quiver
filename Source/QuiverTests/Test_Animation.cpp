@@ -113,7 +113,7 @@ TEST_CASE("AnimationData can be modified", "[Animation]")
 		frame.mTime = -1ms;
 		REQUIRE(animationData.AddFrame(frame) == false);
 
-		frame.mTime - 0ms;
+		frame.mTime = 0ms;
 		REQUIRE(animationData.AddFrame(frame) == false);
 
 		frame.mTime = 1ms;

@@ -13,7 +13,6 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/bundled/time.h>
 #include <cxxopts/cxxopts.hpp>
-#include <optional.hpp>
 
 #include "Quiver/Entity/CustomComponent/CustomComponent.h"
 #include "Quiver/Misc/JsonHelpers.h"
@@ -107,6 +106,8 @@ auto GetWorldFromParams(
 auto CreateEditor(ApplicationStateContext& context, const json& params) 
 -> std::unique_ptr<ApplicationState>
 {
+	// TODO: Move GetWorldFromParams down into the WorldEditor constructor, probably. It should handle its own parameters.
+	// Alternatively, move this factory function into the WorldEditor code.
 	auto world = GetWorldFromParams(
 		params,
 		context.GetWorldContext());
@@ -123,6 +124,9 @@ auto CreateEditor(ApplicationStateContext& context, const json& params)
 auto CreateGame(ApplicationStateContext& context, const json& params)
 -> std::unique_ptr<ApplicationState>
 {
+	// TODO: As with WorldEditor, move GetWorldFromParams down into the Game constructor, probably. 
+	// It should handle its own parameters.
+	// Alternatively, move this factory function into the Game state code.
 	auto world = GetWorldFromParams(
 		params,
 		context.GetWorldContext());
@@ -153,7 +157,7 @@ ApplicationStateLibrary GetQuiverStates() {
 
 int RunApplication(ApplicationParams params)
 {
-	InitLoggers(spdlog::level::debug);
+	InitLoggers(params.config.logging.level);
 
 	auto consoleLog = spdlog::get("console");
 
@@ -327,7 +331,7 @@ bool GetLogLevel(const json& j, spdlog::level::level_enum& level) {
 	return false;
 }
 
-void from_json(const json& j, LoggingConfig config) {
+void from_json(const json& j, LoggingConfig& config) {
 	GetLogLevel(j.value<json>("level", {}), config.level);
 }
 
@@ -336,6 +340,7 @@ void from_json(const json& j, ApplicationConfig& config) {
 	config.imGuiConfig = j.value("ImGuiConfig", config.imGuiConfig);
 	config.graphicsSettings = j.value("graphicsSettings", config.graphicsSettings);
 	config.initialState = j.value("initialState", config.initialState);
+	config.logging = j.value("logging", config.logging);
 }
 
 ApplicationConfig LoadConfig(const char* filename) {
@@ -359,7 +364,7 @@ ApplicationConfig LoadConfig(const char* filename) {
 	json configJson;
 
 	try {
-		configJson << configFile;
+		configFile >> configJson;
 	}
 	catch (std::invalid_argument e) {
 		log->error(
@@ -426,6 +431,20 @@ int RunApplication(CustomComponentTypeLibrary& customComponents)
 {
 	FixtureFilterBitNames bitNames{};
 	return RunApplication(customComponents, bitNames);
+}
+
+int RunApplication(ApplicationConfig& config)
+{
+	ApplicationStateLibrary noUserStates;
+	FixtureFilterBitNames noBitNames{};
+	CustomComponentTypeLibrary noCustomComponents;
+	return RunApplication(
+		ApplicationParams{
+			noCustomComponents,
+			noBitNames,
+			config,
+			noUserStates
+		});
 }
 
 int RunApplication() {

@@ -35,7 +35,7 @@ const std::vector<std::string> EntityPrefabContainer::GetPrefabNames() const
 	return names;
 }
 
-const std::experimental::optional<nlohmann::json> EntityPrefabContainer::GetPrefab(const std::string prefabName) const
+const std::optional<nlohmann::json> EntityPrefabContainer::GetPrefab(const std::string prefabName) const
 {
 	const auto it = mEntityPrefabs.find(prefabName);
 

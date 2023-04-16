@@ -1,5 +1,6 @@
 #include "ColourUtils.h"
 
+#include <iomanip>
 #include <sstream>
 
 #include <ImGui/imgui.h>
@@ -82,9 +83,9 @@ void ImGuiColourEditRGB(const char* label, sf::Color & colour)
 	ImVec4 fcolor(colour.r * s, colour.g * s, colour.b * s, colour.a * s);
 	if (ImGui::ColorEdit3(label, &fcolor.x)) {
 		colour = sf::Color((sf::Uint8)(fcolor.x * 255),
-			(sf::Uint8)(fcolor.y * 255),
-			(sf::Uint8)(fcolor.z * 255),
-			(sf::Uint8)(fcolor.w * 255));
+						   (sf::Uint8)(fcolor.y * 255),
+						   (sf::Uint8)(fcolor.z * 255),
+						   colour.a);
 	}
 }
 

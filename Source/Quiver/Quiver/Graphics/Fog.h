@@ -48,7 +48,7 @@ private:
 	sf::Color color = sf::Color(255, 255, 255, 0);
 	float minDistance = 1.0f;
 	float maxDistance = 20.0f;
-	float maxIntensity = 1.0f;
+	float maxIntensity = 0.0f;
 };
 
 void GuiControls(Fog& distanceShade);

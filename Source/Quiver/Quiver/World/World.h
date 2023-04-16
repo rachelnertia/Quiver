@@ -83,6 +83,10 @@ public:
 	void RenderDebug(
 		sf::RenderTarget& target, 
 		const Camera2D& camera);
+
+	void Render2D(
+		sf::RenderTarget& target,
+		const Camera2D& camera);
 	
 	void Render3D(
 		sf::RenderTarget& target, 

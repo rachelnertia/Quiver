@@ -171,6 +171,24 @@ void World::RenderDebug(sf::RenderTarget & target, const Camera2D & camera)
 	mPhysicsWorld->DrawDebugData();
 }
 
+void World::Render2D(sf::RenderTarget& target, const Camera2D& camera)
+{
+	// Draw ground.
+	{
+		sf::RectangleShape rect;
+		float fraction = std::max(0.0f, -mDirectionalLight.GetDirection().z);
+		sf::Color directionalLightColor = mDirectionalLight.GetColor();
+		directionalLightColor.r = (sf::Uint8)((float)directionalLightColor.r * fraction);
+		directionalLightColor.g = (sf::Uint8)((float)directionalLightColor.g * fraction);
+		directionalLightColor.b = (sf::Uint8)((float)directionalLightColor.b * fraction);
+		rect.setFillColor(this->groundColor * this->mAmbientLight.mColor + directionalLightColor);
+		rect.setSize(sf::Vector2f(target.getSize()));
+		target.draw(rect);
+	}
+
+	RenderDebug(target, camera);
+}
+
 Profiler sPreRenderProfiler(512);
 Profiler sRenderProfiler(512);
 Profiler sColumnsProfiler(512);
@@ -264,7 +282,12 @@ void World::Render3D(
 		const int top = (targetSize.y / 2) + GetPitchOffsetInPixels(camera, targetSize.y);
 		rect.setPosition(0.0f, (float)top);
 		rect.setSize(sf::Vector2f((float)targetSize.x, (float)(targetSize.y - top)));
-		rect.setFillColor(groundColor * mAmbientLight.mColor);
+		float fraction = std::max(0.0f, -mDirectionalLight.GetDirection().z);
+		sf::Color directionalLightColor = mDirectionalLight.GetColor();
+		directionalLightColor.r = (sf::Uint8)((float)directionalLightColor.r * fraction);
+		directionalLightColor.g = (sf::Uint8)((float)directionalLightColor.g * fraction);
+		directionalLightColor.b = (sf::Uint8)((float)directionalLightColor.b * fraction);
+		rect.setFillColor(groundColor * mAmbientLight.mColor + directionalLightColor);
 		target.draw(rect);
 
 		// Draw distance-shade on top of it.

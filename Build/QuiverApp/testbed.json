@@ -1,0 +1,101 @@
+{
+    "AmbientLight": {
+        "Colour": "9696b4ff"
+    },
+    "Animations": null,
+    "DirectionalLight": {
+        "AngleHorizontal": -1.1605740785598755,
+        "AngleVertical": -1.3609942197799683,
+        "Color": "808080ff"
+    },
+    "Entities": [
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.20000000298023224,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    6.4375,
+                    -2.59375
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Radius": 1.12716805934906,
+                    "Type": "Circle"
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ffffffff",
+                "Detached": false,
+                "GroundOffset": 0.0,
+                "Height": 1.0,
+                "SpriteRadius": 0.5
+            }
+        },
+        {
+            "PhysicsComponent": {
+                "Angle": 0.0,
+                "AngularDamping": 0.0,
+                "BodyType": "Static",
+                "FixedRotation": false,
+                "Friction": 0.20000000298023224,
+                "IsBullet": false,
+                "LinearDamping": 0.0,
+                "Position": [
+                    7.453125,
+                    0.25
+                ],
+                "Restitution": 0.0,
+                "Shape": {
+                    "Type": "Polygon",
+                    "Vertices": [
+                        [
+                            1.046875,
+                            -1.21875
+                        ],
+                        [
+                            1.046875,
+                            1.21875
+                        ],
+                        [
+                            -1.046875,
+                            1.21875
+                        ],
+                        [
+                            -1.046875,
+                            -1.21875
+                        ]
+                    ]
+                }
+            },
+            "RenderComponent": {
+                "Colour": "ffffffff",
+                "Detached": false,
+                "GroundOffset": 0.0,
+                "Height": 1.0,
+                "SpriteRadius": 0.5
+            }
+        }
+    ],
+    "Fog": {
+        "Color": "ffffff00",
+        "MaxDistance": 20.0,
+        "MaxIntensity": 0.0,
+        "MinDistance": 1.0
+    },
+    "Gravity": [
+        0.0,
+        0.0
+    ],
+    "GroundColour": "125345ff",
+    "Prefabs": {},
+    "RenderSettings": {
+        "RayLength": 50.0
+    },
+    "Sky": null,
+    "SkyColour": "00000000"
+}

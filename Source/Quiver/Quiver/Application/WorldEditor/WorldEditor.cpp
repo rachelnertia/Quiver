@@ -164,7 +164,7 @@ void WorldEditor::Render()
 		mCamera.Get2D().mOffsetX = (float)window.getSize().x / 2.0f;
 		mCamera.Get2D().mOffsetY = (float)window.getSize().y / 2.0f;
 
-		mWorld->RenderDebug(window, mCamera.Get2D());
+		mWorld->Render2D(window, mCamera.Get2D());
 
 		mTools.at(mCurrentToolIndex)->Draw(window, mCamera.Get2D());
 	}

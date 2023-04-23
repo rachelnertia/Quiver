@@ -23,9 +23,14 @@ Entity::Entity(World& world, const PhysicsComponentDef& physicsDef)
 	: mWorld(world)
 	, mId(world.GetNextEntityId())
 	, mPhysicsComponent(std::make_unique<PhysicsComponent>(*this, physicsDef))
-{}
+{
+	GetWorld().RegisterPhysicsComponent(*GetPhysics());
+}
 
-Entity::~Entity() {}
+Entity::~Entity() 
+{
+	GetWorld().UnregisterPhysicsComponent(*GetPhysics());
+}
 
 nlohmann::json Entity::ToJson(const bool toPrefab) const
 {

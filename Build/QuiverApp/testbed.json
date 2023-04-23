@@ -4,7 +4,7 @@
     },
     "Animations": null,
     "DirectionalLight": {
-        "AngleHorizontal": -1.1605740785598755,
+        "AngleHorizontal": -1.1601704359054565,
         "AngleVertical": -1.3609942197799683,
         "Color": "808080ff"
     },
@@ -13,14 +13,16 @@
             "PhysicsComponent": {
                 "Angle": 0.0,
                 "AngularDamping": 0.0,
-                "BodyType": "Static",
+                "BodyType": "Dynamic",
                 "FixedRotation": false,
                 "Friction": 0.20000000298023224,
+                "GroundOffset": 5.0,
+                "Height": 2,
                 "IsBullet": false,
                 "LinearDamping": 0.0,
                 "Position": [
-                    6.4375,
-                    -2.59375
+                    7.0625,
+                    -0.6875
                 ],
                 "Restitution": 0.0,
                 "Shape": {
@@ -31,7 +33,7 @@
             "RenderComponent": {
                 "Colour": "ffffffff",
                 "Detached": false,
-                "GroundOffset": 0.0,
+                "GroundOffset": 5.0,
                 "Height": 1.0,
                 "SpriteRadius": 0.5
             }
@@ -43,6 +45,8 @@
                 "BodyType": "Static",
                 "FixedRotation": false,
                 "Friction": 0.20000000298023224,
+                "GroundOffset": 0.0,
+                "Height": 2,
                 "IsBullet": false,
                 "LinearDamping": 0.0,
                 "Position": [

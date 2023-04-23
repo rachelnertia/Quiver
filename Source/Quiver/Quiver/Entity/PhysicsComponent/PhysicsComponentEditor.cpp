@@ -156,6 +156,12 @@ void PhysicsComponentEditor::GuiControls(const BitNames& bitNames)
 	qvr::GuiControls(
 		m_PhysicsComponent.GetBody(), 
 		bitNames);
+
+	ImGui::InputFloat(
+		"Ground Offset (Bottom)",
+		m_PhysicsComponent,
+		&PhysicsComponent::GetBottom,
+		&PhysicsComponent::SetBottom);
 }
 
 }

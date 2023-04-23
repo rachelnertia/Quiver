@@ -151,6 +151,18 @@ PhysicsComponentDef::PhysicsComponentDef(const nlohmann::json & j)
 	{
 		bodyDef.angularDamping = j["AngularDamping"];
 	}
+
+	if (j.find("GroundOffset") != j.end() &&
+		j["GroundOffset"].is_number())
+	{
+		this->m_GroundOffset = j["GroundOffset"];
+	}
+
+	if (j.find("Height") != j.end() &&
+		j["Height"].is_number())
+	{
+		this->m_Height = j["Height"];
+	}
 }
 
 }

@@ -41,6 +41,7 @@
 #include "Quiver/Misc/ImGuiHelpers.h"
 #include "Quiver/Misc/JsonHelpers.h"
 #include "Quiver/Misc/Profiler.h"
+#include "Quiver/Physics/ContactFilter.h"
 #include "Quiver/Physics/ContactListener.h"
 #include "Quiver/World/WorldContext.h"
 
@@ -99,11 +100,13 @@ World::World(
 	WorldContext& context)
 	: mContext(context)
 	, mContactListener(std::make_unique<Physics::ContactListener>())
+	, mContactFilter(std::make_unique<Physics::ContactFilter>())
 	, mPhysicsWorld(std::make_unique<b2World>(b2Vec2_zero))
 	, mAudioLibrary(std::make_unique<AudioLibrary>())
 	, mTextureLibrary(std::make_unique<TextureLibrary>())
 {
 	mPhysicsWorld->SetContactListener(mContactListener.get());
+	//mPhysicsWorld->SetContactFilter(mContactFilter.get());
 }
 
 World::~World() {}
@@ -123,8 +126,17 @@ void World::TakeStep(qvr::RawInputDevices& inputDevices)
 		mPhysicsWorld->Step(GetTimestep().count(), velocity_iterations, position_iterations);
 	}
 
+	for (auto& physicsComponent : mPhysicsComponents) {
+		physicsComponent.get().Update(GetTimestep());
+	}
+
+	//for (auto& renderComponent : mRenderComponents) {
+	//
+	//}
+
 	mAnimators.Animate(duration_cast<Animation::TimeUnit>(GetTimestep()));
 
+	// TODO: Calculate total time a better way - float accumulation is error-prone.
 	mTotalTime += GetTimestep();
 
 	UpdateAudioComponents();
@@ -146,7 +158,7 @@ void World::SetPaused(const bool paused)
 {
 	if (paused)
 	{
-
+		
 	}
 	else
 	{
@@ -741,6 +753,32 @@ bool World::UnregisterAudioComponent(const AudioComponent & audioComponent)
 	return false;
 }
 
+bool World::RegisterPhysicsComponent(PhysicsComponent& physicsComponent)
+{
+	const auto it = FindByAddress(mPhysicsComponents, physicsComponent);
+
+	if (it != mPhysicsComponents.end())
+	{
+		return true;
+	}
+
+	mPhysicsComponents.push_back(physicsComponent);
+
+	return true;
+}
+
+bool World::UnregisterPhysicsComponent(PhysicsComponent& physicsComponent)
+{
+	const auto it = FindByAddress(mPhysicsComponents, physicsComponent);
+
+	if (it != mPhysicsComponents.end())
+	{
+		mPhysicsComponents.erase(it);
+		return true;
+	}
+
+	return false;
+}
 
 // Provide a factory function to create an ApplicationState.
 // It will hopefully be grabbed by whatever owns and is responsible for updating the World.

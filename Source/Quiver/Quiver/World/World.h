@@ -22,6 +22,7 @@
 struct b2Transform;
 struct b2Vec2;
 class b2Body;
+class b2ContactFilter;
 class b2ContactListener;
 class b2Shape;
 class b2World;
@@ -42,6 +43,7 @@ class CustomComponent;
 class CustomComponentTypeLibrary;
 class Entity;
 class EntityPrefab;
+class PhysicsComponent;
 class RawInputDevices;
 class RenderComponent;
 class TextureLibrary;
@@ -135,6 +137,9 @@ public:
 	bool RegisterCustomComponent(const CustomComponent& customComponent);
 	bool UnregisterCustomComponent(const CustomComponent& customComponent);
 
+	bool RegisterPhysicsComponent(PhysicsComponent& physicsComponent);
+	bool UnregisterPhysicsComponent(PhysicsComponent& physicsComponent);
+
 	bool RegisterUiRenderer(WorldUiRenderer& renderer);
 	bool UnregisterUiRenderer(WorldUiRenderer& renderer);
 
@@ -217,13 +222,15 @@ private:
 	std::unique_ptr<World>             mNextWorld;
 	std::unique_ptr<b2World>           mPhysicsWorld;
 	std::unique_ptr<b2ContactListener> mContactListener;
+	std::unique_ptr<b2ContactFilter>   mContactFilter;
 	std::unique_ptr<AudioLibrary>      mAudioLibrary;
 	std::unique_ptr<TextureLibrary>    mTextureLibrary;
 
-	std::vector<std::reference_wrapper<Camera3D>>        mCameras;
-	std::vector<std::reference_wrapper<RenderComponent>> mDetachedRenderComponents;
-	std::vector<std::reference_wrapper<AudioComponent>>  mAudioComponents;
-	std::vector<std::reference_wrapper<WorldUiRenderer>>      mUiRenderers;
+	std::vector<std::reference_wrapper<Camera3D>>		  mCameras;
+	std::vector<std::reference_wrapper<RenderComponent>>  mDetachedRenderComponents;
+	std::vector<std::reference_wrapper<AudioComponent>>	  mAudioComponents;
+	std::vector<std::reference_wrapper<PhysicsComponent>> mPhysicsComponents;
+	std::vector<std::reference_wrapper<WorldUiRenderer>>  mUiRenderers;
 
 	std::unordered_map<EntityId, std::unique_ptr<Entity>> mEntities;
 

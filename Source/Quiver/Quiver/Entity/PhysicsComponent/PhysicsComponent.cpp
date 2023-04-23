@@ -6,6 +6,7 @@
 #include <spdlog/spdlog.h>
 
 #include "Quiver/Entity/Entity.h"
+#include "Quiver/Entity/RenderComponent/RenderComponent.h"
 #include "Quiver/Entity/PhysicsComponent/PhysicsComponentDef.h"
 #include "Quiver/Physics/PhysicsShape.h"
 #include "Quiver/World/World.h"
@@ -38,6 +39,9 @@ PhysicsComponent::PhysicsComponent(Entity& entity, const PhysicsComponentDef& de
 			log->error("Failed to create fixture!");
 		}
 	}
+
+	SetBottom(def.m_GroundOffset);
+	mHeight = def.m_Height;
 }
 
 PhysicsComponent::~PhysicsComponent()
@@ -122,6 +126,9 @@ nlohmann::json PhysicsComponent::ToJson()
 		// Do fixture data... which we don't care about yet.
 	}
 
+	j["GroundOffset"] = mGroundOffset;
+	j["Height"] = mHeight;
+
 	return j;
 }
 
@@ -133,6 +140,87 @@ b2Vec2 PhysicsComponent::GetPosition() const
 	}
 
 	return b2Vec2_zero;
+}
+
+float PhysicsComponent::CalculateNextZVelocity() const
+{
+	// TODO: Make gravity a configurable part of the World and pass it into this function.
+	const float gravity = 9.8f;
+
+	// TODO: Get from World? A global constant?
+	const float deltaTime = 1.0f / 60.0f;
+
+	float result = mZVelocity - gravity * deltaTime;
+
+	return result;
+}
+
+float PhysicsComponent::CalculateNextGroundOffset() const
+{
+	// TODO: Get from World? A global constant?
+	const float deltaTime = 1.0f / 60.0f;
+
+	return mGroundOffset + mZVelocity * deltaTime;
+}
+
+void PhysicsComponent::SetGrounded(b2Fixture* groundFixture /* = nullptr*/)
+{
+	// Stop any downward motion.
+	mZVelocity = std::max(0.0f, mZVelocity);
+
+	mGroundFixture = groundFixture;
+}
+
+void PhysicsComponent::SetNotGrounded()
+{
+	mGroundFixture = nullptr;
+}
+
+void PhysicsComponent::SetZVelocity(float velocity)
+{
+	if (IsGrounded())
+	{
+		if (velocity > 0)
+		{
+			SetNotGrounded();
+		}
+		else
+		{
+			return;
+		}
+	}
+
+	mZVelocity = velocity;
+}
+
+void PhysicsComponent::Update(const std::chrono::duration<float> deltaTime)
+{
+	if (GetBody().GetType() != b2BodyType::b2_staticBody)
+	{
+		if (!IsGrounded())
+		{
+			mGroundOffset = CalculateNextGroundOffset();
+
+			mZVelocity = CalculateNextZVelocity();
+
+			GetBody().SetAwake(true);
+		}
+
+		if (mGroundOffset <= 0.0f)
+		{
+			mGroundOffset = 0.0f;
+			// We've hit the ground.
+			SetGrounded();
+		}
+	}
+
+	// This is very inefficient but whatever.
+	// TODO: Do this immediately before rendering instead of during the update step.
+	RenderComponent* renderComponent = GetEntity().GetGraphics();
+	if (renderComponent)
+	{
+		renderComponent->SetGroundOffset(mGroundOffset);
+	}
 }
 
 }

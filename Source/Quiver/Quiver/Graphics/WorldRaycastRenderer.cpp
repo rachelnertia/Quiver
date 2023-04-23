@@ -448,11 +448,11 @@ void WorldRaycastRendererImpl::Render(
 
 			auto CalculateLineOffset = [&renderData, &camera](float const oneMetreInPixels)
 			{
-				const float groundOffset = renderData.GetGroundOffset() * oneMetreInPixels;
-				const float heightOffset = (renderData.GetHeight() - 1.0f) * oneMetreInPixels;
-				const float cameraHeightOffset = camera.GetHeightOffset() * 2.0f * oneMetreInPixels;
+				const float groundOffset = renderData.GetGroundOffset() * 2.0f;
+				const float heightOffset = renderData.GetHeight() - 1.0f;
+				const float cameraHeightOffset = camera.GetHeightOffset();
 
-				return -groundOffset - heightOffset - cameraHeightOffset;
+				return (-groundOffset - heightOffset - cameraHeightOffset) * oneMetreInPixels;
 			};
 
 			const float lineOffsetNear = CalculateLineOffset(oneMetreInPixelsNear);
@@ -531,7 +531,10 @@ void WorldRaycastRendererImpl::Render(
 			CreateDrawable(intersection.m_backPoints[pointIndex + 1], intersection.m_backPoints[pointIndex], false);
 		}
 
-		CreateDrawable(intersection.m_point, intersection.m_backPoints[intersection.m_numBackPoints - 1], true);
+		if (intersection.m_numBackPoints > 0)
+		{
+			CreateDrawable(intersection.m_point, intersection.m_backPoints[intersection.m_numBackPoints - 1], true);
+		}
 	};
 
 	std::for_each(
